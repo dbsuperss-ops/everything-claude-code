@@ -1,66 +1,66 @@
 ---
-description: Enforce TDD workflow with 80%+ coverage
+description: 80% 이상의 커버리지를 목표로 TDD 워크플로우를 강제 수행
 agent: tdd-guide
 subtask: true
 ---
 
-# TDD Command
+# TDD 명령 (TDD Command)
 
-Implement the following using strict test-driven development: $ARGUMENTS
+엄격한 테스트 주도 개발(Test-Driven Development) 방식을 사용하여 다음을 구현합니다: $ARGUMENTS
 
-## TDD Cycle (MANDATORY)
+## TDD 사이클 (필수)
 
 ```
 RED → GREEN → REFACTOR → REPEAT
 ```
 
-1. **RED**: Write a failing test FIRST
-2. **GREEN**: Write minimal code to pass the test
-3. **REFACTOR**: Improve code while keeping tests green
-4. **REPEAT**: Continue until feature complete
+1. **RED**: 실패하는 테스트를 가장 먼저 작성합니다.
+2. **GREEN**: 테스트를 통과하기 위한 최소한의 코드를 작성합니다.
+3. **REFACTOR**: 테스트가 통과하는 상태를 유지하면서 코드를 개선합니다.
+4. **REPEAT**: 기능이 완성될 때까지 반복합니다.
 
-## Your Task
+## 임무
 
-### Step 1: Define Interfaces (SCAFFOLD)
-- Define TypeScript interfaces for inputs/outputs
-- Create function signature with `throw new Error('Not implemented')`
+### 1단계: 인터페이스 정의 (SCAFFOLD)
+- 입력/출력을 위한 TypeScript 인터페이스를 정의합니다.
+- `throw new Error('Not implemented')`를 포함한 함수 서명을 생성합니다.
 
-### Step 2: Write Failing Tests (RED)
-- Write tests that exercise the interface
-- Include happy path, edge cases, and error conditions
-- Run tests - verify they FAIL
+### 2단계: 실패하는 테스트 작성 (RED)
+- 인터페이스를 검증하는 테스트를 작성합니다.
+- 정상적인 경로(Happy path), 엣지 케이스(Edge cases), 에러 조건을 모두 포함합니다.
+- 테스트를 실행하여 실패(FAIL)하는지 확인합니다.
 
-### Step 3: Implement Minimal Code (GREEN)
-- Write just enough code to make tests pass
-- No premature optimization
-- Run tests - verify they PASS
+### 3단계: 최소한의 코드 구현 (GREEN)
+- 테스트를 통과할 수 있을 정도의 코드만 작성합니다.
+- 성급한 최적화는 지양합니다.
+- 테스트를 실행하여 통과(PASS)하는지 확인합니다.
 
-### Step 4: Refactor (IMPROVE)
-- Extract constants, improve naming
-- Remove duplication
-- Run tests - verify they still PASS
+### 4단계: 리팩토링 (IMPROVE)
+- 상수를 추출하고 명칭을 개선합니다.
+- 중복 코드를 제거합니다.
+- 테스트를 실행하여 여전히 통과(PASS)하는지 확인합니다.
 
-### Step 5: Check Coverage
-- Target: 80% minimum
-- 100% for critical business logic
-- Add more tests if needed
+### 5단계: 커버리지 확인
+- 목표: 최소 80% 이상
+- 핵심 비즈니스 로직의 경우 100% 목표
+- 필요한 경우 테스트를 추가합니다.
 
-## Coverage Requirements
+## 커버리지 요구 사항
 
-| Code Type | Minimum |
+| 코드 유형 | 최소 기준 |
 |-----------|---------|
-| Standard code | 80% |
-| Financial calculations | 100% |
-| Authentication logic | 100% |
-| Security-critical code | 100% |
+| 일반 코드 | 80% |
+| 재무 계산 로직 | 100% |
+| 인증 로직 | 100% |
+| 보안 핵심 코드 | 100% |
 
-## Test Types to Include
+## 포함해야 할 테스트 유형
 
-- **Unit Tests**: Individual functions
-- **Edge Cases**: Empty, null, max values, boundaries
-- **Error Conditions**: Invalid inputs, network failures
-- **Integration Tests**: API endpoints, database operations
+- **단위 테스트**: 개별 함수
+- **엣지 케이스**: 빈 값, null, 최대값, 경계값
+- **에러 조건**: 유효하지 않은 입력, 네트워크 실패
+- **통합 테스트**: API 엔드포인트, 데이터베이스 작업
 
 ---
 
-**MANDATORY**: Tests must be written BEFORE implementation. Never skip the RED phase.
+**필수**: 테스트는 반드시 구현 "전에" 작성되어야 합니다. 절대로 RED 단계를 건너뛰지 마십시오.

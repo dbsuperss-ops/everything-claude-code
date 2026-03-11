@@ -1,67 +1,67 @@
 ---
-description: Run verification loop to validate implementation
+description: 구현 내용을 검증하기 위해 검증 루프 실행
 agent: build
 ---
 
-# Verify Command
+# 검증 명령 (Verify Command)
 
-Run verification loop to validate the implementation: $ARGUMENTS
+구현 내용을 확인하기 위해 종합 검증 루프를 실행합니다: $ARGUMENTS
 
-## Your Task
+## 임무
 
-Execute comprehensive verification:
+다음의 포괄적인 검증을 수행하십시오:
 
-1. **Type Check**: `npx tsc --noEmit`
-2. **Lint**: `npm run lint`
-3. **Unit Tests**: `npm test`
-4. **Integration Tests**: `npm run test:integration` (if available)
-5. **Build**: `npm run build`
-6. **Coverage Check**: Verify 80%+ coverage
+1. **타입 체크**: `npx tsc --noEmit`
+2. **린트(Lint)**: `npm run lint`
+3. **단위 테스트**: `npm test`
+4. **통합 테스트**: `npm run test:integration` (가능한 경우)
+5. **빌드**: `npm run build`
+6. **커버리지 확인**: 80% 이상의 커버리지 확인
 
-## Verification Checklist
+## 검증 체크리스트
 
-### Code Quality
-- [ ] No TypeScript errors
-- [ ] No lint warnings
-- [ ] No console.log statements
-- [ ] Functions < 50 lines
-- [ ] Files < 800 lines
+### 코드 품질
+- [ ] TypeScript 에러 없음
+- [ ] 린트 경고 없음
+- [ ] console.log 구문 없음
+- [ ] 함수 길이 < 50줄
+- [ ] 파일 길이 < 800줄
 
-### Tests
-- [ ] All tests passing
-- [ ] Coverage >= 80%
-- [ ] Edge cases covered
-- [ ] Error conditions tested
+### 테스트
+- [ ] 모든 테스트 통과
+- [ ] 커버리지 >= 80%
+- [ ] 엣지 케이스 포함 여부
+- [ ] 에러 조건 테스트 여부
 
-### Security
-- [ ] No hardcoded secrets
-- [ ] Input validation present
-- [ ] No SQL injection risks
-- [ ] No XSS vulnerabilities
+### 보안
+- [ ] 하드코딩된 비밀 정보 없음
+- [ ] 입력값 검증 포함 여부
+- [ ] SQL 인젝션 리스크 없음
+- [ ] XSS 취약점 없음
 
-### Build
-- [ ] Build succeeds
-- [ ] No warnings
-- [ ] Bundle size acceptable
+### 빌드
+- [ ] 빌드 성공
+- [ ] 경고 메시지 없음
+- [ ] 번들 크기 적정성
 
-## Verification Report
+## 검증 보고서 형식
 
-### Summary
-- Status: ✅ PASS / ❌ FAIL
-- Score: X/Y checks passed
+### 요약
+- 상태: ✅ 통과 (PASS) / ❌ 실패 (FAIL)
+- 점수: 전체 Y개 중 X개 통과
 
-### Details
-| Check | Status | Notes |
+### 상세 내용
+| 점검 항목 | 상태 | 비고 |
 |-------|--------|-------|
-| TypeScript | ✅/❌ | [details] |
-| Lint | ✅/❌ | [details] |
-| Tests | ✅/❌ | [details] |
-| Coverage | ✅/❌ | XX% (target: 80%) |
-| Build | ✅/❌ | [details] |
+| TypeScript | ✅/❌ | [상세 내용] |
+| Lint | ✅/❌ | [상세 내용] |
+| Tests | ✅/❌ | [상세 내용] |
+| Coverage | ✅/❌ | XX% (목표: 80%) |
+| Build | ✅/❌ | [상세 내용] |
 
-### Action Items
-[If FAIL, list what needs to be fixed]
+### 조치 사항
+[실패(FAIL)인 경우, 수정해야 할 항목 목록]
 
 ---
 
-**NOTE**: Verification loop should be run before every commit and PR.
+**참고**: 검증 루프는 모든 커밋 및 PR 전에 반드시 실행해야 합니다.

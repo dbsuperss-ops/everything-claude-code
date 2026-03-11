@@ -1,102 +1,102 @@
 ---
-description: Remove dead code and consolidate duplicates
+description: 데드 코드(Dead code) 제거 및 중복 코드 통합
 agent: refactor-cleaner
 subtask: true
 ---
 
-# Refactor Clean Command
+# 리팩토링 정리 명령 (Refactor Clean Command)
 
-Analyze and clean up the codebase: $ARGUMENTS
+코드베이스를 분석하고 정리합니다: $ARGUMENTS
 
-## Your Task
+## 임무
 
-1. **Detect dead code** using analysis tools
-2. **Identify duplicates** and consolidation opportunities
-3. **Safely remove** unused code with documentation
-4. **Verify** no functionality broken
+1. **데드 코드 탐지**: 분석 도구를 사용하여 사용되지 않는 코드를 찾습니다.
+2. **중복 코드 식별**: 중복되거나 통합 가능한 요소를 파악합니다.
+3. **안전한 제거**: 사용되지 않는 코드를 문서화와 함께 안전하게 제거합니다.
+4. **검증**: 기능이 손상되지 않았는지 확인합니다.
 
-## Detection Phase
+## 탐지 단계
 
-### Run Analysis Tools
+### 분석 도구 실행
 
 ```bash
-# Find unused exports
+# 사용되지 않는 export 찾기
 npx knip
 
-# Find unused dependencies
+# 사용되지 않는 종속성 찾기
 npx depcheck
 
-# Find unused TypeScript exports
+# 사용되지 않는 TypeScript export 찾기
 npx ts-prune
 ```
 
-### Manual Checks
+### 수동 점검 항목
 
-- Unused functions (no callers)
-- Unused variables
-- Unused imports
-- Commented-out code
-- Unreachable code
-- Unused CSS classes
+- 사용되지 않는 함수 (호출자 없음)
+- 사용되지 않는 변수
+- 사용되지 않는 임포트(Import)
+- 주석 처리된 코드
+- 도달할 수 없는(Unreachable) 코드
+- 사용되지 않는 CSS 클래스
 
-## Removal Phase
+## 제거 단계
 
-### Before Removing
+### 제거 전 확인 사항
 
-1. **Search for usage** - grep, find references
-2. **Check exports** - might be used externally
-3. **Verify tests** - no test depends on it
-4. **Document removal** - git commit message
+1. **사용처 검색**: grep 또는 'Find References' 기능을 통해 검색합니다.
+2. **Export 확인**: 외부에서 사용 중일 수 있으니 주의하십시오.
+3. **테스트 확인**: 해당 코드에 의존하는 테스트가 없는지 확인합니다.
+4. **제거 내용 기록**: git 커밋 메시지에 명확히 기록합니다.
 
-### Safe Removal Order
+### 안전한 제거 순서
 
-1. Remove unused imports first
-2. Remove unused private functions
-3. Remove unused exported functions
-4. Remove unused types/interfaces
-5. Remove unused files
+1. 사용되지 않는 임포트 먼저 제거
+2. 사용되지 않는 private 함수 제거
+3. 사용되지 않는 exported 함수 제거
+4. 사용되지 않는 타입/인터페이스 제거
+5. 사용되지 않는 파일 제거
 
-## Consolidation Phase
+## 통합 단계
 
-### Identify Duplicates
+### 중복 식별
 
-- Similar functions with minor differences
-- Copy-pasted code blocks
-- Repeated patterns
+- 약간의 차이만 있는 유사한 함수들
+- 복사-붙여넣기 된 코드 블록
+- 반복되는 패턴
 
-### Consolidation Strategies
+### 통합 전략
 
-1. **Extract utility function** - for repeated logic
-2. **Create base class** - for similar classes
-3. **Use higher-order functions** - for repeated patterns
-4. **Create shared constants** - for magic values
+1. **유틸리티 함수 추출**: 반복되는 로직용
+2. **베이스 클래스 생성**: 유사한 클래스용
+3. **고차 함수(Higher-order functions) 사용**: 반복되는 패턴용
+4. **공용 상수 생성**: 매직 넘버/값(Magic values)용
 
-## Verification
+## 검증 단계
 
-After cleanup:
+정리 작업 후:
 
-1. `npm run build` - builds successfully
-2. `npm test` - all tests pass
-3. `npm run lint` - no new lint errors
-4. Manual smoke test - features work
+1. `npm run build` - 빌드 성공 확인
+2. `npm test` - 모든 테스트 통과 확인
+3. `npm run lint` - 새로운 린트 에러 없음 확인
+4. 수동 스모크 테스트 - 주요 기능 작동 확인
 
-## Report Format
+## 보고서 형식
 
 ```
-Dead Code Analysis
+데드 코드 분석 결과
 ==================
 
-Removed:
-- file.ts: functionName (unused export)
-- utils.ts: helperFunction (no callers)
+제거됨:
+- file.ts: functionName (사용되지 않는 export)
+- utils.ts: helperFunction (호출자 없음)
 
-Consolidated:
-- formatDate() and formatDateTime() → dateUtils.format()
+통합됨:
+- formatDate() 및 formatDateTime() → dateUtils.format()으로 통합
 
-Remaining (manual review needed):
-- oldComponent.tsx: potentially unused, verify with team
+남은 항목 (수동 검토 필요):
+- oldComponent.tsx: 사용되지 않을 가능성 있음, 팀 확인 필요
 ```
 
 ---
 
-**CAUTION**: Always verify before removing. When in doubt, ask or add `// TODO: verify usage` comment.
+**주의**: 제거하기 전에 항상 검증하십시오. 의심스러운 경우 직접 삭제하지 말고 `// TODO: 사용 여부 확인` 주석을 추가하십시오.

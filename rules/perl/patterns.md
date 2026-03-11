@@ -6,13 +6,13 @@ paths:
   - "**/*.psgi"
   - "**/*.cgi"
 ---
-# Perl Patterns
+# Perl 패턴 (Patterns)
 
-> This file extends [common/patterns.md](../common/patterns.md) with Perl-specific content.
+> 이 문서는 [common/patterns.md](../common/patterns.md)의 규칙을 기반으로 Perl에 특화된 내용을 확장합니다.
 
-## Repository Pattern
+## 저장소(Repository) 패턴
 
-Use **DBI** or **DBIx::Class** behind an interface:
+인터페이스 뒤에 **DBI** 또는 **DBIx::Class**를 사용하십시오:
 
 ```perl
 package MyApp::Repo::User;
@@ -27,9 +27,9 @@ sub find_by_id ($self, $id) {
 }
 ```
 
-## DTOs / Value Objects
+## DTO / 값 객체 (Value Objects)
 
-Use **Moo** classes with **Types::Standard** (equivalent to Python dataclasses):
+**Types::Standard**를 포함한 **Moo** 클래스를 사용하십시오 (Python의 dataclass와 유사):
 
 ```perl
 package MyApp::DTO::User;
@@ -41,10 +41,10 @@ has email => (is => 'ro', isa => Str, required => 1);
 has age   => (is => 'ro', isa => Int);
 ```
 
-## Resource Management
+## 리소스 관리
 
-- Always use **three-arg open** with `autodie`
-- Use **Path::Tiny** for file operations
+- 항상 `autodie`를 포함한 **3인자 open (three-arg open)** 형식을 사용하십시오.
+- 파일 작업에는 **Path::Tiny**를 사용하십시오.
 
 ```perl
 use autodie;
@@ -53,24 +53,24 @@ use Path::Tiny;
 my $content = path('config.json')->slurp_utf8;
 ```
 
-## Module Interface
+## 모듈 인터페이스
 
-Use `Exporter 'import'` with `@EXPORT_OK` — never `@EXPORT`:
+`Exporter 'import'`와 함께 `@EXPORT_OK`를 사용하십시오. — `@EXPORT`는 절대로 사용하지 마십시오:
 
 ```perl
 use Exporter 'import';
 our @EXPORT_OK = qw(parse_config validate_input);
 ```
 
-## Dependency Management
+## 의존성 관리
 
-Use **cpanfile** + **carton** for reproducible installs:
+재현 가능한 설치를 위해 **cpanfile** + **carton**을 사용하십시오:
 
 ```bash
 carton install
 carton exec prove -lr t/
 ```
 
-## Reference
+## 참고 자료
 
-See skill: `perl-patterns` for comprehensive modern Perl patterns and idioms.
+현대적인 Perl 패턴과 관례에 대해서는 `perl-patterns` 스킬을 참조하십시오.

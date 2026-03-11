@@ -3,32 +3,32 @@ paths:
   - "**/*.kt"
   - "**/*.kts"
 ---
-# Kotlin Patterns
+# Kotlin 패턴 (Patterns)
 
-> This file extends [common/patterns.md](../common/patterns.md) with Kotlin and Android/KMP-specific content.
+> 이 문서는 [common/patterns.md](../common/patterns.md)의 규칙을 기반으로 Kotlin 및 Android/KMP(Kotlin Multiplatform)특화 내용을 확장합니다.
 
-## Dependency Injection
+## 의존성 주입 (Dependency Injection)
 
-Prefer constructor injection. Use Koin (KMP) or Hilt (Android-only):
+생성자 주입(Constructor injection)을 권장합니다. KMP의 경우 **Koin**을, Android 전용의 경우 **Hilt**를 사용하십시오:
 
 ```kotlin
-// Koin — declare modules
+// Koin — 모듈 선언
 val dataModule = module {
     single<ItemRepository> { ItemRepositoryImpl(get(), get()) }
     factory { GetItemsUseCase(get()) }
     viewModelOf(::ItemListViewModel)
 }
 
-// Hilt — annotations
+// Hilt — 어노테이션 사용
 @HiltViewModel
 class ItemListViewModel @Inject constructor(
     private val getItems: GetItemsUseCase
 ) : ViewModel()
 ```
 
-## ViewModel Pattern
+## ViewModel 패턴
 
-Single state object, event sink, one-way data flow:
+단일 상태 객체(Single state object), 이벤트 싱크(Event sink), 단방향 데이터 흐름(UDF)을 따릅니다:
 
 ```kotlin
 data class ScreenState(
@@ -49,11 +49,11 @@ class ScreenViewModel(private val useCase: GetItemsUseCase) : ViewModel() {
 }
 ```
 
-## Repository Pattern
+## 저장소(Repository) 패턴
 
-- `suspend` functions return `Result<T>` or custom error type
-- `Flow` for reactive streams
-- Coordinate local + remote data sources
+- `suspend` 함수는 `Result<T>` 또는 커스텀 에러 타입을 반환합니다.
+- 반응형 스트림을 위해 `Flow`를 사용합니다.
+- 로컬 데이터 소스와 리모트 데이터 소스를 조율합니다.
 
 ```kotlin
 interface ItemRepository {
@@ -63,9 +63,9 @@ interface ItemRepository {
 }
 ```
 
-## UseCase Pattern
+## UseCase 패턴
 
-Single responsibility, `operator fun invoke`:
+단일 책임 원칙을 따르며, `operator fun invoke`를 활용합니다:
 
 ```kotlin
 class GetItemUseCase(private val repository: ItemRepository) {
@@ -83,7 +83,7 @@ class GetItemsUseCase(private val repository: ItemRepository) {
 
 ## expect/actual (KMP)
 
-Use for platform-specific implementations:
+플랫폼별 구현을 처리하기 위해 사용합니다:
 
 ```kotlin
 // commonMain
@@ -96,25 +96,25 @@ expect class SecureStorage {
 // androidMain
 actual fun platformName(): String = "Android"
 actual class SecureStorage {
-    actual fun save(key: String, value: String) { /* EncryptedSharedPreferences */ }
+    actual fun save(key: String, value: String) { /* EncryptedSharedPreferences 사용 */ }
     actual fun get(key: String): String? = null /* ... */
 }
 
 // iosMain
 actual fun platformName(): String = "iOS"
 actual class SecureStorage {
-    actual fun save(key: String, value: String) { /* Keychain */ }
+    actual fun save(key: String, value: String) { /* Keychain 사용 */ }
     actual fun get(key: String): String? = null /* ... */
 }
 ```
 
-## Coroutine Patterns
+## 코루틴(Coroutine) 패턴
 
-- Use `viewModelScope` in ViewModels, `coroutineScope` for structured child work
-- Use `stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue)` for StateFlow from cold Flows
-- Use `supervisorScope` when child failures should be independent
+- ViewModel에서는 `viewModelScope`를, 하위 작업의 구조화된 처리를 위해서는 `coroutineScope`를 사용하십시오.
+- Cold Flow로부터 StateFlow를 생성할 때는 `stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue)`를 사용하십시오.
+- 자식 작업의 실패가 서로에게 영향을 주지 않아야 하는 경우 `supervisorScope`를 사용하십시오.
 
-## Builder Pattern with DSL
+## DSL을 활용한 빌더(Builder) 패턴
 
 ```kotlin
 class HttpClientConfig {
@@ -132,7 +132,7 @@ fun httpClient(block: HttpClientConfig.() -> Unit): HttpClient {
     return HttpClient(config)
 }
 
-// Usage
+// 사용 예시
 val client = httpClient {
     baseUrl = "https://api.example.com"
     timeout = 15_000
@@ -140,7 +140,7 @@ val client = httpClient {
 }
 ```
 
-## References
+## 참고 자료
 
-See skill: `kotlin-coroutines-flows` for detailed coroutine patterns.
-See skill: `android-clean-architecture` for module and layer patterns.
+- 상세한 코루틴 패턴에 대해서는 `kotlin-coroutines-flows` 스킬을 참조하십시오.
+- 모듈 및 레이어 패턴에 대해서는 `android-clean-architecture` 스킬을 참조하십시오.

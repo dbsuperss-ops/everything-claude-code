@@ -1,67 +1,67 @@
 ---
-description: Update documentation for recent changes
+description: 최근 변경 사항에 맞춰 문서 업데이트
 agent: doc-updater
 subtask: true
 ---
 
-# Update Docs Command
+# 문서 업데이트 명령 (Update Docs Command)
 
-Update documentation to reflect recent changes: $ARGUMENTS
+최근 변경 사항을 반영하여 문서를 업데이트합니다: $ARGUMENTS
 
-## Your Task
+## 임무
 
-1. **Identify changed code** - `git diff --name-only`
-2. **Find related docs** - README, API docs, guides
-3. **Update documentation** - Keep in sync with code
-4. **Verify accuracy** - Docs match implementation
+1. **변경된 코드 확인** - `git diff --name-only` 실행
+2. **관련 문서 검색** - README, API 문서, 가이드 등
+3. **문서 업데이트** - 코드와 문서의 동기화 유지
+4. **정확성 검증** - 문서 내용이 실제 구현과 일치하는지 확인
 
-## Documentation Types
+## 문서 유형
 
 ### README.md
-- Installation instructions
-- Quick start guide
-- Feature overview
-- Configuration options
+- 설치 지침
+- 빠른 시작 가이드 (Quick start guide)
+- 주요 기능 개요
+- 설정 옵션
 
-### API Documentation
-- Endpoint descriptions
-- Request/response formats
-- Authentication details
-- Error codes
+### API 문서
+- 엔드포인트 설명
+- 요청/응답 형식
+- 인증 세부 사항
+- 에러 코드
 
-### Code Comments
-- JSDoc for public APIs
-- Complex logic explanations
-- TODO/FIXME cleanup
+### 코드 주석
+- 공개 API를 위한 JSDoc
+- 복잡한 로직에 대한 설명
+- TODO/FIXME 정리
 
-### Guides
-- How-to tutorials
-- Architecture decisions (ADRs)
-- Troubleshooting guides
+### 가이드
+- 사용 방법(How-to) 튜토리얼
+- 아키텍처 결정 기록 (ADRs)
+- 문제 해결(Troubleshooting) 가이드
 
-## Update Checklist
+## 업데이트 체크리스트
 
-- [ ] README reflects current features
-- [ ] API docs match endpoints
-- [ ] JSDoc updated for changed functions
-- [ ] Examples are working
-- [ ] Links are valid
-- [ ] Version numbers updated
+- [ ] README가 현재 기능을 충분히 반영하고 있는가
+- [ ] API 문서가 엔드포인트와 일치하는가
+- [ ] 변경된 함수에 대해 JSDoc이 업데이트되었는가
+- [ ] 예시 코드가 정상적으로 작동하는가
+- [ ] 링크가 유효한가
+- [ ] 버전 정보가 업데이트되었는가
 
-## Documentation Quality
+## 문서 품질 기준
 
-### Good Documentation
-- Accurate and up-to-date
-- Clear and concise
-- Has working examples
-- Covers edge cases
+### 좋은 문서의 특징
+- 정확하고 최신 정보를 유지함
+- 명확하고 간결함
+- 작동하는 예시 코드를 포함함
+- 엣지 케이스를 다룸
 
-### Avoid
-- Outdated information
-- Missing parameters
-- Broken examples
-- Ambiguous language
+### 피해야 할 사항
+- 오래된 정보
+- 누락된 파라미터 설명
+- 작동하지 않는 예시
+- 모호한 표현
 
 ---
 
-**IMPORTANT**: Documentation should be updated alongside code changes, not as an afterthought.
+**중요**: 문서는 나중에 몰아서 작성하는 것이 아니라, 코드 변경과 동시에 업데이트되어야 합니다.

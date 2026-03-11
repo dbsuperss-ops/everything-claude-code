@@ -1,104 +1,104 @@
 ---
-description: Generate skills from git history analysis
+description: git 히스토리 분석을 통해 스킬 생성
 agent: build
 ---
 
-# Skill Create Command
+# 스킬 생성 명령 (Skill Create Command)
 
-Analyze git history to generate Claude Code skills: $ARGUMENTS
+git 히스토리를 분석하여 Claude Code 스킬을 생성합니다: $ARGUMENTS
 
-## Your Task
+## 임무
 
-1. **Analyze commits** - Pattern recognition from history
-2. **Extract patterns** - Common practices and conventions
-3. **Generate SKILL.md** - Structured skill documentation
-4. **Create instincts** - For continuous-learning-v2
+1. **커밋 분석** - 히스토리로부터 패턴 인식
+2. **패턴 추출** - 공통적인 관행 및 관례 추출
+3. **SKILL.md 생성** - 구조화된 스킬 문서 작성
+4. **본능(Instincts) 생성** - continuous-learning-v2용 본능 생성
 
-## Analysis Process
+## 분석 프로세스
 
-### Step 1: Gather Commit Data
+### 1단계: 커밋 데이터 수집
 ```bash
-# Recent commits
+# 최근 커밋 내역
 git log --oneline -100
 
-# Commits by file type
+# 파일 유형별 커밋 횟수
 git log --name-only --pretty=format: | sort | uniq -c | sort -rn
 
-# Most changed files
+# 가장 많이 수정된 파일
 git log --pretty=format: --name-only | sort | uniq -c | sort -rn | head -20
 ```
 
-### Step 2: Identify Patterns
+### 2단계: 패턴 식별
 
-**Commit Message Patterns**:
-- Common prefixes (feat, fix, refactor)
-- Naming conventions
-- Co-author patterns
+**커밋 메시지 패턴**:
+- 공통 접두사 (feat, fix, refactor)
+- 명명 규칙
+- 공동 작업자(Co-author) 패턴
 
-**Code Patterns**:
-- File structure conventions
-- Import organization
-- Error handling approaches
+**코드 패턴**:
+- 파일 구조 관례
+- 임포트 구성 방식
+- 에러 처리 접근법
 
-**Review Patterns**:
-- Common review feedback
-- Recurring fix types
-- Quality gates
+**리뷰 패턴**:
+- 공통적인 리뷰 피드백
+- 반복되는 수정 유형
+- 품질 게이트
 
-### Step 3: Generate SKILL.md
+### 3단계: SKILL.md 생성
 
 ```markdown
-# [Skill Name]
+# [스킬 이름]
 
-## Overview
-[What this skill teaches]
+## 개요
+[이 스킬이 가르치는 내용]
 
-## Patterns
+## 패턴
 
-### Pattern 1: [Name]
-- When to use
-- Implementation
-- Example
+### 패턴 1: [이름]
+- 사용 시기
+- 구현 방법
+- 예시
 
-### Pattern 2: [Name]
-- When to use
-- Implementation
-- Example
+### 패턴 2: [이름]
+- 사용 시기
+- 구현 방법
+- 예시
 
-## Best Practices
+## 베스트 프랙티스
 
-1. [Practice 1]
-2. [Practice 2]
-3. [Practice 3]
+1. [프랙티스 1]
+2. [프랙티스 2]
+3. [프랙티스 3]
 
-## Common Mistakes
+## 일반적인 실수
 
-1. [Mistake 1] - How to avoid
-2. [Mistake 2] - How to avoid
+1. [실수 1] - 방지 방법
+2. [실수 2] - 방지 방법
 
-## Examples
+## 예시
 
-### Good Example
-```[language]
-// Code example
+### 좋은 예시
+```[언어]
+// 코드 예시
 ```
 
-### Anti-pattern
-```[language]
-// What not to do
+### 안티 패턴 (Anti-pattern)
+```[언어]
+// 하지 말아야 할 것
 ```
 ```
 
-### Step 4: Generate Instincts
+### 4단계: 본능(Instincts) 생성
 
-For continuous-learning-v2:
+continuous-learning-v2용:
 
 ```json
 {
   "instincts": [
     {
-      "trigger": "[situation]",
-      "action": "[response]",
+      "trigger": "[상황]",
+      "action": "[대응 조치]",
       "confidence": 0.8,
       "source": "git-history-analysis"
     }
@@ -106,12 +106,12 @@ For continuous-learning-v2:
 }
 ```
 
-## Output
+## 결과물
 
-Creates:
-- `skills/[name]/SKILL.md` - Skill documentation
-- `skills/[name]/instincts.json` - Instinct collection
+생성 내용:
+- `skills/[이름]/SKILL.md` - 스킬 문서
+- `skills/[이름]/instincts.json` - 본능 모음
 
 ---
 
-**TIP**: Run `/skill-create --instincts` to also generate instincts for continuous learning.
+**팁**: 지속적 학습을 위한 본능도 함께 생성하려면 `/skill-create --instincts` 명령을 실행하십시오.

@@ -6,49 +6,49 @@ paths:
   - "**/*.psgi"
   - "**/*.cgi"
 ---
-# Perl Testing
+# Perl 테스트 (Testing)
 
-> This file extends [common/testing.md](../common/testing.md) with Perl-specific content.
+> 이 문서는 [common/testing.md](../common/testing.md)의 규칙을 기반으로 Perl에 특화된 내용을 확장합니다.
 
-## Framework
+## 프레임워크
 
-Use **Test2::V0** for new projects (not Test::More):
+신규 프로젝트에는 `Test::More` 대신 **Test2::V0**를 사용하십시오:
 
 ```perl
 use Test2::V0;
 
-is($result, 42, 'answer is correct');
+is($result, 42, '정답이 올바름');
 
 done_testing;
 ```
 
-## Runner
+## 실행 도구 (Runner)
 
 ```bash
-prove -l t/              # adds lib/ to @INC
-prove -lr -j8 t/         # recursive, 8 parallel jobs
+prove -l t/              # lib/ 디렉토리를 @INC에 추가
+prove -lr -j8 t/         # 재귀적 실행, 8개 작업을 병렬로 수행
 ```
 
-Always use `-l` to ensure `lib/` is on `@INC`.
+`lib/`가 `@INC`에 포함되도록 항상 `-l` 옵션을 사용하십시오.
 
-## Coverage
+## 커버리지
 
-Use **Devel::Cover** — target 80%+:
+**Devel::Cover**를 사용하며, 80% 이상의 커버리지를 목표로 하십시오.
 
 ```bash
 cover -test
 ```
 
-## Mocking
+## 모의 객체 (Mocking)
 
-- **Test::MockModule** — mock methods on existing modules
-- **Test::MockObject** — create test doubles from scratch
+- **Test::MockModule** — 기존 모듈의 메서드를 모킹할 때 사용
+- **Test::MockObject** — 테스트용 가짜 객체(Test doubles)를 처음부터 생성할 때 사용
 
-## Pitfalls
+## 주의 사항
 
-- Always end test files with `done_testing`
-- Never forget the `-l` flag with `prove`
+- 테스트 파일은 항상 `done_testing`으로 종료하십시오.
+- `prove` 실행 시 `-l` 플래그를 절대 잊지 마십시오.
 
-## Reference
+## 참고 자료
 
-See skill: `perl-testing` for detailed Perl TDD patterns with Test2::V0, prove, and Devel::Cover.
+Test2::V0, prove, Devel::Cover를 활용한 상세한 Perl TDD 패턴에 대해서는 `perl-testing` 스킬을 참조하십시오.
