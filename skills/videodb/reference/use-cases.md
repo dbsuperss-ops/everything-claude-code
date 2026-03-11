@@ -1,118 +1,118 @@
-# Use Cases
+# 사용 사례 (Use Cases)
 
-Common workflows and what VideoDB enables. For code details, see [api-reference.md](api-reference.md), [capture.md](capture.md), [editor.md](editor.md), and [search.md](search.md).
-
----
-
-## Video Search & Highlights
-
-### Create Highlight Reels
-Upload a long video (conference talk, lecture, meeting recording), search for key moments by topic ("product announcement", "Q&A session", "demo"), and automatically compile matching segments into a shareable highlight reel.
-
-### Build Searchable Video Libraries
-Batch upload videos to a collection, index them for spoken word search, then query across the entire library. Find specific topics across hundreds of hours of content instantly.
-
-### Extract Specific Clips
-Search for moments matching a query ("budget discussion", "action items") and extract each matching segment as an individual clip with its own stream URL.
+일반적인 워크플로우와 VideoDB가 제공하는 기능들입니다. 코드에 대한 상세 내용은 [api-reference.md](api-reference.md), [capture.md](capture.md), [editor.md](editor.md), 그리고 [search.md](search.md)를 참조하십시오.
 
 ---
 
-## Video Enhancement
+## 비디오 검색 및 하이라이트
 
-### Add Professional Polish
-Take raw footage and enhance it with:
-- Auto-generated subtitles from speech
-- Custom thumbnails at specific timestamps
-- Background music overlays
-- Intro/outro sequences with generated images
+### 하이라이트 영상 제작
+컨퍼런스 발표, 강연, 회의 녹화본 등 긴 비디오를 업로드하고, 주제("제품 발표", "Q&A 세션", "데모")별로 주요 순간을 검색하여 공유 가능한 하이라이트 영상으로 자동 컴파일합니다.
 
-### AI-Enhanced Content
-Combine existing video with generative AI:
-- Generate text summaries from transcript
-- Create background music matching video duration
-- Generate title cards and overlay images
-- Mix all elements into a polished final output
+### 검색 가능한 비디오 라이브러리 구축
+비디오를 컬렉션에 일괄 업로드하고 음성 검색을 위해 인덱싱하면, 전체 라이브러리를 대상으로 쿼리를 수행할 수 있습니다. 수백 시간 분량의 콘텐츠 중에서 특정 주제를 즉시 찾아낼 수 있습니다.
+
+### 특정 클립 추출
+쿼리("예산 논의", "실행 항목")와 일치하는 순간을 검색하고, 각 매칭된 세그먼트를 고유한 스트림 URL을 가진 개별 클립으로 추출합니다.
 
 ---
 
-## Real-Time Capture (Desktop/Meeting)
+## 비디오 향상 (Video Enhancement)
 
-### Screen + Audio Recording with AI
-Capture screen, microphone, and system audio simultaneously. Get real-time:
-- **Live transcription** - Speech to text as it happens
-- **Audio summaries** - Periodic AI-generated summaries of discussions
-- **Visual indexing** - AI descriptions of screen activity
+### 전문적인 영상 편집
+원본 영상을 다음과 같은 기능으로 향상시킬 수 있습니다:
+- 음성으로부터 자동 생성된 자막 추가
+- 특정 타임스탬프에서 커스텀 썸네일 생성
+- 배경 음악 오버레이 추가
+- 생성된 이미지를 활용한 인트로/아웃로 시퀀스 구축
 
-### Meeting Capture with Summarization
-Record meetings with live transcription of all participants. Get periodic summaries with key discussion points, decisions, and action items delivered in real-time.
-
-### Screen Activity Tracking
-Track what's happening on screen with AI-generated descriptions:
-- "User is browsing a spreadsheet in Google Sheets"
-- "User switched to a code editor with a Python file"
-- "Video call with screen sharing enabled"
-
-### Post-Session Processing
-After capture ends, the recording is exported as a permanent video. Then:
-- Generate searchable transcript
-- Search for specific topics within the recording
-- Extract clips of important moments
-- Share via stream URL or player link
+### AI 기반 콘텐츠 제작
+기존 비디오와 생성형 AI를 결합합니다:
+- 스크립트로부터 텍스트 요약 생성
+- 비디오 길이에 맞춘 배경 음악 생성
+- 타이틀 카드 및 오버레이 이미지 생성
+- 모든 요소를 결합하여 완성도 높은 최종 결과물 믹싱
 
 ---
 
-## Live Stream Intelligence (RTSP/RTMP)
+## 실시간 캡처 (데스크톱/회의)
 
-### Connect External Streams
-Ingest live video from RTSP/RTMP sources (security cameras, encoders, broadcasts). Process and index content in real-time.
+### AI를 활용한 화면 및 오디오 녹화
+화면, 마이크 및 시스템 오디오를 동시에 캡처하며 다음 기능을 실시간으로 활용합니다:
+- **실시간 스크립트 추출** - 말하는 즉시 텍스트로 변환
+- **오디오 요약** - 대화 내용에 대해 정기적으로 AI 요약본 생성
+- **시각적 인덱싱** - 화면 활동에 대한 AI 설명 생성
 
-### Real-Time Event Detection
-Define events to detect in live streams:
-- "Person entering restricted area"
-- "Traffic violation at intersection"
-- "Product visible on shelf"
+### 요약 기능이 포함된 회의 캡처
+모든 참가자의 음성을 실시간으로 텍스트화하며 회의를 기록합니다. 주요 논의사항, 결정사항 및 실행 항목이 포함된 정기 요약본을 실시간으로 받아볼 수 있습니다.
 
-Get alerts via WebSocket or webhook when events occur.
+### 화면 활동 추적
+AI가 생성하는 설명을 통해 화면에서 무슨 일이 일어나는지 추적합니다:
+- "사용자가 Google Sheets에서 스프레드시트를 탐색 중입니다."
+- "사용자가 Python 파일이 열린 코드 에디터로 전환했습니다."
+- "화면 공유가 활성화된 화상 회의 중입니다."
 
-### Live Stream Search
-Search across recorded live stream content. Find specific moments and generate clips from hours of continuous footage.
-
----
-
-## Content Moderation & Safety
-
-### Automated Content Review
-Index video scenes with AI and search for problematic content. Flag videos containing violence, inappropriate content, or policy violations.
-
-### Profanity Detection
-Detect and locate profanity in audio. Optionally overlay beep sounds at detected timestamps.
+### 세션 종료 후 처리
+캡처가 종료되면 녹화본은 영구 비디오로 내보내기 됩니다. 이후 다음 작업이 가능합니다:
+- 검색 가능한 스크립트 생성
+- 녹화본 내에서 특정 주제 검색
+- 중요한 순간의 클립 추출
+- 스트림 URL 또는 플레이어 링크를 통한 공유
 
 ---
 
-## Platform Integration
+## 라이브 스트림 인텔리전스 (RTSP/RTMP)
 
-### Social Media Formatting
-Reframe videos for different platforms:
-- Vertical (9:16) for TikTok, Reels, Shorts
-- Square (1:1) for Instagram feed
-- Landscape (16:9) for YouTube
+### 외부 스트림 연결
+RTSP/RTMP 소스(보안 카메라, 인코더, 방송 등)에서 라이브 비디오를 수집합니다. 콘텐츠를 실시간으로 처리하고 인덱싱합니다.
 
-### Transcode for Delivery
-Change resolution, bitrate, or quality for different delivery targets. Output optimized streams for web, mobile, or broadcast.
+### 실시간 이벤트 감지
+라이브 스트림에서 감지할 이벤트를 정의합니다:
+- "제한 구역에 사람이 진입함"
+- "교차로에서 교통 법규 위반 발생"
+- "선반에 제품이 진열됨"
 
-### Generate Shareable Links
-Every operation produces playable stream URLs. Embed in web players, share directly, or integrate with existing platforms.
+이벤트 발생 시 WebSocket 또는 웹훅을 통해 알림을 받습니다.
+
+### 라이브 스트림 검색
+녹화된 라이브 스트림 콘텐츠를 대상으로 검색을 수행합니다. 수 시간의 연속 촬영분 중에서 특정 순간을 찾아 클립을 생성할 수 있습니다.
 
 ---
 
-## Workflow Summary
+## 콘텐츠 검토 및 안전 (Content Moderation & Safety)
 
-| Goal | VideoDB Approach |
+### 자동 콘텐츠 검토
+비디오 장면을 AI로 인덱싱하고 문제가 되는 콘텐츠를 검색합니다. 폭력, 부적절한 콘텐츠 또는 정책 위반 사항이 포함된 비디오를 분류(Flagging)합니다.
+
+### 비속어 감지
+오디오 내에서 비속어를 감지하고 위치를 파악합니다. 선택적으로 감지된 타임스탬프에 '삐' 소리 오버레이를 추가할 수 있습니다.
+
+---
+
+## 플랫폼 통합
+
+### 소셜 미디어 형식 변환
+다양한 플랫폼에 맞춰 비디오 프레임을 재구성합니다:
+- TikTok, Reels, Shorts용 세로형 (9:16)
+- Instagram 피드용 정사각형 (1:1)
+- YouTube용 가로형 (16:9)
+
+### 전송을 위한 트랜스코딩
+대상에 따라 해상도, 비트레이트 또는 화질을 변경합니다. 웹, 모바일 또는 방송에 최적화된 스트림을 출력합니다.
+
+### 공유 가능한 링크 생성
+모든 작업 결과물은 재생 가능한 스트림 URL로 생성됩니다. 웹 플레이어에 삽입하거나, 직접 공유하거나, 기존 플랫폼과 통합할 수 있습니다.
+
+---
+
+## 워크플로우 요약
+
+| 목표 | VideoDB 접근 방식 |
 |------|------------------|
-| Find moments in video | Index spoken words/scenes → Search → Compile clips |
-| Create highlights | Search multiple topics → Build timeline → Generate stream |
-| Add subtitles | Index spoken words → Add subtitle overlay |
-| Record screen + AI | Start capture → Run AI pipelines → Export video |
-| Monitor live streams | Connect RTSP → Index scenes → Create alerts |
-| Reformat for social | Reframe to target aspect ratio |
-| Combine clips | Build timeline with multiple assets → Generate stream |
+| 비디오 내 특정 순간 찾기 | 음성/장면 인덱싱 → 검색 → 클립 컴파일 |
+| 하이라이트 영상 제작 | 여러 주제 검색 → 타임라인 구축 → 스트림 생성 |
+| 자막 추가 | 음성 인덱싱 → 자막 오버레이 추가 |
+| 화면 및 AI 녹화 | 캡처 시작 → AI 파이프라인 실행 → 비디오 내보내기 |
+| 라이브 스트림 모니터링 | RTSP 연결 → 장면 인덱싱 → 알림 생성 |
+| 소셜 미디어용 재구성 | 대상 가로세로 비율로 프레임 재구성 (Reframe) |
+| 클립 조합 | 여러 에셋으로 타임라인 구축 → 스트림 생성 |
