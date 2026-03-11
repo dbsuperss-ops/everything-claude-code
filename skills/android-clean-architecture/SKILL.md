@@ -1,56 +1,56 @@
 ---
 name: android-clean-architecture
-description: Clean Architecture patterns for Android and Kotlin Multiplatform projects — module structure, dependency rules, UseCases, Repositories, and data layer patterns.
+description: Android 및 Kotlin Multiplatform(KMP) 프로젝트를 위한 클린 아키텍처 패턴 — 모듈 구조, 의존성 규칙, UseCase, Repository 및 데이터 레이어 패턴을 포함합니다.
 origin: ECC
 ---
 
-# Android Clean Architecture
+# Android 클린 아키텍처 (Android Clean Architecture)
 
-Clean Architecture patterns for Android and KMP projects. Covers module boundaries, dependency inversion, UseCase/Repository patterns, and data layer design with Room, SQLDelight, and Ktor.
+Android 및 KMP 프로젝트를 위한 클린 아키텍처 패턴 가이드입니다. 모듈 경계, 의존성 역전, UseCase/Repository 패턴, 그리고 Room, SQLDelight, Ktor를 사용한 데이터 레이어 설계를 다룹니다.
 
-## When to Activate
+## 활성화 시기
 
-- Structuring Android or KMP project modules
-- Implementing UseCases, Repositories, or DataSources
-- Designing data flow between layers (domain, data, presentation)
-- Setting up dependency injection with Koin or Hilt
-- Working with Room, SQLDelight, or Ktor in a layered architecture
+- Android 또는 KMP 프로젝트 모듈 구조를 잡을 때
+- UseCase, Repository 또는 DataSource를 구현할 때
+- 레이어 간(domain, data, presentation) 데이터 흐름을 설계할 때
+- Koin 또는 Hilt를 사용하여 의존성 주입(DI)을 설정할 때
+- 계층화된 아키텍처 내에서 Room, SQLDelight 또는 Ktor로 작업할 때
 
-## Module Structure
+## 모듈 구조 (Module Structure)
 
-### Recommended Layout
+### 권장 레이아웃
 
 ```
 project/
-├── app/                  # Android entry point, DI wiring, Application class
-├── core/                 # Shared utilities, base classes, error types
-├── domain/               # UseCases, domain models, repository interfaces (pure Kotlin)
-├── data/                 # Repository implementations, DataSources, DB, network
-├── presentation/         # Screens, ViewModels, UI models, navigation
-├── design-system/        # Reusable Compose components, theme, typography
-└── feature/              # Feature modules (optional, for larger projects)
+├── app/                  # Android 진입점, DI 구성, Application 클래스
+├── core/                 # 공통 유틸리티, 베이스 클래스, 에러 타입
+├── domain/               # UseCase, 도메인 모델, 리포지토리 인터페이스 (순수 Kotlin)
+├── data/                 # 리포지토리 구현체, DataSource, DB, 네트워크 처리
+├── presentation/         # 화면(Screens), ViewModel, UI 모델, 내비게이션
+├── design-system/        # 재사용 가능한 Compose 컴포넌트, 테마, 타이포그래피
+└── feature/              # 기능별 모듈 (선택 사항, 규모가 큰 프로젝트용)
     ├── auth/
     ├── settings/
     └── profile/
 ```
 
-### Dependency Rules
+### 의존성 규칙
 
 ```
 app → presentation, domain, data, core
 presentation → domain, design-system, core
 data → domain, core
-domain → core (or no dependencies)
-core → (nothing)
+domain → core (또는 의존성 없음)
+core → (의존성 없음)
 ```
 
-**Critical**: `domain` must NEVER depend on `data`, `presentation`, or any framework. It contains pure Kotlin only.
+**중요**: `domain` 레이어는 절대로 `data`, `presentation` 또는 특정 프레임워크에 의존해서는 안 됩니다. 순수하게 Kotlin 코드로만 구성되어야 합니다.
 
-## Domain Layer
+## 도메인 레이어 (Domain Layer)
 
-### UseCase Pattern
+### UseCase 패턴
 
-Each UseCase represents one business operation. Use `operator fun invoke` for clean call sites:
+각 UseCase는 하나의 비즈니스 작업을 나타냅니다. 호출을 깔끔하게 하기 위해 `operator fun invoke`를 사용하십시오.
 
 ```kotlin
 class GetItemsByCategoryUseCase(
@@ -61,7 +61,7 @@ class GetItemsByCategoryUseCase(
     }
 }
 
-// Flow-based UseCase for reactive streams
+// 반응형 스트림을 위한 Flow 기반 UseCase
 class ObserveUserProgressUseCase(
     private val repository: UserRepository
 ) {
@@ -71,9 +71,9 @@ class ObserveUserProgressUseCase(
 }
 ```
 
-### Domain Models
+### 도메인 모델 (Domain Models)
 
-Domain models are plain Kotlin data classes — no framework annotations:
+도메인 모델은 프레임워크 어노테이션이 없는 일반적인 Kotlin 데이터 클래스여야 합니다.
 
 ```kotlin
 data class Item(
@@ -88,9 +88,9 @@ data class Item(
 enum class Status { DRAFT, ACTIVE, ARCHIVED }
 ```
 
-### Repository Interfaces
+### 리포지토리 인터페이스 (Repository Interfaces)
 
-Defined in domain, implemented in data:
+도메인 레이어에서 정의하고, 데이터 레이어에서 구현합니다.
 
 ```kotlin
 interface ItemRepository {
@@ -100,11 +100,11 @@ interface ItemRepository {
 }
 ```
 
-## Data Layer
+## 데이터 레이어 (Data Layer)
 
-### Repository Implementation
+### 리포지토리 구현체
 
-Coordinates between local and remote data sources:
+로컬 및 원격 데이터 소스 간의 조정을 담당합니다.
 
 ```kotlin
 class ItemRepositoryImpl(
@@ -134,12 +134,12 @@ class ItemRepositoryImpl(
 }
 ```
 
-### Mapper Pattern
+### 매퍼(Mapper) 패턴
 
-Keep mappers as extension functions near the data models:
+데이터 모델 근처에 확장 함수로 매퍼를 작성하십시오.
 
 ```kotlin
-// In data layer
+// 데이터 레이어 내에서
 fun ItemEntity.toDomain() = Item(
     id = id,
     title = title,
@@ -159,7 +159,7 @@ fun ItemDto.toEntity() = ItemEntity(
 )
 ```
 
-### Room Database (Android)
+### Room 데이터베이스 (Android)
 
 ```kotlin
 @Entity(tableName = "items")
@@ -209,7 +209,7 @@ observeAll:
 SELECT * FROM ItemEntity;
 ```
 
-### Ktor Network Client (KMP)
+### Ktor 네트워크 클라이언트 (KMP)
 
 ```kotlin
 class ItemRemoteDataSource(private val client: HttpClient) {
@@ -221,7 +221,7 @@ class ItemRemoteDataSource(private val client: HttpClient) {
     }
 }
 
-// HttpClient setup with content negotiation
+// 콘텐츠 협상(Content Negotiation)을 포함한 HttpClient 설정
 val httpClient = HttpClient {
     install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
     install(Logging) { level = LogLevel.HEADERS }
@@ -229,32 +229,32 @@ val httpClient = HttpClient {
 }
 ```
 
-## Dependency Injection
+## 의존성 주입 (Dependency Injection)
 
-### Koin (KMP-friendly)
+### Koin (KMP 친화적)
 
 ```kotlin
-// Domain module
+// 도메인 모듈
 val domainModule = module {
     factory { GetItemsByCategoryUseCase(get()) }
     factory { ObserveUserProgressUseCase(get()) }
 }
 
-// Data module
+// 데이터 모듈
 val dataModule = module {
     single<ItemRepository> { ItemRepositoryImpl(get(), get()) }
     single { ItemLocalDataSource(get()) }
     single { ItemRemoteDataSource(get()) }
 }
 
-// Presentation module
+// 프레젠테이션 모듈
 val presentationModule = module {
     viewModelOf(::ItemListViewModel)
     viewModelOf(::DashboardViewModel)
 }
 ```
 
-### Hilt (Android-only)
+### Hilt (Android 전용)
 
 ```kotlin
 @Module
@@ -270,11 +270,11 @@ class ItemListViewModel @Inject constructor(
 ) : ViewModel()
 ```
 
-## Error Handling
+## 에러 처리
 
-### Result/Try Pattern
+### Result/Try 패턴
 
-Use `Result<T>` or a custom sealed type for error propagation:
+에러 전파를 위해 `Result<T>` 또는 커스텀 Sealed 타입을 사용하십시오.
 
 ```kotlin
 sealed interface Try<out T> {
@@ -288,7 +288,7 @@ sealed interface AppError {
     data object Unauthorized : AppError
 }
 
-// In ViewModel — map to UI state
+// ViewModel에서 UI 상태로 매핑
 viewModelScope.launch {
     when (val result = getItems(category)) {
         is Try.Success -> _state.update { it.copy(items = result.value, isLoading = false) }
@@ -297,9 +297,9 @@ viewModelScope.launch {
 }
 ```
 
-## Convention Plugins (Gradle)
+## 컨벤션 플러그인 (Convention Plugins, Gradle)
 
-For KMP projects, use convention plugins to reduce build file duplication:
+KMP 프로젝트의 경우, 빌드 파일의 중복을 줄이기 위해 컨벤션 플러그인을 활용하십시오.
 
 ```kotlin
 // build-logic/src/main/kotlin/kmp-library.gradle.kts
@@ -311,29 +311,29 @@ kotlin {
     androidTarget()
     iosX64(); iosArm64(); iosSimulatorArm64()
     sourceSets {
-        commonMain.dependencies { /* shared deps */ }
+        commonMain.dependencies { /* 공통 의존성 */ }
         commonTest.dependencies { implementation(kotlin("test")) }
     }
 }
 ```
 
-Apply in modules:
+모듈에서의 적용:
 
 ```kotlin
 // domain/build.gradle.kts
 plugins { id("kmp-library") }
 ```
 
-## Anti-Patterns to Avoid
+## 지양해야 할 안티 패턴
 
-- Importing Android framework classes in `domain` — keep it pure Kotlin
-- Exposing database entities or DTOs to the UI layer — always map to domain models
-- Putting business logic in ViewModels — extract to UseCases
-- Using `GlobalScope` or unstructured coroutines — use `viewModelScope` or structured concurrency
-- Fat repository implementations — split into focused DataSources
-- Circular module dependencies — if A depends on B, B must not depend on A
+- `domain` 레이어에서 Android 프레임워크 클래스 임포트 — 순수 Kotlin을 유지하십시오.
+- 데이터베이스 엔티티나 DTO를 UI 레이어에 노출함 — 항상 도메인 모델로 매핑하십시오.
+- 비즈니스 로직을 ViewModel에 작성함 — UseCase로 추출하십시오.
+- `GlobalScope`나 비구조적 코루틴 사용 — `viewModelScope`나 구조적 동시성을 사용하십시오.
+- 비대한 리포지토리 구현 — 세분화된 DataSource로 분리하십시오.
+- 모듈 간 순환 의존성 — A가 B에 의존하면, B는 A에 의존해서는 안 됩니다.
 
-## References
+## 참고 사항
 
-See skill: `compose-multiplatform-patterns` for UI patterns.
-See skill: `kotlin-coroutines-flows` for async patterns.
+UI 패턴에 대해서는 `compose-multiplatform-patterns` 스킬을 참고하십시오.
+비동기 패턴에 대해서는 `kotlin-coroutines-flows` 스킬을 참고하십시오.

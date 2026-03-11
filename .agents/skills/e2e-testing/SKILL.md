@@ -1,14 +1,14 @@
 ---
 name: e2e-testing
-description: Playwright E2E testing patterns, Page Object Model, configuration, CI/CD integration, artifact management, and flaky test strategies.
+description: Playwright E2E 테스트 패턴, 페이지 오브젝트 모델(POM), 설정, CI/CD 통합, 산출물 관리 및 불안정한 테스트(Flaky test) 대응 전략을 담고 있습니다.
 origin: ECC
 ---
 
-# E2E Testing Patterns
+# E2E 테스트 패턴
 
-Comprehensive Playwright patterns for building stable, fast, and maintainable E2E test suites.
+안정적이고 빠르며 유지보수가 용이한 E2E 테스트 슈트를 구축하기 위한 포괄적인 Playwright 패턴입니다.
 
-## Test File Organization
+## 테스트 파일 구성
 
 ```
 tests/
@@ -29,7 +29,7 @@ tests/
 └── playwright.config.ts
 ```
 
-## Page Object Model (POM)
+## 페이지 오브젝트 모델 (Page Object Model, POM)
 
 ```typescript
 import { Page, Locator } from '@playwright/test'
@@ -64,13 +64,13 @@ export class ItemsPage {
 }
 ```
 
-## Test Structure
+## 테스트 구조
 
 ```typescript
 import { test, expect } from '@playwright/test'
 import { ItemsPage } from '../../pages/ItemsPage'
 
-test.describe('Item Search', () => {
+test.describe('아이템 검색', () => {
   let itemsPage: ItemsPage
 
   test.beforeEach(async ({ page }) => {
@@ -78,7 +78,7 @@ test.describe('Item Search', () => {
     await itemsPage.goto()
   })
 
-  test('should search by keyword', async ({ page }) => {
+  test('키워드로 검색 가능해야 함', async ({ page }) => {
     await itemsPage.search('test')
 
     const count = await itemsPage.getItemCount()
@@ -88,7 +88,7 @@ test.describe('Item Search', () => {
     await page.screenshot({ path: 'artifacts/search-results.png' })
   })
 
-  test('should handle no results', async ({ page }) => {
+  test('검색 결과가 없을 때를 처리해야 함', async ({ page }) => {
     await itemsPage.search('xyznonexistent123')
 
     await expect(page.locator('[data-testid="no-results"]')).toBeVisible()
@@ -97,7 +97,7 @@ test.describe('Item Search', () => {
 })
 ```
 
-## Playwright Configuration
+## Playwright 설정
 
 ```typescript
 import { defineConfig, devices } from '@playwright/test'
@@ -136,63 +136,63 @@ export default defineConfig({
 })
 ```
 
-## Flaky Test Patterns
+## 불안정한 테스트(Flaky Test) 대응 패턴
 
-### Quarantine
+### 격리 및 보류 (Quarantine)
 
 ```typescript
-test('flaky: complex search', async ({ page }) => {
-  test.fixme(true, 'Flaky - Issue #123')
-  // test code...
+test('flaky: 복잡한 검색', async ({ page }) => {
+  test.fixme(true, '불안정함 - 이슈 #123')
+  // 테스트 코드...
 })
 
-test('conditional skip', async ({ page }) => {
-  test.skip(process.env.CI, 'Flaky in CI - Issue #123')
-  // test code...
+test('조건부 스킵', async ({ page }) => {
+  test.skip(process.env.CI, 'CI에서 불안정함 - 이슈 #123')
+  // 테스트 코드...
 })
 ```
 
-### Identify Flakiness
+### 불안정성 확인
 
 ```bash
 npx playwright test tests/search.spec.ts --repeat-each=10
 npx playwright test tests/search.spec.ts --retries=3
 ```
 
-### Common Causes & Fixes
+### 흔한 원인 및 해결책
 
-**Race conditions:**
+**경합 조건 (Race conditions):**
 ```typescript
-// Bad: assumes element is ready
+// 나쁜 예: 요소가 준비되었다고 가정함
 await page.click('[data-testid="button"]')
 
-// Good: auto-wait locator
+// 좋은 예: 자동 대기(Auto-wait) 로케이터 사용
 await page.locator('[data-testid="button"]').click()
 ```
 
-**Network timing:**
+**네트워크 타이밍:**
 ```typescript
-// Bad: arbitrary timeout
+// 나쁜 예: 임의의 대기 시간 설정
 await page.waitForTimeout(5000)
 
-// Good: wait for specific condition
+// 좋은 예: 특정 조건이 충족될 때까지 대기
 await page.waitForResponse(resp => resp.url().includes('/api/data'))
 ```
 
-**Animation timing:**
+**애니메이션 타이밍:**
 ```typescript
-// Bad: click during animation
+// 나쁜 예: 애니메이션 도중에 클릭 시도
 await page.click('[data-testid="menu-item"]')
 
-// Good: wait for stability
+// 좋은 예: 상태가 안정될 때까지 대기
 await page.locator('[data-testid="menu-item"]').waitFor({ state: 'visible' })
 await page.waitForLoadState('networkidle')
 await page.locator('[data-testid="menu-item"]').click()
 ```
 
-## Artifact Management
+## 산출물(Artifact) 관리
 
-### Screenshots
+### 스크린샷
 
 ```typescript
 await page.screenshot({ path: 'artifacts/after-login.png' })
@@ -200,7 +200,7 @@ await page.screenshot({ path: 'artifacts/full-page.png', fullPage: true })
 await page.locator('[data-testid="chart"]').screenshot({ path: 'artifacts/chart.png' })
 ```
 
-### Traces
+### 트레이스 (Traces)
 
 ```typescript
 await browser.startTracing(page, {
@@ -208,21 +208,21 @@ await browser.startTracing(page, {
   screenshots: true,
   snapshots: true,
 })
-// ... test actions ...
+// ... 테스트 동작 ...
 await browser.stopTracing()
 ```
 
-### Video
+### 비디오
 
 ```typescript
-// In playwright.config.ts
+// playwright.config.ts 파일 내 설정
 use: {
   video: 'retain-on-failure',
   videosPath: 'artifacts/videos/'
 }
 ```
 
-## CI/CD Integration
+## CI/CD 통합
 
 ```yaml
 # .github/workflows/e2e.yml
@@ -250,38 +250,37 @@ jobs:
           retention-days: 30
 ```
 
-## Test Report Template
+## 테스트 보고서 템플릿
 
 ```markdown
-# E2E Test Report
+# E2E 테스트 보고서
 
-**Date:** YYYY-MM-DD HH:MM
-**Duration:** Xm Ys
-**Status:** PASSING / FAILING
+**날짜:** YYYY-MM-DD HH:MM
+**소요 시간:** X분 Y초
+**상태:** 통과(PASSING) / 실패(FAILING)
 
-## Summary
-- Total: X | Passed: Y (Z%) | Failed: A | Flaky: B | Skipped: C
+## 요약
+- 전체: X | 통과: Y (Z%) | 실패: A | 불안정(Flaky): B | 스킵: C
 
-## Failed Tests
+## 실패한 테스트
+### 테스트 이름
+**파일:** `tests/e2e/feature.spec.ts:45`
+**에러:** 요소가 보일 것으로 예상했으나 보이지 않음
+**스크린샷:** artifacts/failed.png
+**권장 수정 사항:** [설명]
 
-### test-name
-**File:** `tests/e2e/feature.spec.ts:45`
-**Error:** Expected element to be visible
-**Screenshot:** artifacts/failed.png
-**Recommended Fix:** [description]
-
-## Artifacts
-- HTML Report: playwright-report/index.html
-- Screenshots: artifacts/*.png
-- Videos: artifacts/videos/*.webm
-- Traces: artifacts/*.zip
+## 산출물
+- HTML 보고서: playwright-report/index.html
+- 스크린샷: artifacts/*.png
+- 비디오: artifacts/videos/*.webm
+- 트레이스: artifacts/*.zip
 ```
 
-## Wallet / Web3 Testing
+## 지갑 / Web3 테스트
 
 ```typescript
-test('wallet connection', async ({ page, context }) => {
-  // Mock wallet provider
+test('지갑 연결 테스트', async ({ page, context }) => {
+  // 지갑 공급자(Wallet provider) 모킹
   await context.addInitScript(() => {
     window.ethereum = {
       isMetaMask: true,
@@ -299,22 +298,22 @@ test('wallet connection', async ({ page, context }) => {
 })
 ```
 
-## Financial / Critical Flow Testing
+## 금융 / 핵심 서비스 흐름 테스트
 
 ```typescript
-test('trade execution', async ({ page }) => {
-  // Skip on production — real money
-  test.skip(process.env.NODE_ENV === 'production', 'Skip on production')
+test('거래 실행 테스트', async ({ page }) => {
+  // 실제 비용이 발생하는 운영 환경에서는 스킵
+  test.skip(process.env.NODE_ENV === 'production', '운영 환경에서는 건너뜀')
 
   await page.goto('/markets/test-market')
   await page.locator('[data-testid="position-yes"]').click()
   await page.locator('[data-testid="trade-amount"]').fill('1.0')
 
-  // Verify preview
+  // 미리보기 확인
   const preview = page.locator('[data-testid="trade-preview"]')
   await expect(preview).toContainText('1.0')
 
-  // Confirm and wait for blockchain
+  // 승인 및 블록체인 처리 대기
   await page.locator('[data-testid="confirm-trade"]').click()
   await page.waitForResponse(
     resp => resp.url().includes('/api/trade') && resp.status() === 200,
