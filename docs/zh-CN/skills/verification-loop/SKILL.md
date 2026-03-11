@@ -1,136 +1,85 @@
 ---
 name: verification-loop
-description: "Claude Code 会话的全面验证系统。"
+description: "Claude Code 세션의 전체 기능을 점검하는 종합 검증 시스템입니다."
 origin: ECC
 ---
 
-# 验证循环技能
+# 검증 사이클 스킬 (Verification Loop)
 
-一个全面的 Claude Code 会话验证系统。
+Claude Code 세션을 위한 종합적인 코드 검증 시스템입니다.
 
-## 何时使用
+## 적용 시점
 
-在以下情况下调用此技能：
+다음과 같은 상황에서 이 스킬을 호출하십시오:
 
-* 完成功能或重大代码变更后
-* 创建 PR 之前
-* 当您希望确保质量门通过时
-* 重构之后
+* 기능 구현이나 대규모 코드 변경을 완료했을 때
+* PR(Pull Request)을 생성하기 직전
+* 품질 기준(Quality Gates)을 통과했는지 확인하고 싶을 때
+* 리팩토링 수행 후
 
-## 验证阶段
+## 검증 단계
 
-### 阶段 1：构建验证
-
+### 1단계: 빌드 검증 (Build)
 ```bash
-# Check if project builds
 npm run build 2>&1 | tail -20
-# OR
-pnpm build 2>&1 | tail -20
 ```
+빌드에 실패하면 즉시 중단하고 수정하십시오.
 
-如果构建失败，请停止并在继续之前修复。
-
-### 阶段 2：类型检查
-
+### 2단계: 타입 체크 (Type Check)
 ```bash
-# TypeScript projects
+# TypeScript 프로젝트
 npx tsc --noEmit 2>&1 | head -30
 
-# Python projects
+# Python 프로젝트
 pyright . 2>&1 | head -30
 ```
+모든 타입 에러를 보고하고, 주요 에러는 즉시 수정하십시오.
 
-报告所有类型错误。在继续之前修复关键错误。
-
-### 阶段 3：代码规范检查
-
+### 3단계: 코드 컨벤션 체크 (Lint)
 ```bash
-# JavaScript/TypeScript
 npm run lint 2>&1 | head -30
-
-# Python
-ruff check . 2>&1 | head -30
 ```
 
-### 阶段 4：测试套件
-
+### 4단계: 테스트 및 커버리지 (Tests & Coverage)
 ```bash
-# Run tests with coverage
 npm run test -- --coverage 2>&1 | tail -50
-
-# Check coverage threshold
-# Target: 80% minimum
 ```
+* **목표**: 최소 80% 이상의 테스트 커버리지 달성 여부 확인
 
-报告：
+### 5단계: 보안 및 로그 스캔 (Security & Clean)
+* 하드코딩된 API 키(`sk-` 등)가 노출되었는지 확인합니다.
+* 프로덕션 코드에 남겨진 `console.log`가 있는지 확인합니다.
 
-* 总测试数：X
-* 通过：X
-* 失败：X
-* 覆盖率：X%
-
-### 阶段 5：安全扫描
-
+### 6단계: 변경 사항 검토 (Diff Review)
 ```bash
-# Check for secrets
-grep -rn "sk-" --include="*.ts" --include="*.js" . 2>/dev/null | head -10
-grep -rn "api_key" --include="*.ts" --include="*.js" . 2>/dev/null | head -10
-
-# Check for console.log
-grep -rn "console.log" --include="*.ts" --include="*.tsx" src/ 2>/dev/null | head -10
-```
-
-### 阶段 6：差异审查
-
-```bash
-# Show what changed
 git diff --stat
-git diff HEAD~1 --name-only
 ```
+변경된 파일들을 하나씩 훑어보며 다음을 체크합니다:
+* 실수로 변경된 부분이 없는가?
+* 에러 처리가 누락된 곳은 없는가?
+* 잠재적인 경계 조건(Edge cases)이 고려되었는가?
 
-审查每个更改的文件，检查：
+---
 
-* 意外更改
-* 缺失的错误处理
-* 潜在的边界情况
+## 검증 보고서 템플릿 (Verification Report)
 
-## 输出格式
-
-运行所有阶段后，生成验证报告：
+모든 단계를 마친 후 다음과 같은 양식으로 보고하십시오:
 
 ```
-VERIFICATION REPORT
+[검증 보고서]
 ==================
+빌드 결과:     [PASS/FAIL]
+타입 체크:     [PASS/FAIL] (에러 수: X)
+린트(Lint):    [PASS/FAIL] (경고 수: X)
+테스트 결과:   [PASS/FAIL] (성공/전체, 커버리지 Z%)
+보안/로그:     [PASS/FAIL] (발견된 이슈: X)
+변경 파일 수:   [X]
 
-Build:     [PASS/FAIL]
-Types:     [PASS/FAIL] (X errors)
-Lint:      [PASS/FAIL] (X warnings)
-Tests:     [PASS/FAIL] (X/Y passed, Z% coverage)
-Security:  [PASS/FAIL] (X issues)
-Diff:      [X files changed]
+최종 판정:     [PR 준비 완료 / 추가 수정 필요]
 
-Overall:   [READY/NOT READY] for PR
-
-Issues to Fix:
+수정 필요 사항:
 1. ...
 2. ...
 ```
 
-## 持续模式
-
-对于长时间会话，每 15 分钟或在重大更改后运行验证：
-
-```markdown
-设置一个心理检查点：
-- 完成每个函数后
-- 完成一个组件后
-- 在移动到下一个任务之前
-
-运行: /verify
-
-```
-
-## 与钩子的集成
-
-此技能补充 PostToolUse 钩子，但提供更深入的验证。
-钩子会立即捕获问题；此技能提供全面的审查。
+**핵심**: 작은 기능 구현 후나 작업 전환 전, 정기적으로 `/verify`를 실행하여 사이클을 유지하십시오. 빠른 피드백이 실수를 줄이는 가장 좋은 방법입니다.

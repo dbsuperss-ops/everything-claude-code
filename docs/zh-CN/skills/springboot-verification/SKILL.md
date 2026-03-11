@@ -1,235 +1,80 @@
 ---
 name: springboot-verification
-description: "Spring Boot项目验证循环：构建、静态分析、测试覆盖、安全扫描，以及发布或PR前的差异审查。"
+description: "Spring Boot 프로젝트 검증 사이클 가이드입니다. 빌드, 정적 분석, 테스트 커버리지 확인, 보안 스캔, PR 전 변경 사항 검토 과정을 다룹니다."
 origin: ECC
 ---
 
-# Spring Boot 验证循环
+# Spring Boot 검증 사이클
 
-在提交 PR 前、重大变更后以及部署前运行。
+PR(Pull Request) 생성 전, 주요 변경 사항 적용 후, 그리고 배포 직전에 이 사이클을 실행하십시오.
 
-## 何时激活
+## 적용 시점
 
-* 为 Spring Boot 服务开启拉取请求之前
-* 在重大重构或依赖项升级之后
-* 用于暂存或生产环境的部署前验证
-* 运行完整的构建 → 代码检查 → 测试 → 安全扫描流水线
-* 验证测试覆盖率是否满足阈值
+* Spring Boot 서비스에서 PR을 올리기 전
+* 대규모 리팩토링이나 의존성 라이브러리 업데이트 후
+* 스테이징 또는 운영 환경 배포 전 최종 검증 시
+* 빌드 → 린팅 → 테스트 → 보안 스캔 파이프라인을 전체 실행할 때
+* 테스트 커버리지 목표치(80%+) 달성 여부를 확인할 때
 
-## 阶段 1：构建
+## 단계별 검증 절차
 
+### 1단계: 빌드 (Build)
 ```bash
-mvn -T 4 clean verify -DskipTests
-# or
+# Maven
+mvn clean verify -DskipTests
+# Gradle
 ./gradlew clean assemble -x test
 ```
+빌드에 실패하면 즉시 중단하고 수정하십시오.
 
-如果构建失败，停止并修复。
-
-## 阶段 2：静态分析
-
-Maven（常用插件）：
-
+### 2단계: 정적 분석 (Static Analysis)
+SpotBugs, PMD, Checkstyle 등을 활용하여 코드 품질을 체크합니다.
 ```bash
-mvn -T 4 spotbugs:check pmd:check checkstyle:check
+mvn spotbugs:check pmd:check checkstyle:check
 ```
 
-Gradle（如果已配置）：
-
+### 3단계: 테스트 및 커버리지 (Tests & Coverage)
+코드의 논리적 결함을 찾고 테스트가 충분한지 확인합니다.
 ```bash
-./gradlew checkstyleMain pmdMain spotbugsMain
-```
-
-## 阶段 3：测试 + 覆盖率
-
-```bash
-mvn -T 4 test
-mvn jacoco:report   # verify 80%+ coverage
-# or
+mvn test jacoco:report
+# 또는
 ./gradlew test jacocoTestReport
 ```
+* **단위 테스트**: Mockito를 사용하여 개별 서비스 로직을 격리하여 테스트합니다.
+* **통합 테스트**: Testcontainers를 사용하여 H2가 아닌 실제 DB(Postgres 등) 환경에서 테스트하십시오.
+* **API 테스트**: MockMvc를 사용하여 컨트롤러 계층과 HTTP 응답을 검증합니다.
 
-报告：
+### 4단계: 보안 스캔 (Security Scan)
+* **의존성 취약점**: OWASP Dependency Check 등을 실행하여 알려진 CVE가 있는지 확인합니다.
+* **비밀 정보 노출**: 소스 코드나 설정 파일(`.yml`, `.properties`)에 비밀번호나 API 키가 하드코딩되어 있는지 `grep` 등으로 스캔하십시오.
+* **안티 패턴 체크**: `System.out.println` 사용 여부, 에러 응답에 원본 예외 메시지 노출 여부 등을 확인합니다.
 
-* 总测试数，通过/失败
-* 覆盖率百分比（行/分支）
-
-### 单元测试
-
-使用模拟的依赖项来隔离测试服务逻辑：
-
-```java
-@ExtendWith(MockitoExtension.class)
-class UserServiceTest {
-
-  @Mock private UserRepository userRepository;
-  @InjectMocks private UserService userService;
-
-  @Test
-  void createUser_validInput_returnsUser() {
-    var dto = new CreateUserDto("Alice", "alice@example.com");
-    var expected = new User(1L, "Alice", "alice@example.com");
-    when(userRepository.save(any(User.class))).thenReturn(expected);
-
-    var result = userService.create(dto);
-
-    assertThat(result.name()).isEqualTo("Alice");
-    verify(userRepository).save(any(User.class));
-  }
-
-  @Test
-  void createUser_duplicateEmail_throwsException() {
-    var dto = new CreateUserDto("Alice", "existing@example.com");
-    when(userRepository.existsByEmail(dto.email())).thenReturn(true);
-
-    assertThatThrownBy(() -> userService.create(dto))
-        .isInstanceOf(DuplicateEmailException.class);
-  }
-}
-```
-
-### 使用 Testcontainers 进行集成测试
-
-针对真实数据库（而非 H2）进行测试：
-
-```java
-@SpringBootTest
-@Testcontainers
-class UserRepositoryIntegrationTest {
-
-  @Container
-  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-      .withDatabaseName("testdb");
-
-  @DynamicPropertySource
-  static void configureProperties(DynamicPropertyRegistry registry) {
-    registry.add("spring.datasource.url", postgres::getJdbcUrl);
-    registry.add("spring.datasource.username", postgres::getUsername);
-    registry.add("spring.datasource.password", postgres::getPassword);
-  }
-
-  @Autowired private UserRepository userRepository;
-
-  @Test
-  void findByEmail_existingUser_returnsUser() {
-    userRepository.save(new User("Alice", "alice@example.com"));
-
-    var found = userRepository.findByEmail("alice@example.com");
-
-    assertThat(found).isPresent();
-    assertThat(found.get().getName()).isEqualTo("Alice");
-  }
-}
-```
-
-### 使用 MockMvc 进行 API 测试
-
-在完整的 Spring 上下文中测试控制器层：
-
-```java
-@WebMvcTest(UserController.class)
-class UserControllerTest {
-
-  @Autowired private MockMvc mockMvc;
-  @MockBean private UserService userService;
-
-  @Test
-  void createUser_validInput_returns201() throws Exception {
-    var user = new UserDto(1L, "Alice", "alice@example.com");
-    when(userService.create(any())).thenReturn(user);
-
-    mockMvc.perform(post("/api/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {"name": "Alice", "email": "alice@example.com"}
-                """))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.name").value("Alice"));
-  }
-
-  @Test
-  void createUser_invalidEmail_returns400() throws Exception {
-    mockMvc.perform(post("/api/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {"name": "Alice", "email": "not-an-email"}
-                """))
-        .andExpect(status().isBadRequest());
-  }
-}
-```
-
-## 阶段 4：安全扫描
-
-```bash
-# Dependency CVEs
-mvn org.owasp:dependency-check-maven:check
-# or
-./gradlew dependencyCheckAnalyze
-
-# Secrets in source
-grep -rn "password\s*=\s*\"" src/ --include="*.java" --include="*.yml" --include="*.properties"
-grep -rn "sk-\|api_key\|secret" src/ --include="*.java" --include="*.yml"
-
-# Secrets (git history)
-git secrets --scan  # if configured
-```
-
-### 常见安全发现
-
-```
-# Check for System.out.println (use logger instead)
-grep -rn "System\.out\.print" src/main/ --include="*.java"
-
-# Check for raw exception messages in responses
-grep -rn "e\.getMessage()" src/main/ --include="*.java"
-
-# Check for wildcard CORS
-grep -rn "allowedOrigins.*\*" src/main/ --include="*.java"
-```
-
-## 阶段 5：代码检查/格式化（可选关卡）
-
-```bash
-mvn spotless:apply   # if using Spotless plugin
-./gradlew spotlessApply
-```
-
-## 阶段 6：差异审查
-
+### 5단계: 변경 사항 검토 (Diff Review)
 ```bash
 git diff --stat
-git diff
 ```
+* 불필요한 디버그 로그가 남아있지 않은가?
+* 적절한 HTTP 상태 코드와 의미 있는 에러 메시지를 반환하는가?
+* 필요한 곳에 트랜잭션(`@Transactional`)과 검증(`@Valid`)이 적용되었는가?
 
-检查清单：
+---
 
-* 没有遗留调试日志（`System.out`、`log.debug` 没有防护）
-* 有意义的错误信息和 HTTP 状态码
-* 在需要的地方有事务和验证
-* 配置变更已记录
-
-## 输出模板
+## 검증 보고서 템플릿 (Verification Report)
 
 ```
-VERIFICATION REPORT
+[검증 보고서]
 ===================
-Build:     [PASS/FAIL]
-Static:    [PASS/FAIL] (spotbugs/pmd/checkstyle)
-Tests:     [PASS/FAIL] (X/Y passed, Z% coverage)
-Security:  [PASS/FAIL] (CVE findings: N)
-Diff:      [X files changed]
+빌드 결과:     [PASS/FAIL]
+정적 분석:     [PASS/FAIL] (SpotBugs/Checkstyle 등)
+테스트 결과:   [PASS/FAIL] (성공/전체, 커버리지 %)
+보안 스캔:     [PASS/FAIL] (발견된 CVE 수: N)
+변경 사항:     [수정된 파일 수]
 
-Overall:   [READY / NOT READY]
+최종 판정:     [READY / NOT READY]
 
-Issues to Fix:
+수정 필요 사항:
 1. ...
 2. ...
 ```
 
-## 持续模式
-
-* 在重大变更时或长时间会话中每 30–60 分钟重新运行各阶段
-* 保持短循环：`mvn -T 4 test` + spotbugs 以获取快速反馈
-
-**记住**：快速反馈胜过意外惊喜。保持关卡严格——将警告视为生产系统中的缺陷。
+**핵심**: 예기치 못한 당황스러운 상황보다 빠른 피드백이 낫습니다. 경고(Warning)를 실제 결함처럼 엄격하게 취급하여 프로덕션 품질을 유지하십시오.

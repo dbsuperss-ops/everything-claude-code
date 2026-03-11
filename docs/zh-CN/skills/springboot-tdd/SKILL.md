@@ -1,27 +1,27 @@
 ---
 name: springboot-tdd
-description: 使用JUnit 5、Mockito、MockMvc、Testcontainers和JaCoCo进行Spring Boot的测试驱动开发。适用于添加功能、修复错误或重构时。
+description: JUnit 5, Mockito, MockMvc, Testcontainers 및 JaCoCo를 사용한 Spring Boot 테스트 주도 개발(TDD) 가이드입니다. 기능 추가, 버그 수정 또는 리팩토링 시 활용하십시오.
 origin: ECC
 ---
 
-# Spring Boot TDD 工作流程
+# Spring Boot TDD 워크플로우
 
-适用于 Spring Boot 服务、覆盖率 80%+（单元 + 集成）的 TDD 指南。
+Spring Boot 서비스의 전체 테스트 커버리지 80% 이상(단위 + 통합)을 달성하기 위한 TDD 지침입니다.
 
-## 何时使用
+## 적용 시점
 
-* 新功能或端点
-* 错误修复或重构
-* 添加数据访问逻辑或安全规则
+* 새로운 기능 또는 API 엔드포인트를 개발할 때
+* 버그 수정 또는 리팩토링을 수행할 때
+* 데이터 액세스 로직이나 보안 규칙을 추가할 때
 
-## 工作流程
+## 워크플로우 단계
 
-1. 先写测试（它们应该失败）
-2. 实现最小代码以通过测试
-3. 在测试通过后进行重构
-4. 强制覆盖率（JaCoCo）
+1. **테스트 우선 작성**: 요구 사항에 맞는 테스트를 먼저 작성합니다 (이 시점엔 실패해야 함).
+2. **코드 구현**: 테스트를 통과하기 위한 최소한의 코드를 작성합니다.
+3. **리팩토링**: 테스트 성공을 유지하면서 코드를 개선하고 정리합니다.
+4. **커버리지 확인**: JaCoCo 등을 통해 목표 커버리지(80%+) 달성 여부를 확인합니다.
 
-## 单元测试 (JUnit 5 + Mockito)
+## 단위 테스트 (JUnit 5 + Mockito)
 
 ```java
 @ExtendWith(MockitoExtension.class)
@@ -31,24 +31,23 @@ class MarketServiceTest {
 
   @Test
   void createsMarket() {
-    CreateMarketRequest req = new CreateMarketRequest("name", "desc", Instant.now(), List.of("cat"));
+    // Arrange (준비)
+    CreateMarketRequest req = new CreateMarketRequest("이름", "설명", Instant.now(), List.of("카테고리"));
     when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
+    // Act (실행)
     Market result = service.create(req);
 
-    assertThat(result.name()).isEqualTo("name");
+    // Assert (검증)
+    assertThat(result.name()).isEqualTo("이름");
     verify(repo).save(any());
   }
 }
 ```
 
-模式：
+## 웹 계층 테스트 (MockMvc)
 
-* Arrange-Act-Assert
-* 避免部分模拟；优先使用显式桩
-* 使用 `@ParameterizedTest` 处理变体
-
-## Web 层测试 (MockMvc)
+`@WebMvcTest`를 사용하여 컨트롤러와 MVC 설정만 로드하고 서비스는 모킹합니다.
 
 ```java
 @WebMvcTest(MarketController.class)
@@ -67,94 +66,15 @@ class MarketControllerTest {
 }
 ```
 
-## 集成测试 (SpringBootTest)
+## 통합 테스트 및 환경 구성
 
-```java
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class MarketIntegrationTest {
-  @Autowired MockMvc mockMvc;
+* **SpringBootTest**: 실제 스프링 컨텍스트를 로드하여 전체 흐름을 테스트합니다.
+* **Testcontainers**: Postgres, Redis 등 실제 인프라를 컨테이너로 띄워 운영 환경과 유사한 환경에서 테스트하십시오.
+* **AssertJ**: 가독성 높은 단언문(`assertThat`)을 사용하십시오.
 
-  @Test
-  void createsMarket() throws Exception {
-    mockMvc.perform(post("/api/markets")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("""
-          {"name":"Test","description":"Desc","endDate":"2030-01-01T00:00:00Z","categories":["general"]}
-        """))
-      .andExpect(status().isCreated());
-  }
-}
-```
+## 실행 명령어
 
-## 持久层测试 (DataJpaTest)
+* **Maven**: `mvn test` 또는 `mvn verify`
+* **Gradle**: `./gradlew test jacocoTestReport`
 
-```java
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(TestContainersConfig.class)
-class MarketRepositoryTest {
-  @Autowired MarketRepository repo;
-
-  @Test
-  void savesAndFinds() {
-    MarketEntity entity = new MarketEntity();
-    entity.setName("Test");
-    repo.save(entity);
-
-    Optional<MarketEntity> found = repo.findByName("Test");
-    assertThat(found).isPresent();
-  }
-}
-```
-
-## Testcontainers
-
-* 对 Postgres/Redis 使用可复用的容器以镜像生产环境
-* 通过 `@DynamicPropertySource` 连接，将 JDBC URL 注入 Spring 上下文
-
-## 覆盖率 (JaCoCo)
-
-Maven 片段：
-
-```xml
-<plugin>
-  <groupId>org.jacoco</groupId>
-  <artifactId>jacoco-maven-plugin</artifactId>
-  <version>0.8.14</version>
-  <executions>
-    <execution>
-      <goals><goal>prepare-agent</goal></goals>
-    </execution>
-    <execution>
-      <id>report</id>
-      <phase>verify</phase>
-      <goals><goal>report</goal></goals>
-    </execution>
-  </executions>
-</plugin>
-```
-
-## 断言
-
-* 为可读性，优先使用 AssertJ (`assertThat`)
-* 对于 JSON 响应，使用 `jsonPath`
-* 对于异常：`assertThatThrownBy(...)`
-
-## 测试数据构建器
-
-```java
-class MarketBuilder {
-  private String name = "Test";
-  MarketBuilder withName(String name) { this.name = name; return this; }
-  Market build() { return new Market(null, name, MarketStatus.ACTIVE); }
-}
-```
-
-## CI 命令
-
-* Maven: `mvn -T 4 test` 或 `mvn verify`
-* Gradle: `./gradlew test jacocoTestReport`
-
-**记住**：保持测试快速、隔离且确定。测试行为，而非实现细节。
+**핵심**: 테스트는 구현 상세 내용이 아닌 '비즈니스 행위'를 검증해야 합니다. 빠르고, 격리되며, 결정론적인(언제든 결과가 같은) 테스트를 작성하십시오.

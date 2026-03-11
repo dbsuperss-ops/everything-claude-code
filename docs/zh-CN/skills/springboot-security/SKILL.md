@@ -1,272 +1,82 @@
 ---
 name: springboot-security
-description: Java Spring Boot 服务中认证/授权、验证、CSRF、密钥、标头、速率限制和依赖安全性的 Spring Security 最佳实践。
+description: Java Spring Boot 서비스의 인증/인가, 유효성 검증, CSRF, 비밀 정보 관리, 보안 헤더, 속도 제한 및 의존성 보안을 위한 Spring Security 베스트 프랙티스입니다.
 origin: ECC
 ---
 
-# Spring Boot 安全审查
+# Spring Boot 보안 리뷰
 
-在添加身份验证、处理输入、创建端点或处理密钥时使用。
+인증 추가, 입력 처리, 엔드포인트 생성 또는 비밀 정보를 다룰 때 이 스킬을 활용하십시오.
 
-## 何时激活
+## 적용 시점
 
-* 添加身份验证（JWT、OAuth2、基于会话）
-* 实现授权（@PreAuthorize、基于角色的访问控制）
-* 验证用户输入（Bean Validation、自定义验证器）
-* 配置 CORS、CSRF 或安全标头
-* 管理密钥（Vault、环境变量）
-* 添加速率限制或暴力破解防护
-* 扫描依赖项以查找 CVE
+* 인증 방식(JWT, OAuth2, 세션 기반)을 추가할 때
+* 권한 부여(@PreAuthorize, 역할 기반 접근 제어)를 구현할 때
+* 사용자 입력 검증(Bean Validation, 커스텀 검증기)을 수행할 때
+* CORS, CSRF 또는 보안 헤더를 설정할 때
+* 비밀 정보(Vault, 환경 변수)를 관리할 때
+* 속도 제한(Rate Limiting) 또는 무차별 대입 공격 방어 로직을 추가할 때
+* 취약점(CVE) 점검을 위해 의존성을 스캔할 때
 
-## 身份验证
+## 인증 (Authentication)
 
-* 优先使用无状态 JWT 或带有撤销列表的不透明令牌
-* 对于会话，使用 `httpOnly`、`Secure`、`SameSite=Strict` cookie
-* 使用 `OncePerRequestFilter` 或资源服务器验证令牌
+* **무상태성(Stateless)**: JWT 또는 취소 리스트가 포함된 불투명 토큰(Opaque token) 사용을 우선하십시오.
+* **쿠키 설정**: 세션 사용 시 `httpOnly`, `Secure`, `SameSite=Strict` 옵션을 반드시 적용하십시오.
+* **필터 활용**: `OncePerRequestFilter`를 상속받아 토큰 검증 로직을 구현하십시오.
 
 ```java
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
-  private final JwtService jwtService;
-
-  public JwtAuthFilter(JwtService jwtService) {
-    this.jwtService = jwtService;
-  }
-
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain chain) throws ServletException, IOException {
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) {
     String header = request.getHeader(HttpHeaders.AUTHORIZATION);
     if (header != null && header.startsWith("Bearer ")) {
-      String token = header.substring(7);
-      Authentication auth = jwtService.authenticate(token);
-      SecurityContextHolder.getContext().setAuthentication(auth);
-    }
-    chain.doFilter(request, response);
-  }
-}
-```
-
-## 授权
-
-* 启用方法安全：`@EnableMethodSecurity`
-* 使用 `@PreAuthorize("hasRole('ADMIN')")` 或 `@PreAuthorize("@authz.canEdit(#id)")`
-* 默认拒绝；仅公开必需的 scope
-
-```java
-@RestController
-@RequestMapping("/api/admin")
-public class AdminController {
-
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/users")
-  public List<UserDto> listUsers() {
-    return userService.findAll();
-  }
-
-  @PreAuthorize("@authz.isOwner(#id, authentication)")
-  @DeleteMapping("/users/{id}")
-  public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-    userService.delete(id);
-    return ResponseEntity.noContent().build();
-  }
-}
-```
-
-## 输入验证
-
-* 在控制器上使用带有 `@Valid` 的 Bean 验证
-* 在 DTO 上应用约束：`@NotBlank`、`@Email`、`@Size`、自定义验证器
-* 在渲染之前使用白名单清理任何 HTML
-
-```java
-// BAD: No validation
-@PostMapping("/users")
-public User createUser(@RequestBody UserDto dto) {
-  return userService.create(dto);
-}
-
-// GOOD: Validated DTO
-public record CreateUserDto(
-    @NotBlank @Size(max = 100) String name,
-    @NotBlank @Email String email,
-    @NotNull @Min(0) @Max(150) Integer age
-) {}
-
-@PostMapping("/users")
-public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserDto dto) {
-  return ResponseEntity.status(HttpStatus.CREATED)
-      .body(userService.create(dto));
-}
-```
-
-## SQL 注入预防
-
-* 使用 Spring Data 存储库或参数化查询
-* 对于原生查询，使用 `:param` 绑定；切勿拼接字符串
-
-```java
-// BAD: String concatenation in native query
-@Query(value = "SELECT * FROM users WHERE name = '" + name + "'", nativeQuery = true)
-
-// GOOD: Parameterized native query
-@Query(value = "SELECT * FROM users WHERE name = :name", nativeQuery = true)
-List<User> findByName(@Param("name") String name);
-
-// GOOD: Spring Data derived query (auto-parameterized)
-List<User> findByEmailAndActiveTrue(String email);
-```
-
-## 密码编码
-
-* 始终使用 BCrypt 或 Argon2 哈希密码——切勿存储明文
-* 使用 `PasswordEncoder` Bean，而非手动哈希
-
-```java
-@Bean
-public PasswordEncoder passwordEncoder() {
-  return new BCryptPasswordEncoder(12); // cost factor 12
-}
-
-// In service
-public User register(CreateUserDto dto) {
-  String hashedPassword = passwordEncoder.encode(dto.password());
-  return userRepository.save(new User(dto.email(), hashedPassword));
-}
-```
-
-## CSRF 保护
-
-* 对于浏览器会话应用程序，保持 CSRF 启用；在表单/头中包含令牌
-* 对于使用 Bearer 令牌的纯 API，禁用 CSRF 并依赖无状态身份验证
-
-```java
-http
-  .csrf(csrf -> csrf.disable())
-  .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-```
-
-## 密钥管理
-
-* 源代码中不包含密钥；从环境变量或 vault 加载
-* 保持 `application.yml` 不包含凭据；使用占位符
-* 定期轮换令牌和数据库凭据
-
-```yaml
-# BAD: Hardcoded in application.yml
-spring:
-  datasource:
-    password: mySecretPassword123
-
-# GOOD: Environment variable placeholder
-spring:
-  datasource:
-    password: ${DB_PASSWORD}
-
-# GOOD: Spring Cloud Vault integration
-spring:
-  cloud:
-    vault:
-      uri: https://vault.example.com
-      token: ${VAULT_TOKEN}
-```
-
-## 安全头
-
-```java
-http
-  .headers(headers -> headers
-    .contentSecurityPolicy(csp -> csp
-      .policyDirectives("default-src 'self'"))
-    .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-    .xssProtection(Customizer.withDefaults())
-    .referrerPolicy(rp -> rp.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)));
-```
-
-## CORS 配置
-
-* 在安全过滤器级别配置 CORS，而非按控制器配置
-* 限制允许的来源——在生产环境中切勿使用 `*`
-
-```java
-@Bean
-public CorsConfigurationSource corsConfigurationSource() {
-  CorsConfiguration config = new CorsConfiguration();
-  config.setAllowedOrigins(List.of("https://app.example.com"));
-  config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-  config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-  config.setAllowCredentials(true);
-  config.setMaxAge(3600L);
-
-  UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-  source.registerCorsConfiguration("/api/**", config);
-  return source;
-}
-
-// In SecurityFilterChain:
-http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
-```
-
-## 速率限制
-
-* 在昂贵的端点上应用 Bucket4j 或网关级限制
-* 记录突发流量并告警；返回 429 并提供重试提示
-
-```java
-// Using Bucket4j for per-endpoint rate limiting
-@Component
-public class RateLimitFilter extends OncePerRequestFilter {
-  private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
-
-  private Bucket createBucket() {
-    return Bucket.builder()
-        .addLimit(Bandwidth.classic(100, Refill.intervally(100, Duration.ofMinutes(1))))
-        .build();
-  }
-
-  @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain chain) throws ServletException, IOException {
-    String clientIp = request.getRemoteAddr();
-    Bucket bucket = buckets.computeIfAbsent(clientIp, k -> createBucket());
-
-    if (bucket.tryConsume(1)) {
-      chain.doFilter(request, response);
-    } else {
-      response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-      response.getWriter().write("{\"error\": \"Rate limit exceeded\"}");
+      // 토큰 검증 및 SecurityContext 설정 로직
     }
   }
 }
 ```
 
-## 依赖项安全
+## 인가 (Authorization)
 
-* 在 CI 中运行 OWASP Dependency Check / Snyk
-* 保持 Spring Boot 和 Spring Security 在受支持的版本
-* 对已知 CVE 使构建失败
+* **메소드 보안 활성화**: `@EnableMethodSecurity`를 사용하십시오.
+* **권한 체크**: `@PreAuthorize("hasRole('ADMIN')")` 또는 커스텀 빈을 활용한 `@PreAuthorize("@authz.isOwner(#id, authentication)")`를 사용하십시오.
+* **기본 거부 원칙**: 모든 접근을 기본적으로 차단하고 필요한 범위만 명시적으로 허용하십시오.
 
-## 日志记录和 PII
+## 입력값 검증 (Validation)
 
-* 切勿记录密钥、令牌、密码或完整的 PAN 数据
-* 擦除敏感字段；使用结构化 JSON 日志记录
+* **Bean Validation**: 컨트롤러에서 `@Valid`와 함께 DTO 수준의 제약 조건(`@NotBlank`, `@Email`, `@Size` 등)을 적용하십시오.
+* **DTO 사용**: API 입력에 엔티티를 직접 사용하지 말고 전용 DTO를 활용하십시오.
 
-## 文件上传
+## SQL 인젝션 방지
 
-* 验证大小、内容类型和扩展名
-* 存储在 Web 根目录之外；如果需要则进行扫描
+* **Spring Data JPA**: 가급적 쿼리 메소드를 사용하고, 네이티브 쿼리 사용 시 반드시 파라미터 바인딩(`:name`)을 사용하십시오. 절대 문자열을 직접 결합하지 마십시오.
 
-## 发布前检查清单
+## 비밀번호 관리
 
-* \[ ] 身份验证令牌已验证并正确过期
-* \[ ] 每个敏感路径都有授权守卫
-* \[ ] 所有输入都已验证和清理
-* \[ ] 没有字符串拼接的 SQL
-* \[ ] CSRF 策略适用于应用程序类型
-* \[ ] 密钥已外部化；未提交任何密钥
-* \[ ] 安全头已配置
-* \[ ] API 有速率限制
-* \[ ] 依赖项已扫描并保持最新
-* \[ ] 日志不包含敏感数据
+* **암호화**: `BCryptPasswordEncoder` 또는 `Argon2`를 사용하여 해싱하십시오. 평문 저장은 절대 금지입니다.
 
-**记住**：默认拒绝、验证输入、最小权限、优先采用安全配置。
+## CSRF 및 CORS
+
+* **CSRF**: 브라우저 기반 세션 앱은 CSRF를 활성화하고, 순수 API 기반(JWT 사용)은 비활성화하되 무상태 인증에 의존하십시오.
+* **CORS**: 컨트롤러 단위가 아닌 보안 필터 수준에서 통합 관리하고, 운영 환경에서 허용 도메인(`AllowedOrigins`)에 와일드카드(`*`)를 사용하지 마십시오.
+
+## 비밀 정보 및 로그 관리
+
+* **환경 변수**: 소스 코드나 `application.yml`에 비밀번호를 기록하지 말고 `${DB_PASSWORD}`와 같은 환경 변수 플레이스홀더를 사용하십시오.
+* **민감 정보 마스킹**: 로그에 비밀번호, 토큰, 신용카드 번호 등이 남지 않도록 주의하십시오.
+
+---
+
+## 배포 전 최종 체크리스트
+
+* [ ] 토큰 검증 및 만료 처리가 정확한가?
+* [ ] 모든 민감한 경로에 권한 체크 로직이 있는가?
+* [ ] 입력값에 대한 검증 및 새니타이징이 수행되는가?
+* [ ] SQL 인젝션 위험(문자열 결합 쿼리)이 없는가?
+* [ ] 비밀 정보가 환경 변수로 외부화되었는가?
+* [ ] 보안 헤더(CSP, HSTS 등)가 설정되었는가?
+* [ ] 주요 엔드포인트에 속도 제한이 적용되었는가?
+* [ ] 의존성 라이브러리에 알려진 취약점이 없는가?
+
+**핵심**: 보안의 기본은 '기본 거부(Default Deny)', '입력값 불신', '최소 권한 부여'입니다. 안전한 설정을 우선적으로 적용하십시오.

@@ -1,119 +1,49 @@
 ---
 name: visa-doc-translate
-description: 将签证申请文件（图片）翻译成英文，并创建包含原文和译文的双语PDF
+description: 비자 신청 서류(이미지)를 영어로 번역하고, 원본 이미지와 번역문이 포함된 이중 언어 PDF를 생성합니다.
+origin: ECC
 ---
 
-您正在协助翻译用于签证申请的签证申请文件。
+# 비자 서류 번역 스킬 (Visa Doc Translate)
 
-## 说明
+이 스킬은 비자 신청에 필요한 다양한 증명서(이미지 파일)를 자동으로 분석하고 영어로 번역하여 공식 제출용 PDF를 생성합니다.
 
-当用户提供图像文件路径时，**自动**执行以下步骤，**无需**请求确认：
+## 적용 시점
 
-1. **图像转换**：如果文件是 HEIC 格式，使用 `sips -s format png <input> --out <output>` 将其转换为 PNG
+사용자가 비자 신청용 서류 이미지(PNG, JPG, HEIC 등) 경로를 제공했을 때 다음 단계가 **자동으로** 진행됩니다:
 
-2. **图像旋转**：
-   * 检查 EXIF 方向数据
-   * 根据 EXIF 数据自动旋转图像
-   * 如果 EXIF 方向是 6，则逆时针旋转 90 度
-   * 根据需要应用额外旋转（如果文档看起来上下颠倒，则测试 180 度）
+1. **이미지 변환 및 보정**:
+   * HEIC 파일은 PNG로 자동 변환합니다.
+   * EXIF 데이터를 분석하여 이미지를 올바른 방향으로 자동 회전시킵니다.
+2. **OCR 텍스트 추출**:
+   * macOS Vision, EasyOCR, Tesseract 등을 활용하여 이미지 내 텍스트를 정확히 추출합니다.
+   * 서류 유형(예: 예금잔액증명서, 재직증명서, 경력증명서 등)을 자동 식별합니다.
+3. **전문 영문 번역**:
+   * 비자 신청용 전문 용어를 사용하여 모든 내용을 영어로 번역합니다.
+   * 원본 서류의 구조와 형식을 최대한 유지합니다.
+   * 고유 명사는 원어와 영어를 병기합니다 (예: 홍길동(HONG Gildong)).
+   * 숫자, 날짜, 금액 정보를 정확하게 보존합니다.
+4. **PDF 보고서 생성**:
+   * **1페이지**: 회전 보정된 원본 이미지 배치 (A4 사이즈에 맞게 크기 조정)
+   * **2페이지**: 전문적인 영문 번역본 배치 (가독성 높은 레이아웃)
+   * 하단에 인증 문구 추가: "This is a certified English translation of the original document"
+5. **결과물 저장**: 동일 디렉터리에 `<파일명>_Translated.pdf` 파일을 생성합니다.
 
-3. **OCR 文本提取**：
-   * 自动尝试多种 OCR 方法：
-     * macOS Vision 框架（macOS 首选）
-     * EasyOCR（跨平台，无需 tesseract）
-     * Tesseract OCR（如果可用）
-   * 从文档中提取所有文本信息
-   * 识别文档类型（存款证明、在职证明、退休证明等）
+## 지원 서류 목록
 
-4. **翻译**：
-   * 专业地将所有文本内容翻译成英文
-   * 保持原始文档的结构和格式
-   * 使用适合签证申请的专业术语
-   * 保留专有名词的原始语言，并在括号内附上英文
-   * 对于中文姓名，使用拼音格式（例如，WU Zhengye）
-   * 准确保留所有数字、日期和金额
+* 예금잔액증명서 (Deposit Certificate)
+* 소득금액증명원 (Income Certificate)
+* 재직증명서 / 경력증명서 (Employment Certificate / Experience Certificate)
+* 퇴직증명서 (Retirement Certificate)
+* 부동산 등기사항전부증명서 (Real Estate Registration)
+* 사업자등록증 (Business License)
+* 주민등록증 / 여권 복사본
+* 기타 공식 문서
 
-5. **PDF 生成**：
-   * 使用 PIL 和 reportlab 库创建 Python 脚本
-   * 第 1 页：显示旋转后的原始图像，居中并缩放到适合 A4 页面
-   * 第 2 页：以适当格式显示英文翻译：
-     * 标题居中并加粗
-     * 内容左对齐，间距适当
-     * 适合官方文件的专业布局
-   * 在底部添加注释："This is a certified English translation of the original document"
-   * 执行脚本以生成 PDF
+## 기술 사양 및 요구 사항
 
-6. **输出**：在同一目录中创建名为 `<original_filename>_Translated.pdf` 的 PDF 文件
+* **필수 라이브러리**: `pillow`, `reportlab`
+* **OCR 도구**: `easyocr` (권장), `pytesseract`
+* **macOS 전용**: `pyobjc-framework-Vision` (최고성능 OCR)
 
-## 支持的文档
-
-* 银行存款证明 (存款证明)
-* 收入证明 (收入证明)
-* 在职证明 (在职证明)
-* 退休证明 (退休证明)
-* 房产证明 (房产证明)
-* 营业执照 (营业执照)
-* 身份证和护照
-* 其他官方文件
-
-## 技术实现
-
-### OCR 方法（按顺序尝试）
-
-1. **macOS Vision 框架**（仅限 macOS）：
-   ```python
-   import Vision
-   from Foundation import NSURL
-   ```
-
-2. **EasyOCR**（跨平台）：
-   ```bash
-   pip install easyocr
-   ```
-
-3. **Tesseract OCR**（如果可用）：
-   ```bash
-   brew install tesseract tesseract-lang
-   pip install pytesseract
-   ```
-
-### 必需的 Python 库
-
-```bash
-pip install pillow reportlab
-```
-
-对于 macOS Vision 框架：
-
-```bash
-pip install pyobjc-framework-Vision pyobjc-framework-Quartz
-```
-
-## 重要指南
-
-* **请勿**在每个步骤都要求用户确认
-* 自动确定最佳旋转角度
-* 如果一种 OCR 方法失败，请尝试多种方法
-* 确保所有数字、日期和金额都准确翻译
-* 使用简洁、专业的格式
-* 完成整个流程并报告最终 PDF 的位置
-
-## 使用示例
-
-```bash
-/visa-doc-translate RetirementCertificate.PNG
-/visa-doc-translate BankStatement.HEIC
-/visa-doc-translate EmploymentLetter.jpg
-```
-
-## 输出示例
-
-该技能将：
-
-1. 使用可用的 OCR 方法提取文本
-2. 翻译成专业英文
-3. 生成 `<filename>_Translated.pdf`，其中包含：
-   * 第 1 页：原始文档图像
-   * 第 2 页：专业的英文翻译
-
-非常适合需要翻译文件的澳大利亚、美国、加拿大、英国及其他国家的签证申请。
+**핵심**: 비자 신청용 서류 번역은 정확성이 생명입니다. 모든 숫자와 날짜가 원본과 일치하는지 확인하십시오. 사용자 승인 과정을 최소화하여 파일 경로 제공만으로 최종 결과물(PDF)을 받아볼 수 있게 설계되었습니다.

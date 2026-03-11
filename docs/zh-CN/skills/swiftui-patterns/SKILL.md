@@ -1,38 +1,35 @@
 ---
 name: swiftui-patterns
-description: SwiftUI 架构模式，使用 @Observable 进行状态管理，视图组合，导航，性能优化，以及现代 iOS/macOS UI 最佳实践。
+description: SwiftUI 아키텍처 패턴, @Observable을 활용한 상태 관리, 뷰 조합, 내비게이션, 성능 최적화 및 현대적인 iOS/macOS UI 베스트 프랙티스입니다.
+origin: ECC
 ---
 
-# SwiftUI 模式
+# SwiftUI 패턴
 
-适用于 Apple 平台的现代 SwiftUI 模式，用于构建声明式、高性能的用户界面。涵盖 Observation 框架、视图组合、类型安全导航和性能优化。
+애플 플랫폼을 위한 현대적인 SwiftUI 패턴 가이드입니다. 선언적이고 성능이 뛰어난 사용자 인터페이스를 구축하기 위한 Observation 프레임워크, 뷰 조합, 타입 안전한 내비게이션 및 성능 최적화 기법을 다룹니다.
 
-## 何时激活
+## 적용 시점
 
-* 构建 SwiftUI 视图和管理状态时（`@State`、`@Observable`、`@Binding`）
-* 使用 `NavigationStack` 设计导航流程时
-* 构建视图模型和数据流时
-* 优化列表和复杂布局的渲染性能时
-* 在 SwiftUI 中使用环境值和依赖注入时
+* SwiftUI 뷰를 구축하고 상태(`@State`, `@Observable`, `@Binding`)를 관리할 때
+* `NavigationStack`을 사용하여 내비게이션 흐름을 설계할 때
+* 뷰 모델(ViewModel)과 데이터 흐름을 설계할 때
+* 리스트 및 복잡한 레이아웃의 렌더링 성능을 최적화할 때
+* 환경값(Environment values) 및 의존성 주입을 활용할 때
 
-## 状态管理
+## 상태 관리 (Observation)
 
-### 属性包装器选择
+현대적인 SwiftUI(iOS 17+)에서는 `ObservableObject` 대신 `@Observable` 매크로를 사용하십시오. 이는 속성 수준에서 변경을 추적하므로, 실제 변경된 속성을 사용하는 뷰만 다시 렌더링되어 성능이 향상됩니다.
 
-选择最适合的最简单包装器：
-
-| 包装器 | 使用场景 |
+| 속성 래퍼 | 사용 시나리오 |
 |---------|----------|
-| `@State` | 视图本地的值类型（开关、表单字段、Sheet 展示） |
-| `@Binding` | 指向父视图 `@State` 的双向引用 |
-| `@Observable` 类 + `@State` | 拥有多个属性的自有模型 |
-| `@Observable` 类（无包装器） | 从父视图传递的只读引用 |
-| `@Bindable` | 指向 `@Observable` 属性的双向绑定 |
-| `@Environment` | 通过 `.environment()` 注入的共享依赖项 |
+| `@State` | 뷰 로컬 값 타입 (토글, 텍스트 필드 값, 가벼운 상태) |
+| `@Binding` | 부모 뷰의 `@State`에 대한 양방향 참조 |
+| `@Observable` 클래스 + `@State` | 뷰가 소유하고 관리하는 독립적인 모델(ViewModel 등) |
+| `@Observable` 클래스 (래퍼 없음) | 부모로부터 전달받은 읽기 전용 참조 |
+| `@Bindable` | `@Observable` 클래스의 필드와 양방향 바인딩을 형성할 때 |
+| `@Environment` | `.environment()`를 통해 주입된 공통 의존성 |
 
-### @Observable ViewModel
-
-使用 `@Observable`（而非 `ObservableObject`）—— 它跟踪属性级别的变更，因此 SwiftUI 只会重新渲染读取了已变更属性的视图：
+### ViewModel 예시
 
 ```swift
 @Observable
@@ -41,219 +38,48 @@ final class ItemListViewModel {
     private(set) var isLoading = false
     var searchText = ""
 
-    private let repository: any ItemRepository
-
-    init(repository: any ItemRepository = DefaultItemRepository()) {
-        self.repository = repository
-    }
-
     func load() async {
         isLoading = true
         defer { isLoading = false }
-        items = (try? await repository.fetchAll()) ?? []
+        items = try? await repository.fetchAll()
     }
 }
 ```
 
-### 消费 ViewModel 的视图
+## 뷰 구성 및 성능 최적화
+
+### 서브뷰 분리
+뷰를 작고 전문화된 구조체로 나누십시오. 상태가 변경될 때 해당 상태를 직접 사용하는 서브뷰만 다시 렌더링되도록 격리하는 것이 성능의 핵심입니다.
+
+### 팁: 비싼 연산 피하기
+* `body` 내부에서 I/O, 네트워크 호출, 복잡한 계산을 절대 수행하지 마십시오.
+* 비동기 작업은 `.task {}` 블록을 사용하십시오. 뷰가 사라지면 작업이 자동으로 취소됩니다.
+* 리스트의 `ForEach`에서는 항상 고유하고 안정적인 ID를 사용하십시오. (Array index 지양)
+
+### 내비게이션 (NavigationStack)
+타입 안전한 내비게이션을 위해 `NavigationStack`과 `NavigationPath`를 함께 사용하십시오.
 
 ```swift
-struct ItemListView: View {
-    @State private var viewModel: ItemListViewModel
-
-    init(viewModel: ItemListViewModel = ItemListViewModel()) {
-        _viewModel = State(initialValue: viewModel)
-    }
-
-    var body: some View {
-        List(viewModel.items) { item in
-            ItemRow(item: item)
-        }
-        .searchable(text: $viewModel.searchText)
-        .overlay { if viewModel.isLoading { ProgressView() } }
-        .task { await viewModel.load() }
-    }
-}
-```
-
-### 环境注入
-
-用 `@Environment` 替换 `@EnvironmentObject`：
-
-```swift
-// Inject
-ContentView()
-    .environment(authManager)
-
-// Consume
-struct ProfileView: View {
-    @Environment(AuthManager.self) private var auth
-
-    var body: some View {
-        Text(auth.currentUser?.name ?? "Guest")
-    }
-}
-```
-
-## 视图组合
-
-### 提取子视图以限制失效
-
-将视图拆分为小型、专注的结构体。当状态变更时，只有读取该状态的子视图会重新渲染：
-
-```swift
-struct OrderView: View {
-    @State private var viewModel = OrderViewModel()
-
-    var body: some View {
-        VStack {
-            OrderHeader(title: viewModel.title)
-            OrderItemList(items: viewModel.items)
-            OrderTotal(total: viewModel.total)
-        }
-    }
-}
-```
-
-### 用于可复用样式的 ViewModifier
-
-```swift
-struct CardModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .padding()
-            .background(.regularMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-}
-
-extension View {
-    func cardStyle() -> some View {
-        modifier(CardModifier())
-    }
-}
-```
-
-## 导航
-
-### 类型安全的 NavigationStack
-
-使用 `NavigationStack` 与 `NavigationPath` 来实现程序化、类型安全的路由：
-
-```swift
-@Observable
-final class Router {
-    var path = NavigationPath()
-
-    func navigate(to destination: Destination) {
-        path.append(destination)
-    }
-
-    func popToRoot() {
-        path = NavigationPath()
-    }
-}
-
 enum Destination: Hashable {
     case detail(Item.ID)
     case settings
-    case profile(User.ID)
 }
 
-struct RootView: View {
-    @State private var router = Router()
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            HomeView()
-                .navigationDestination(for: Destination.self) { dest in
-                    switch dest {
-                    case .detail(let id): ItemDetailView(itemID: id)
-                    case .settings: SettingsView()
-                    case .profile(let id): ProfileView(userID: id)
-                    }
-                }
+NavigationStack(path: $router.path) {
+    HomeView()
+        .navigationDestination(for: Destination.self) { dest in
+            switch dest {
+            case .detail(let id): ItemDetailView(id: id)
+            case .settings: SettingsView()
+            }
         }
-        .environment(router)
-    }
 }
 ```
 
-## 性能
+## 피해야 할 안티 패턴
 
-### 为大型集合使用惰性容器
+* **구식 래퍼 사용**: 새 코드에서 `ObservableObject`, `@Published`, `@StateObject` 사용을 피하고 `@Observable`로 마이그레이션하십시오.
+* **불필요한 AnyView**: 타입 정보를 지우는 `AnyView` 대신 `@ViewBuilder`나 `Group`을 사용하십시오.
+* **body 내 인스턴스화**: `body` 안에서 클래스 인스턴스를 직접 생성하지 마십시오. 매번 렌더링될 때마다 새로 생성될 수 있습니다.
 
-`LazyVStack` 和 `LazyHStack` 仅在视图可见时才创建它们：
-
-```swift
-ScrollView {
-    LazyVStack(spacing: 8) {
-        ForEach(items) { item in
-            ItemRow(item: item)
-        }
-    }
-}
-```
-
-### 稳定的标识符
-
-在 `ForEach` 中始终使用稳定、唯一的 ID —— 避免使用数组索引：
-
-```swift
-// Use Identifiable conformance or explicit id
-ForEach(items, id: \.stableID) { item in
-    ItemRow(item: item)
-}
-```
-
-### 避免在 body 中进行昂贵操作
-
-* 切勿在 `body` 内执行 I/O、网络调用或繁重计算
-* 使用 `.task {}` 处理异步工作 —— 当视图消失时它会自动取消
-* 在滚动视图中谨慎使用 `.sensoryFeedback()` 和 `.geometryGroup()`
-* 在列表中最小化使用 `.shadow()`、`.blur()` 和 `.mask()` —— 它们会触发屏幕外渲染
-
-### 遵循 Equatable
-
-对于 body 计算昂贵的视图，遵循 `Equatable` 以跳过不必要的重新渲染：
-
-```swift
-struct ExpensiveChartView: View, Equatable {
-    let dataPoints: [DataPoint] // DataPoint must conform to Equatable
-
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.dataPoints == rhs.dataPoints
-    }
-
-    var body: some View {
-        // Complex chart rendering
-    }
-}
-```
-
-## 预览
-
-使用 `#Preview` 宏配合内联模拟数据以进行快速迭代：
-
-```swift
-#Preview("Empty state") {
-    ItemListView(viewModel: ItemListViewModel(repository: EmptyMockRepository()))
-}
-
-#Preview("Loaded") {
-    ItemListView(viewModel: ItemListViewModel(repository: PopulatedMockRepository()))
-}
-```
-
-## 应避免的反模式
-
-* 在新代码中使用 `ObservableObject` / `@Published` / `@StateObject` / `@EnvironmentObject` —— 迁移到 `@Observable`
-* 将异步工作直接放在 `body` 或 `init` 中 —— 使用 `.task {}` 或显式的加载方法
-* 在不拥有数据的子视图中将视图模型创建为 `@State` —— 改为从父视图传递
-* 使用 `AnyView` 类型擦除 —— 对于条件视图，优先选择 `@ViewBuilder` 或 `Group`
-* 在向 Actor 传递数据或从 Actor 接收数据时忽略 `Sendable` 要求
-
-## 参考
-
-查看技能：`swift-actor-persistence` 以了解基于 Actor 的持久化模式。
-查看技能：`swift-protocol-di-testing` 以了解基于协议的 DI 和使用 Swift Testing 进行测试。
+**핵심**: SwiftUI는 상태와 뷰의 그림자(Shadow)를 비교하여 렌더링을 결정합니다. 상태를 최소한으로 유지하고, 뷰를 작게 쪼개어 변화의 영향을 최소화하는 것이 가장 아름답고 빠른 앱을 만드는 비결입니다.

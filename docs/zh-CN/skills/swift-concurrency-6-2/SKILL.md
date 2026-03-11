@@ -1,66 +1,48 @@
 ---
 name: swift-concurrency-6-2
-description: Swift 6.2 可接近的并发性 — 默认单线程，@concurrent 用于显式后台卸载，隔离一致性用于主 actor 类型。
+description: Swift 6.2의 '접근 가능한 동시성(Approachable Concurrency)' 가이드입니다. 기본 싱글 스레드 동작, 명시적 백그라운드 처리를 위한 @concurrent, 메인 액터 격리 준수 패턴을 다룹니다.
+origin: ECC
 ---
 
-# Swift 6.2 可接近的并发
+# Swift 6.2 접근 가능한 동시성 (Approachable Concurrency)
 
-采用 Swift 6.2 并发模型的模式，其中代码默认在单线程上运行，并发是显式引入的。在无需牺牲性能的情况下消除常见的数据竞争错误。
+Swift 6.2 동시성 모델을 채택하기 위한 패턴입니다. 이 모델에서는 코드가 기본적으로 싱글 스레드에서 실행되며, 동시성은 명시적으로 도입됩니다. 성능 저하 없이 흔한 데이터 경쟁(Data race) 오류를 제거합니다.
 
-## 何时启用
+## 적용 시점
 
-* 将 Swift 5.x 或 6.0/6.1 项目迁移到 Swift 6.2
-* 解决数据竞争安全编译器错误
-* 设计基于 MainActor 的应用架构
-* 将 CPU 密集型工作卸载到后台线程
-* 在 MainActor 隔离的类型上实现协议一致性
-* 在 Xcode 26 中启用“可接近的并发”构建设置
+* Swift 5.x 또는 6.0/6.1 프로젝트를 Swift 6.2로 마이그레이션할 때
+* 데이터 경쟁 안전 관련 컴파일러 에러를 해결해야 할 때
+* `MainActor` 중심의 앱 아키텍처를 설계할 때
+* CPU 집약적인 작업을 백그라운드 스레드로 명시적으로 분리할 때
+* Xcode 26의 'Approachable Concurrency' 빌드 설정을 활성화할 때
 
-## 核心问题：隐式的后台卸载
+## 핵심 변화: 명시적 백그라운드 분리
 
-在 Swift 6.1 及更早版本中，异步函数可能会被隐式卸载到后台线程，即使在看似安全的代码中也会导致数据竞争错误：
+Swift 6.1 이하 버전에서는 비동기 함수가 암시적으로 백그라운드 스레드로 넘어갈 수 있어, 안전해 보이는 코드에서도 데이터 경쟁 오류가 발생하곤 했습니다. Swift 6.2에서는 비동기 함수가 호출자(Caller)가 속한 액터(Actor)에 그대로 머무는 것이 기본 동작입니다.
 
 ```swift
-// Swift 6.1: ERROR
+// Swift 6.2: ✅ 안전 - 비동기 호출 후에도 MainActor에 유지됨
 @MainActor
 final class StickerModel {
     let photoProcessor = PhotoProcessor()
 
     func extractSticker(_ item: PhotosPickerItem) async throws -> Sticker? {
-        guard let data = try await item.loadTransferable(type: Data.self) else { return nil }
-
-        // Error: Sending 'self.photoProcessor' risks causing data races
-        return await photoProcessor.extractSticker(data: data, with: item.itemIdentifier)
+        // 호출 후에도 여전히 MainActor 상태이므로 데이터 경쟁이 발생하지 않음
+        return await photoProcessor.extractSticker(data: data, with: item.id)
     }
 }
 ```
 
-Swift 6.2 修复了这个问题：异步函数默认保持在调用者所在的 actor 上。
+## 핵심 패턴: 격리된 프로토콜 준수 (Isolated Conformance)
 
-```swift
-// Swift 6.2: OK — async stays on MainActor, no data race
-@MainActor
-final class StickerModel {
-    let photoProcessor = PhotoProcessor()
-
-    func extractSticker(_ item: PhotosPickerItem) async throws -> Sticker? {
-        guard let data = try await item.loadTransferable(type: Data.self) else { return nil }
-        return await photoProcessor.extractSticker(data: data, with: item.itemIdentifier)
-    }
-}
-```
-
-## 核心模式 — 隔离的一致性
-
-MainActor 类型现在可以安全地符合非隔离协议：
+이제 `MainActor` 타입이 비격리(Non-isolated) 프로토콜을 안전하게 준수할 수 있습니다.
 
 ```swift
 protocol Exportable {
     func export()
 }
 
-// Swift 6.1: ERROR — crosses into main actor-isolated code
-// Swift 6.2: OK with isolated conformance
+// Swift 6.2: @MainActor 내에서 프로토콜 구현 가능
 extension StickerModel: @MainActor Exportable {
     func export() {
         photoProcessor.exportAsPNG()
@@ -68,150 +50,37 @@ extension StickerModel: @MainActor Exportable {
 }
 ```
 
-编译器确保该一致性仅在主 actor 上使用：
+## 핵심 패턴: @concurrent를 통한 백그라운드 작업
 
-```swift
-// OK — ImageExporter is also @MainActor
-@MainActor
-struct ImageExporter {
-    var items: [any Exportable]
-
-    mutating func add(_ item: StickerModel) {
-        items.append(item)  // Safe: same actor isolation
-    }
-}
-
-// ERROR — nonisolated context can't use MainActor conformance
-nonisolated struct ImageExporter {
-    var items: [any Exportable]
-
-    mutating func add(_ item: StickerModel) {
-        items.append(item)  // Error: Main actor-isolated conformance cannot be used here
-    }
-}
-```
-
-## 核心模式 — 全局和静态变量
-
-使用 MainActor 保护全局/静态状态：
-
-```swift
-// Swift 6.1: ERROR — non-Sendable type may have shared mutable state
-final class StickerLibrary {
-    static let shared: StickerLibrary = .init()  // Error
-}
-
-// Fix: Annotate with @MainActor
-@MainActor
-final class StickerLibrary {
-    static let shared: StickerLibrary = .init()  // OK
-}
-```
-
-### MainActor 默认推断模式
-
-Swift 6.2 引入了一种模式，默认推断 MainActor — 无需手动标注：
-
-```swift
-// With MainActor default inference enabled:
-final class StickerLibrary {
-    static let shared: StickerLibrary = .init()  // Implicitly @MainActor
-}
-
-final class StickerModel {
-    let photoProcessor: PhotoProcessor
-    var selection: [PhotosPickerItem]  // Implicitly @MainActor
-}
-
-extension StickerModel: Exportable {  // Implicitly @MainActor conformance
-    func export() {
-        photoProcessor.exportAsPNG()
-    }
-}
-```
-
-此模式是选择启用的，推荐用于应用、脚本和其他可执行目标。
-
-## 核心模式 — 使用 @concurrent 进行后台工作
-
-当需要真正的并行性时，使用 `@concurrent` 显式卸载：
-
-> **重要：** 此示例需要启用“可接近的并发”构建设置 — SE-0466 (MainActor 默认隔离) 和 SE-0461 (默认非隔离非发送)。启用这些设置后，`extractSticker` 会保持在调用者所在的 actor 上，使得可变状态的访问变得安全。**如果没有这些设置，此代码存在数据竞争** — 编译器会标记它。
+진정한 병렬 처리가 필요한 경우, `@concurrent` 키워드를 사용하여 명시적으로 백그라운드로 명시하십시오.
 
 ```swift
 nonisolated final class PhotoProcessor {
-    private var cachedStickers: [String: Sticker] = [:]
-
-    func extractSticker(data: Data, with id: String) async -> Sticker {
-        if let sticker = cachedStickers[id] {
-            return sticker
-        }
-
-        let sticker = await Self.extractSubject(from: data)
-        cachedStickers[id] = sticker
-        return sticker
-    }
-
-    // Offload expensive work to concurrent thread pool
+    // CPU 집약적인 작업을 백그라운드 스레드 풀로 명시적 분리
     @concurrent
-    static func extractSubject(from data: Data) async -> Sticker { /* ... */ }
+    static func extractSubject(from data: Data) async -> Sticker {
+        // 복잡한 연산 로직...
+    }
 }
 
-// Callers must await
-let processor = PhotoProcessor()
-processedPhotos[item.id] = await processor.extractSticker(data: data, with: item.id)
+// 호출자는 반드시 await를 사용해야 함
+let sticker = await PhotoProcessor.extractSubject(from: data)
 ```
 
-要使用 `@concurrent`：
+## 주요 설계 결정 사항
 
-1. 将包含类型标记为 `nonisolated`
-2. 向函数添加 `@concurrent`
-3. 如果函数还不是异步的，则添加 `async`
-4. 在调用点添加 `await`
-
-## 关键设计决策
-
-| 决策 | 原理 |
+| 결정 사항 | 이유 |
 |----------|-----------|
-| 默认单线程 | 最自然的代码是无数据竞争的；并发是选择启用的 |
-| 异步函数保持在调用者所在的 actor 上 | 消除了导致数据竞争错误的隐式卸载 |
-| 隔离的一致性 | MainActor 类型可以符合协议，而无需不安全的变通方法 |
-| `@concurrent` 显式选择启用 | 后台执行是一种有意的性能选择，而非偶然 |
-| MainActor 默认推断 | 减少了应用目标中样板化的 `@MainActor` 标注 |
-| 选择启用采用 | 非破坏性的迁移路径 — 逐步启用功能 |
+| **기본 싱글 스레드** | 가장 자연스러운 코드가 데이터 경쟁이 없는 코드임; 동시성은 선택적 도입 |
+| **호출자 액터 유지** | 비동기 함수가 멋대로 백그라운드로 넘어가 발생하는 예기치 못한 에러 방지 |
+| **@concurrent 명시** | 백그라운드 실행은 우연이 아닌, 성능을 위한 의도적인 선택이어야 함 |
+| **MainActor 추론** | UI 앱 등에서 번거로운 `@MainActor` 어노테이션 반복을 줄임 |
 
-## 迁移步骤
+## 마이그레이션 단계
 
-1. **在 Xcode 中启用**：构建设置中的 Swift Compiler > Concurrency 部分
-2. **在 SPM 中启用**：在包清单中使用 `SwiftSettings` API
-3. **使用迁移工具**：通过 swift.org/migration 进行自动代码更改
-4. **从 MainActor 默认值开始**：为应用目标启用推断模式
-5. **在需要的地方添加 `@concurrent`**：先进行性能分析，然后卸载热点路径
-6. **彻底测试**：数据竞争问题会变成编译时错误
+1. **Xcode 설정 활성화**: Swift Compiler > Concurrency 섹션에서 설정 변경
+2. **MainActor 기본값 활용**: 앱 타겟에 대해 추론 모드 활성화
+3. **@concurrent 추가**: 성능 측정이 필요한 병목 구간(Hot path)에만 백그라운드 처리 적용
+4. **철저한 테스트**: 데이터 경쟁 이슈가 컴파일 타임 에러로 잡히는지 확인
 
-## 最佳实践
-
-* **从 MainActor 开始** — 先编写单线程代码，稍后再优化
-* **仅对 CPU 密集型工作使用 `@concurrent`** — 图像处理、压缩、复杂计算
-* **为主要是单线程的应用目标启用 MainActor 推断模式**
-* **在卸载前进行性能分析** — 使用 Instruments 查找实际的瓶颈
-* **使用 MainActor 保护全局变量** — 全局/静态可变状态需要 actor 隔离
-* **使用隔离的一致性**，而不是 `nonisolated` 变通方法或 `@Sendable` 包装器
-* **增量迁移** — 在构建设置中一次启用一个功能
-
-## 应避免的反模式
-
-* 对每个异步函数都应用 `@concurrent`（大多数不需要后台执行）
-* 在不理解隔离的情况下使用 `nonisolated` 来抑制编译器错误
-* 当 actor 提供相同安全性时，仍保留遗留的 `DispatchQueue` 模式
-* 在并发相关的 Foundation Models 代码中跳过 `model.availability` 检查
-* 与编译器对抗 — 如果它报告数据竞争，代码就存在真正的并发问题
-* 假设所有异步代码都在后台运行（Swift 6.2 默认：保持在调用者所在的 actor 上）
-
-## 何时使用
-
-* 所有新的 Swift 6.2+ 项目（“可接近的并发”是推荐的默认设置）
-* 将现有应用从 Swift 5.x 或 6.0/6.1 并发迁移过来
-* 在采用 Xcode 26 期间解决数据竞争安全编译器错误
-* 构建以 MainActor 为中心的应用架构（大多数 UI 应用）
-* 性能优化 — 将特定的繁重计算卸载到后台
+**핵심**: Swift 6.2는 '안전함'과 '쉬움'을 동시에 추구합니다. 우선 싱글 스레드(MainActor)에서 코드를 작성하고, 정말 필요한 경우에만 `@concurrent`로 성능을 최적화하십시오.
