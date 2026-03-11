@@ -1,40 +1,38 @@
 ---
 name: instinct-export
-description: 将项目/全局范围的本能导出到文件
+description: 프로젝트 또는 전역 범위의 본능(instincts)을 파일로 내보냅니다.
 command: /instinct-export
 ---
 
-# 本能导出命令
+# 본능 내보내기 (Instinct Export) 명령어
 
-将本能导出为可共享的格式。非常适合：
+학습된 본능을 공유 가능한 형식으로 내보냅니다. 다음과 같은 경우에 유용합니다:
 
-* 与团队成员分享
-* 转移到新机器
-* 贡献给项目约定
+* 팀원과 공유할 때
+* 새 컴퓨터로 데이터를 옮길 때
+* 프로젝트 컨벤션에 기여할 때
 
-## 用法
+## 사용법
 
-```
-/instinct-export                           # Export all personal instincts
-/instinct-export --domain testing          # Export only testing instincts
-/instinct-export --min-confidence 0.7      # Only export high-confidence instincts
+```text
+/instinct-export                           # 모든 개인 본능 내보내기
+/instinct-export --domain testing          # 테스트 관련 본능만 내보내기
+/instinct-export --min-confidence 0.7      # 신뢰도가 0.7 이상인 본능만 내보내기
 /instinct-export --output team-instincts.yaml
 /instinct-export --scope project --output project-instincts.yaml
 ```
 
-## 操作步骤
+## 처리 절차
 
-1. 检测当前项目上下文
-2. 按选定范围加载本能：
-   * `project`: 仅限当前项目
-   * `global`: 仅限全局
-   * `all`: 项目与全局合并（默认）
-3. 应用过滤器（`--domain`, `--min-confidence`）
-4. 将 YAML 格式的导出写入文件（如果未提供输出路径，则写入标准输出）
+1. 현재 프로젝트 컨텍스트를 분석합니다.
+2. 선택된 범위에 따라 본능을 로드합니다:
+   * `project`: 현재 프로젝트 전용 본능만 포함
+   * `global`: 전역 본능만 포함
+   * `all`: 프로젝트와 전역 본능을 모두 포함 (기본값)
+3. 필터(`--domain`, `--min-confidence`)를 적용합니다.
+4. YAML 형식으로 출력합니다. (출력 경로가 지정되지 않으면 표준 출력으로 표시)
 
-## 输出格式
-
-创建一个 YAML 文件：
+## 출력 데이터 형식 (YAML)
 
 ```yaml
 # Instincts Export
@@ -56,12 +54,14 @@ project_name: my-app
 # Prefer Functional Style
 
 ## Action
-Use functional patterns over classes.
+함수형 패턴을 클래스보다 우선하여 사용하십시오.
 ```
 
-## 标志
+## 매개변수 (Flags)
 
-* `--domain <name>`: 仅导出指定领域
-* `--min-confidence <n>`: 最低置信度阈值
-* `--output <file>`: 输出文件路径（省略时打印到标准输出）
-* `--scope <project|global|all>`: 导出范围（默认：`all`）
+* `--domain <이름>`: 지정된 도메인/분야만 내보냄
+* `--min-confidence <숫자>`: 최소 신뢰도 기준 (예: 0.7)
+* `--output <파일경로>`: 결과를 저장할 파일 경로 (생략 시 화면에 출력)
+* `--scope <project|global|all>`: 내보낼 범위 선택 (기본값: `all`)
+
+**핵심**: 내보내기 기능을 통해 개인의 노하우(본능)를 팀의 표준으로 확장하거나, 다양한 개발 환경에서 일관된 에이전트 성능을 유지할 수 있습니다.

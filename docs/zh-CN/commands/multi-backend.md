@@ -1,162 +1,98 @@
-# 后端 - 后端导向开发
+---
+description: 백엔드 중심의 개발 워크플로우(연구 → 구상 → 계획 → 실행 → 최적화 → 리뷰)를 관리하며, Codex 모델을 주력으로 활용합니다.
+---
 
-后端导向的工作流程（研究 → 构思 → 规划 → 执行 → 优化 → 评审），由 Codex 主导。
+# /backend - 백엔드 지향 개발 (Backend-Oriented)
 
-## 使用方法
+Codex 모델을 주력으로 하여 백엔드 개발 워크플로우(연구 → 구상 → 계획 → 실행 → 최적화 → 리뷰)를 수행합니다.
+
+## 사용법
 
 ```bash
-/backend <backend task description>
+/backend <백엔드 작업 설명>
 ```
 
-## 上下文
+## 시스템 컨텍스트
 
-* 后端任务：$ARGUMENTS
-* Codex 主导，Gemini 作为辅助参考
-* 适用场景：API 设计、算法实现、数据库优化、业务逻辑
+* **작업 대상**: 백엔드 관련 비즈니스 로직, API 설계, 알고리즘 구현, 데이터베이스 최적화 등
+* **주력 모델**: **Codex** (백엔드 로직 및 알고리즘 구현의 핵심 권위자)
+* **참조 모델**: Gemini (프론트엔드 관점의 보조 참고 자료로 활용)
+* **수행 모델**: Claude (조율, 계획 수립, 실제 파일 쓰기 및 실행 담당)
 
-## 你的角色
+## 수행 역할
 
-你是 **后端协调者**，为服务器端任务协调多模型协作（研究 → 构思 → 规划 → 执行 → 优化 → 评审）。
+당신은 **백엔드 코디네이터(Backend Coordinator)**로서, 서버 측 작업을 위해 다중 모델 협업을 조율합니다.
 
-**协作模型**：
+* **Codex**: 백엔드 로직, 알고리즘 구현 (**신뢰할 수 있는 백엔드 권위자**)
+* **Gemini**: 프론트엔드와의 연동 관점 의견 제시 (**백엔드 로직 결정 시에는 참고용**)
+* **Claude (본인)**: 전체 프로세스 조율, 계획 확정, 코드 작성 및 인프라 실행
 
-* **Codex** – 后端逻辑、算法（**后端权威，可信赖**）
-* **Gemini** – 前端视角（**后端意见仅供参考**）
-* **Claude (自身)** – 协调、规划、执行、交付
+---
 
-***
+## 다중 모델 호출 가이드라인
 
-## 多模型调用规范
-
-**调用语法**：
-
-```
-# New session call
-Bash({
-  command: "~/.claude/bin/codeagent-wrapper {{LITE_MODE_FLAG}}--backend codex - \"$PWD\" <<'EOF'
-ROLE_FILE: <role prompt path>
+**호출 구문 예시 (Bash)**:
+```bash
+# 신규 세션 호출
+~/.claude/bin/codeagent-wrapper --backend codex - "$PWD" <<'EOF'
+ROLE_FILE: <프롬프트 경로>
 <TASK>
-Requirement: <enhanced requirement (or $ARGUMENTS if not enhanced)>
-Context: <project context and analysis from previous phases>
+요구사항: <보완된 요구사항 또는 $ARGUMENTS>
+컨텍스트: <이전 단계의 분석 결과 및 프로젝트 정보>
 </TASK>
-OUTPUT: Expected output format
-EOF",
-  run_in_background: false,
-  timeout: 3600000,
-  description: "Brief description"
-})
-
-# Resume session call
-Bash({
-  command: "~/.claude/bin/codeagent-wrapper {{LITE_MODE_FLAG}}--backend codex resume <SESSION_ID> - \"$PWD\" <<'EOF'
-ROLE_FILE: <role prompt path>
-<TASK>
-Requirement: <enhanced requirement (or $ARGUMENTS if not enhanced)>
-Context: <project context and analysis from previous phases>
-</TASK>
-OUTPUT: Expected output format
-EOF",
-  run_in_background: false,
-  timeout: 3600000,
-  description: "Brief description"
-})
+OUTPUT: 예상되는 출력 형식
+EOF
 ```
 
-**角色提示词**：
+**세션 관리**: 각 호출은 `SESSION_ID`를 반환합니다. 효율적인 문맥 유지를 위해 다음 단계에서는 `resume <SESSION_ID>` 명령어를 사용하여 세션을 이어갑니다.
 
-| 阶段 | Codex |
-|-------|-------|
-| 分析 | `~/.claude/.ccg/prompts/codex/analyzer.md` |
-| 规划 | `~/.claude/.ccg/prompts/codex/architect.md` |
-| 评审 | `~/.claude/.ccg/prompts/codex/reviewer.md` |
+---
 
-**会话复用**：每次调用返回 `SESSION_ID: xxx`，在后续阶段使用 `resume xxx`。在第 2 阶段保存 `CODEX_SESSION`，在第 3 和第 5 阶段使用 `resume`。
+## 핵심 워크플로우
 
-***
+### [단계 0: 준비 (Prepare)]
+요구사항을 분석하고, 필요한 경우 프롬프트를 보완(Enhance)하여 이후 모델 호출에 최적화합니다.
 
-## 沟通准则
+### [단계 1: 연구 (Research)]
+요구사항을 심층 이해하고 프로젝트 컨텍스트를 수집합니다.
+* 기존 API, 데이터 모델, 서비스 아키텍처를 검색합니다.
+* 요구사항 완성도 점수(0-10)가 7점 미만이면 사용자에게 추가 정보를 요청합니다.
 
-1. 在回复开头使用模式标签 `[Mode: X]`，初始值为 `[Mode: Research]`
-2. 遵循严格序列：`Research → Ideation → Plan → Execute → Optimize → Review`
-3. 需要时（例如确认/选择/批准）使用 `AskUserQuestion` 工具进行用户交互
+### [단계 2: 구상 (Ideation)]
+**Codex를 반드시 호출**하여 다음 내용을 확보합니다:
+* 기술적 타당성 분석
+* 최소 2개 이상의 추천 해결 방안
+* 위험 요소 평가 및 대응책
+사용자에게 방안을 제시하고 하나를 선택받습니다.
 
-***
+### [단계 3: 계획 (Plan)]
+선택된 방안을 바탕으로 **Codex(세션 재개)**를 통해 상세 설계를 진행합니다:
+* 파일 구조 정의
+* 함수/클래스 설계 및 인터페이스 정의
+* 의존성 관계 분석
+확정된 계획은 `.claude/plan/작업명.md`에 저장합니다.
 
-## 核心工作流程
+### [단계 4: 실행 (Execute)]
+확정된 계획에 따라 실제 코드를 구현합니다:
+* 프로젝트 코딩 규칙 엄수
+* 에러 처리, 보안 가이드라인, 성능 최적화 반영
 
-### 阶段 0：提示词增强（可选）
+### [단계 5: 최적화 (Optimize)]
+**Codex**를 통해 백엔드 코드 변경 사항을 리뷰합니다:
+* 보안성, 성능, 에러 처리 로직 검토
+* API 명세 준수 여부 확인
+리뷰 피드백을 반영하여 코드를 최적화합니다.
 
-`[Mode: Prepare]` - 如果 ace-tool MCP 可用，调用 `mcp__ace-tool__enhance_prompt`，**将原始的 $ARGUMENTS 替换为增强后的结果，用于后续的 Codex 调用**。如果不可用，则按原样使用 `$ARGUMENTS`。
+### [단계 6: 최종 리뷰 (Review)]
+* 계획 대비 완료율 점검
+* 기능 검증을 위한 테스트 실행
+* 최종 결과 보고 및 향후 개선 사항 제안
 
-### 阶段 1：研究
+---
 
-`[Mode: Research]` - 理解需求并收集上下文
+## 핵심 규칙
 
-1. **代码检索**（如果 ace-tool MCP 可用）：调用 `mcp__ace-tool__search_context` 来检索现有的 API、数据模型、服务架构。如果不可用，则使用内置工具：`Glob` 用于文件发现，`Grep` 用于符号/API 搜索，`Read` 用于上下文收集，`Task`（探索代理）用于更深入的探索。
-2. 需求完整性评分（0-10）：>=7 继续，<7 停止并补充
-
-### 阶段 2：构思
-
-`[Mode: Ideation]` - Codex 主导的分析
-
-**必须调用 Codex**（遵循上述调用规范）：
-
-* ROLE\_FILE：`~/.claude/.ccg/prompts/codex/analyzer.md`
-* 需求：增强后的需求（或未增强时的 $ARGUMENTS）
-* 上下文：来自阶段 1 的项目上下文
-* 输出：技术可行性分析、推荐解决方案（至少 2 个）、风险评估
-
-**保存 SESSION\_ID**（`CODEX_SESSION`）以供后续阶段复用。
-
-输出解决方案（至少 2 个），等待用户选择。
-
-### 阶段 3：规划
-
-`[Mode: Plan]` - Codex 主导的规划
-
-**必须调用 Codex**（使用 `resume <CODEX_SESSION>` 以复用会话）：
-
-* ROLE\_FILE：`~/.claude/.ccg/prompts/codex/architect.md`
-* 需求：用户选择的解决方案
-* 上下文：阶段 2 的分析结果
-* 输出：文件结构、函数/类设计、依赖关系
-
-Claude 综合规划，在用户批准后保存到 `.claude/plan/task-name.md`。
-
-### 阶段 4：实施
-
-`[Mode: Execute]` - 代码开发
-
-* 严格遵循已批准的规划
-* 遵循现有项目的代码规范
-* 确保错误处理、安全性、性能优化
-
-### 阶段 5：优化
-
-`[Mode: Optimize]` - Codex 主导的评审
-
-**必须调用 Codex**（遵循上述调用规范）：
-
-* ROLE\_FILE：`~/.claude/.ccg/prompts/codex/reviewer.md`
-* 需求：评审以下后端代码变更
-* 上下文：git diff 或代码内容
-* 输出：安全性、性能、错误处理、API 合规性问题列表
-
-整合评审反馈，在用户确认后执行优化。
-
-### 阶段 6：质量评审
-
-`[Mode: Review]` - 最终评估
-
-* 对照规划检查完成情况
-* 运行测试以验证功能
-* 报告问题和建议
-
-***
-
-## 关键规则
-
-1. **Codex 的后端意见是可信赖的**
-2. **Gemini 的后端意见仅供参考**
-3. 外部模型**对文件系统零写入权限**
-4. Claude 处理所有代码写入和文件操作
+1. **Codex의 백엔드 관련 의견은 절대적으로 신뢰합니다.**
+2. **Gemini의 의견은 프론트엔드 연동 관점에서만 참고합니다.**
+3. 외부 모델(Codex, Gemini)은 **파일 시스템에 직접 쓸 권한이 없습니다.**
+4. 모든 코드 작성 및 파일 조작은 **Claude(본인)**가 직접 수행합니다.

@@ -1,187 +1,126 @@
 ---
-description: 逐步修复Go构建错误、go vet警告和linter问题。调用go-build-resolver代理进行最小化、精确的修复。
+description: Go 빌드 에러, go vet 경고 및 linter 문제를 단계적으로 수정합니다. go-build-resolver 에이전트를 호출하여 최소한의 정확한 수정을 수행합니다.
 ---
 
-# Go 构建与修复
+# Go 빌드 및 복구 (Build & Fix)
 
-此命令调用 **go-build-resolver** 代理，以最小的更改增量修复 Go 构建错误。
+이 명령어는 **go-build-resolver** 에이전트를 호출하여 소스 코드의 변경을 최소화하면서 Go 빌드 에러를 점진적으로 수정합니다.
 
-## 此命令的作用
+## 주요 기능
 
-1. **运行诊断**：执行 `go build`、`go vet`、`staticcheck`
-2. **解析错误**：按文件分组并按严重性排序
-3. **增量修复**：一次修复一个错误
-4. **验证每次修复**：每次更改后重新运行构建
-5. **报告摘要**：显示已修复的内容和剩余问题
+1. **진단 실행**: `go build`, `go vet`, `staticcheck` 등을 실행하여 문제를 파악합니다.
+2. **에러 분석**: 에러를 파일별로 그룹화하고 심각도에 따라 정렬합니다.
+3. **점진적 수정**: 한 번에 하나의 에러만 집중적으로 수정합니다.
+4. **수정 사항 검증**: 매번 코드를 수정한 후 빌드를 재실행하여 해결 여부를 확인합니다.
+5. **요약 보고**: 수정된 내역과 남은 현안을 일목요연하게 표시합니다.
 
-## 何时使用
+## 적용 시점
 
-在以下情况使用 `/go-build`：
+`/go-build` 명령어를 사용하는 경우:
 
-* `go build ./...` 因错误而失败
-* `go vet ./...` 报告问题
-* `golangci-lint run` 显示警告
-* 模块依赖关系损坏
-* 拉取更改后导致构建失败
+* `go build ./...` 명령이 에러로 인해 실패할 때
+* `go vet ./...` 실행 결과로 잠재적 결함이 보고될 때
+* `golangci-lint run` 등의 도구에서 경고가 발생할 때
+* 모듈 의존성(`go.mod`)이 꼬였을 때
+* 다른 팀원의 코드를 가져온 후 빌드가 되지 않을 때
 
-## 运行的诊断命令
+## 실행되는 진단 명령어
 
 ```bash
-# Primary build check
+# 기본 빌드 확인
 go build ./...
 
-# Static analysis
+# 정적 분석 (Standard)
 go vet ./...
 
-# Extended linting (if available)
+# 확장 린트 처리 (설치된 경우)
 staticcheck ./...
 golangci-lint run
 
-# Module issues
+# 모듈 관련 이슈 점검
 go mod verify
 go mod tidy -v
 ```
 
-## 示例会话
+---
+
+## 실행 예시
 
 ````text
-User: /go-build
+사용자: /go-build
 
-Agent:
-# Go Build Resolution
+에이전트:
+# Go 빌드 에러 해결 프로세스
 
-## Initial Diagnostics
-
+## 초기 진단 결과
 ```bash
 $ go build ./...
 internal/service/user.go:25:15: undefined: UserRepository
 internal/handler/api.go:42:9: cannot use x (type string) as type int
 internal/handler/api.go:58:2: missing return at end of function
+```
+발견된 에러: 3개
+
+## 수정 1: 정의되지 않은 식별자 해결
+- 파일: internal/service/user.go:25
+- 에러: undefined: UserRepository
+- 조치: 누락된 패키지 가져오기(import) 추가 및 참조 수정
+
+```bash
+$ go build ./...
+# 남은 에러: 2개
+```
+
+## ... (중략) ...
+
+## 최종 검증
+```bash
+$ go build ./...
+# 빌드 성공!
+
+$ go vet ./...
+# 이슈 없음
+```
+
+## 최종 요약
+| 항목 | 수량 |
+|--------|-------|
+| 수정된 빌드 에러 | 3 |
+| 수정된 Vet 경고 | 0 |
+| 수정된 파일 수 | 2 |
+| 남은 이슈 | 0 |
+
+빌드 상태: ✅ 성공
 ````
 
-发现错误：3
+---
 
-## 修复 1：未定义的标识符
+## 자주 발생하는 에러 및 해결책
 
-文件：internal/service/user.go:25
-错误：undefined: UserRepository
-原因：缺少导入
-
-```go
-// Added import
-import "project/internal/repository"
-
-// Changed
-var repo UserRepository
-// To
-var repo repository.UserRepository
-```
-
-```bash
-$ go build ./...
-# 2 errors remaining
-```
-
-## 修复 2：类型不匹配
-
-文件：internal/handler/api.go:42
-错误：cannot use x (type string) as type int
-
-```go
-// Changed
-count := params.Get("count")
-// To
-countStr := params.Get("count")
-count, _ := strconv.Atoi(countStr)
-```
-
-```bash
-$ go build ./...
-# 1 error remaining
-```
-
-## 修复 3：缺少返回
-
-文件：internal/handler/api.go:58
-错误：missing return at end of function
-
-```go
-func GetUser(id string) (*User, error) {
-    if id == "" {
-        return nil, ErrInvalidID
-    }
-    user := findUser(id)
-    // Added missing return
-    return user, nil
-}
-```
-
-```bash
-$ go build ./...
-# Build successful!
-```
-
-## 最终验证
-
-```bash
-$ go vet ./...
-# No issues
-
-$ go test ./...
-ok      project/internal/service   0.015s
-ok      project/internal/handler   0.023s
-```
-
-## 摘要
-
-| 指标 | 数量 |
-|--------|-------|
-| 已修复的构建错误 | 3 |
-| 已修复的 Vet 警告 | 0 |
-| 已修改的文件 | 2 |
-| 剩余问题 | 0 |
-
-构建状态：✅ 成功
-
-```
-
-## Common Errors Fixed
-
-| Error | Typical Fix |
+| 에러 메시지 | 일반적인 해결 방법 |
 |-------|-------------|
-| `undefined: X` | Add import or fix typo |
-| `cannot use X as Y` | Type conversion or fix assignment |
-| `missing return` | Add return statement |
-| `X does not implement Y` | Add missing method |
-| `import cycle` | Restructure packages |
-| `declared but not used` | Remove or use variable |
-| `cannot find package` | `go get` or `go mod tidy` |
+| `undefined: X` | import 추가 또는 오타 수정 |
+| `cannot use X as Y` | 타입 변환(Conversion) 또는 대입 로직 수정 |
+| `missing return` | 함수 끝에 return 문 추가 |
+| `X does not implement Y` | 누락된 메서드 구현 추가 |
+| `import cycle` | 패키지 구조 재설계 |
+| `declared but not used` | 변수 제거 또는 실제 사용처 지정 |
+| `cannot find package` | `go mod tidy` 실행 |
 
-## Fix Strategy
+## 수정 전략
 
-1. **Build errors first** - Code must compile
-2. **Vet warnings second** - Fix suspicious constructs
-3. **Lint warnings third** - Style and best practices
-4. **One fix at a time** - Verify each change
-5. **Minimal changes** - Don't refactor, just fix
+1. **빌드 에러 우선 처리**: 먼저 코드가 컴파일이 되어야 합니다.
+2. **Vet 경고 차순 처리**: 의심스러운 구조적 결함을 수정합니다.
+3. **린트 경고 마지막 처리**: 코딩 스타일 및 최선 관행을 적용합니다.
+4. **한 번에 하나씩**: 각 변경 사항을 즉시 검증합니다.
+5. **최소한의 변경**: 거창한 리팩토링보다는 문제 해결에만 집중합니다.
 
-## Stop Conditions
+**중단 조건**: 동일 에러가 3회 이상 지속되거나, 수정을 통해 에러가 더 늘어나는 경우, 또는 아키텍처 변경이 필요하다고 판단되면 작업을 멈추고 사용자에게 보고합니다.
 
-The agent will stop and report if:
-- Same error persists after 3 attempts
-- Fix introduces more errors
-- Requires architectural changes
-- Missing external dependencies
+---
 
-## Related Commands
+## 관련 정보
 
-- `/go-test` - Run tests after build succeeds
-- `/go-review` - Review code quality
-- `/verify` - Full verification loop
-
-## Related
-
-- Agent: `agents/go-build-resolver.md`
-- Skill: `skills/golang-patterns/`
-
-```
+* **호출 에이전트**: `agents/go-build-resolver.md`
+* **관련 스킬**: `skills/golang-patterns/`
+* **함께 쓰면 좋은 명령어**: `/go-test` (빌드 후 테스트), `/go-review` (품질 검토)

@@ -1,161 +1,112 @@
 ---
-description: 全面的Go代码审查，涵盖惯用模式、并发安全性、错误处理和安全性。调用go-reviewer代理。
+description: 관용적 패턴, 동시성 안전성, 에러 처리 및 보안을 포함한 통합적인 Go 코드 리뷰를 수행합니다. go-reviewer 에이전트를 호출합니다.
 ---
 
-# Go 代码审查
+# Go 코드 리뷰 (Code Review)
 
-此命令调用 **go-reviewer** 代理进行全面的 Go 语言特定代码审查。
+이 명령어는 **go-reviewer** 에이전트를 호출하여 Go 언어 전용의 심층적인 코드 리뷰를 수행합니다.
 
-## 此命令的作用
+## 주요 기능
 
-1. **识别 Go 变更**：通过 `git diff` 查找修改过的 `.go` 文件
-2. **运行静态分析**：执行 `go vet`、`staticcheck` 和 `golangci-lint`
-3. **安全扫描**：检查 SQL 注入、命令注入、竞态条件
-4. **并发性审查**：分析 goroutine 安全性、通道使用、互斥锁模式
-5. **惯用 Go 检查**：验证代码是否遵循 Go 约定和最佳实践
-6. **生成报告**：按严重程度分类问题
+1. **Go 변경 사항 식별**: `git diff`를 통해 수정된 `.go` 파일을 찾습니다.
+2. **정적 분석 실행**: `go vet`, `staticcheck`, `golangci-lint` 등을 가동합니다.
+3. **보안 스캔**: SQL 인젝션, 명령 인젝션, 경합 조건(Race Condition) 등을 점검합니다.
+4. **동시성 검토**: Goroutine 안전성, 채널(Channel) 사용 방식, 뮤텍스(Mutex) 패턴을 분석합니다.
+5. **관용적 Go(Idiomatic Go) 확인**: Go의 전통적인 관습과 최선 관행을 준수하는지 검증합니다.
+6. **보고서 생성**: 발견된 이슈를 심각도별로 분류하여 리포트를 작성합니다.
 
-## 使用时机
+## 적용 시점
 
-在以下情况使用 `/go-review`：
+`/go-review` 명령어를 사용하는 경우:
 
-* 编写或修改 Go 代码之后
-* 提交 Go 变更之前
-* 审查包含 Go 代码的拉取请求时
-* 接手新的 Go 代码库时
-* 学习惯用 Go 模式时
+* Go 코드를 작성하거나 수정한 직후
+* 변경 사항을 커밋하기 전 최종 점검 시
+* Go 코드가 포함된 풀 리퀘스트(PR)를 검토할 때
+* 새로운 Go 코드베이스를 처음 분석할 때
+* Go다운(Idiomatic) 코딩 패턴을 배우고 싶을 때
 
-## 审查类别
+## 리뷰 카테고리 (심각도)
 
-### 严重（必须修复）
+### 🔴 심각 (필수 수정)
+* SQL / 명령 인젝션 취약점
+* 동기화되지 않은 공유 자원 접근 (Race Condition)
+* 고루틴 누수 (Goroutine Leak)
+* 하드코딩된 자격 증명 (API 키 등)
+* 안전하지 않은 포인터(Unsafe Pointer) 사용
+* 핵심 경로에서 무시된 에러(Error)
 
-* SQL/命令注入漏洞
-* 无同步的竞态条件
-* Goroutine 泄漏
-* 硬编码凭证
-* 不安全的指针使用
-* 关键路径中忽略的错误
+### 🟡 높음 (수정 권장)
+* 에러 래핑(Error Wrapping) 시 문맥(Context) 누락
+* 에러 반환 대신 `panic` 사용
+* 컨텍스트(Context) 전파 누락
+* 버퍼 없는 채널로 인한 교착 상태(Deadlock) 위험
+* 인터페이스 미충족 에러
+* 뮤텍스 보호 누락
 
-### 高（应该修复）
+### 🔵 중간 (고려 사항)
+* 비관용적인(Non-idiomatic) 코드 패턴
+* 공개된 요소에 Godoc 주석 누락
+* 비효율적인 문자열 결합 (Buffer/Builder 미사용)
+* 슬라이스(Slice) 사전 할당 누락
+* 테이블 기반 테스트(Table-driven tests) 미사용
 
-* 缺少带上下文的错误包装
-* 使用 panic 而非返回错误
-* 上下文未传播
-* 无缓冲通道导致死锁
-* 接口未满足错误
-* 缺少互斥锁保护
+---
 
-### 中（考虑修复）
-
-* 非惯用代码模式
-* 导出项缺少 godoc 注释
-* 低效的字符串拼接
-* 切片未预分配
-* 未使用表格驱动测试
-
-## 运行的自动化检查
+## 실행되는 자동화 도구
 
 ```bash
-# Static analysis
+# 기본 정적 분석
 go vet ./...
 
-# Advanced checks (if installed)
+# 고급 체크 (설치된 경우)
 staticcheck ./...
 golangci-lint run
 
-# Race detection
+# 경합 조건 감지
 go build -race ./...
 
-# Security vulnerabilities
+# 보인 취약점 점검
 govulncheck ./...
 ```
 
-## 使用示例
+---
+
+## 실행 예시
 
 ````text
-User: /go-review
+사용자: /go-review
 
-Agent:
-# Go Code Review Report
+에이전트:
+# Go 코드 리뷰 결과 보고서
 
-## Files Reviewed
-- internal/handler/user.go (modified)
-- internal/service/auth.go (modified)
+## 리뷰 대상 파일
+- internal/handler/user.go (수정됨)
+- internal/service/auth.go (수정됨)
 
-## Static Analysis Results
-✓ go vet: No issues
-✓ staticcheck: No issues
+## 발견된 주요 이슈
 
-## Issues Found
-
-[CRITICAL] Race Condition
-File: internal/service/auth.go:45
-Issue: Shared map accessed without synchronization
+[🔴 심각] 경합 조건 (Race Condition)
+파일: internal/service/auth.go:45
+내용: 동기화 처리가 되지 않은 상태에서 공유 맵(Map)에 접근하고 있습니다.
 ```go
-var cache = map[string]*Session{}  // Concurrent access!
+var cache = map[string]*Session{}  // 동시 접근 위험!
+```
+해결책: `sync.RWMutex` 또는 `sync.Map`을 사용하십시오.
 
-func GetSession(id string) *Session {
-    return cache[id]  // Race condition
-}
+[🟡 높음] 에러 문맥(Context) 누락
+파일: internal/handler/user.go:28
+내용: 반환되는 에러에 구체적인 상황 설명이 부족합니다.
+해결책: `fmt.Errorf("get user %s: %w", userID, err)`와 같이 래핑하십시오.
+
+## 최종 요약
+* 심각: 1 | 높음: 1 | 중간: 0
+권고: ❌ 심각한 이슈가 해결될 때까지 병합(Merge)을 중단하십시오.
 ````
 
-修复：使用 sync.RWMutex 或 sync.Map
+---
 
-```go
-var (
-    cache   = map[string]*Session{}
-    cacheMu sync.RWMutex
-)
+## 관련 정보
 
-func GetSession(id string) *Session {
-    cacheMu.RLock()
-    defer cacheMu.RUnlock()
-    return cache[id]
-}
-```
-
-\[高] 缺少错误上下文
-文件：internal/handler/user.go:28
-问题：返回的错误缺少上下文
-
-```go
-return err  // No context
-```
-
-修复：使用上下文包装
-
-```go
-return fmt.Errorf("get user %s: %w", userID, err)
-```
-
-## 摘要
-
-* 严重：1
-* 高：1
-* 中：0
-
-建议：❌ 在严重问题修复前阻止合并
-
-```
-
-## Approval Criteria
-
-| Status | Condition |
-|--------|-----------|
-| ✅ Approve | No CRITICAL or HIGH issues |
-| ⚠️ Warning | Only MEDIUM issues (merge with caution) |
-| ❌ Block | CRITICAL or HIGH issues found |
-
-## Integration with Other Commands
-
-- Use `/go-test` first to ensure tests pass
-- Use `/go-build` if build errors occur
-- Use `/go-review` before committing
-- Use `/code-review` for non-Go specific concerns
-
-## Related
-
-- Agent: `agents/go-reviewer.md`
-- Skills: `skills/golang-patterns/`, `skills/golang-testing/`
-
-```
+* **호출 에이전트**: `agents/go-reviewer.md`
+* **관련 스킬**: `skills/golang-patterns/`, `skills/golang-testing/`
+* **함께 쓰면 좋은 명령어**: `/go-test` (테스트 실행), `/go-build` (빌드 수정)

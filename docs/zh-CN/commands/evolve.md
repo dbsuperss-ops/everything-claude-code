@@ -1,194 +1,92 @@
 ---
 name: evolve
-description: 分析本能并建议或生成进化结构
+description: 학습된 본능(instincts)을 분석하여 더 높은 수준의 구조(명령어, 스킬, 에이전트)로 진화시킬 것을 제안하거나 자동 생성합니다.
 command: true
 ---
 
-# Evolve 命令
+# 진화 (Evolve) 명령어
 
-## 实现方式
+## 실행 방식
 
-使用插件根路径运行 instinct CLI：
+플러그인 루트 경로를 사용하여 instinct CLI를 실행합니다:
 
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/continuous-learning-v2/scripts/instinct-cli.py" evolve [--generate]
 ```
 
-或者如果 `CLAUDE_PLUGIN_ROOT` 未设置（手动安装）：
+만약 `CLAUDE_PLUGIN_ROOT`가 설정되지 않은 경우(수동 설치 등):
 
 ```bash
 python3 ~/.claude/skills/continuous-learning-v2/scripts/instinct-cli.py evolve [--generate]
 ```
 
-分析本能并将相关的本能聚合成更高层次的结构：
+이 명령어는 개별적인 본능들을 분석하고 서로 연관된 것들을 묶어 다음과 같은 상위 구조로 진화시킵니다:
 
-* **命令**：当本能描述用户调用的操作时
-* **技能**：当本能描述自动触发的行为时
-* **代理**：当本能描述复杂的、多步骤的流程时
+* **명령어 (Command)**: 사용자가 직접 호출하는 액션을 설명하는 본능인 경우
+* **스킬 (Skill)**: 자동으로 트리거되는 행동이나 지식을 설명하는 본능인 경우
+* **에이전트 (Agent)**: 복잡한 다단계 프로세스를 설명하며 독립적인 역할 수행이 필요한 경우
 
-## 使用方法
+## 사용법
 
-```
-/evolve                    # Analyze all instincts and suggest evolutions
-/evolve --generate         # Also generate files under evolved/{skills,commands,agents}
-```
-
-## 演化规则
-
-### → 命令（用户调用）
-
-当本能描述用户会明确请求的操作时：
-
-* 多个关于“当用户要求...”的本能
-* 触发器类似“当创建新的 X 时”的本能
-* 遵循可重复序列的本能
-
-示例：
-
-* `new-table-step1`: "当添加数据库表时，创建迁移"
-* `new-table-step2`: "当添加数据库表时，更新模式"
-* `new-table-step3`: "当添加数据库表时，重新生成类型"
-
-→ 创建：**new-table** 命令
-
-### → 技能（自动触发）
-
-当本能描述应该自动发生的行为时：
-
-* 模式匹配触发器
-* 错误处理响应
-* 代码风格强制执行
-
-示例：
-
-* `prefer-functional`: "当编写函数时，优先使用函数式风格"
-* `use-immutable`: "当修改状态时，使用不可变模式"
-* `avoid-classes`: "当设计模块时，避免基于类的设计"
-
-→ 创建：`functional-patterns` 技能
-
-### → 代理（需要深度/隔离）
-
-当本能描述复杂的、多步骤的、受益于隔离的流程时：
-
-* 调试工作流
-* 重构序列
-* 研究任务
-
-示例：
-
-* `debug-step1`: "当调试时，首先检查日志"
-* `debug-step2`: "当调试时，隔离故障组件"
-* `debug-step3`: "当调试时，创建最小复现"
-* `debug-step4`: "当调试时，用测试验证修复"
-
-→ 创建：**debugger** 代理
-
-## 操作步骤
-
-1. 检测当前项目上下文
-2. 读取项目 + 全局本能（项目优先级高于 ID 冲突）
-3. 按触发器/领域模式分组本能
-4. 识别：
-   * 技能候选（包含 2+ 个本能的触发器簇）
-   * 命令候选（高置信度工作流本能）
-   * 智能体候选（更大、高置信度的簇）
-5. 在适用时显示升级候选（项目 -> 全局）
-6. 如果传入了 `--generate`，则将文件写入：
-   * 项目范围：`~/.claude/homunculus/projects/<project-id>/evolved/`
-   * 全局回退：`~/.claude/homunculus/evolved/`
-
-## 输出格式
-
-```
-============================================================
-  EVOLVE ANALYSIS - 12 instincts
-  Project: my-app (a1b2c3d4e5f6)
-  Project-scoped: 8 | Global: 4
-============================================================
-
-High confidence instincts (>=80%): 5
-
-## SKILL CANDIDATES
-1. Cluster: "adding tests"
-   Instincts: 3
-   Avg confidence: 82%
-   Domains: testing
-   Scopes: project
-
-## COMMAND CANDIDATES (2)
-  /adding-tests
-    From: test-first-workflow [project]
-    Confidence: 84%
-
-## AGENT CANDIDATES (1)
-  adding-tests-agent
-    Covers 3 instincts
-    Avg confidence: 82%
+```text
+/evolve                    # 모든 본능을 분석하고 진화 방향 제안
+/evolve --generate         # evolved/{skills,commands,agents} 경로에 실제 파일 생성
 ```
 
-## 标志
+## 진화 규칙 (Evolving Rules)
 
-* `--generate`：除了分析输出外，还生成进化后的文件
+### → 명령어 (사용자 호출 방식)
 
-## 生成的文件格式
+사용자가 명시적으로 요청할 가능성이 높은 작업들:
+* "사용자가 ~을 요청할 때..."와 관련된 여러 본능
+* "새로운 X를 생성할 때"와 같은 트리거를 가진 본능
+* 반복 가능한 작업 시퀀스를 따르는 본능
 
-### 命令
+*예시:*
+1. "DB 테이블 추가 시 마이그레이션 생성"
+2. "DB 테이블 추가 시 스키마 업데이트"
+3. "DB 테이블 추가 시 타입 재생성"
+→ **new-table** 명령어로 진화
 
-```markdown
----
-name: new-table
-description: Create a new database table with migration, schema update, and type generation
-command: /new-table
-evolved_from:
-  - new-table-migration
-  - update-schema
-  - regenerate-types
----
+### → 스킬 (자동 실행 방식)
 
-# 新建数据表命令
+자동으로 발생해야 하는 행동들:
+* 패턴 매칭 트리거 (코드 작성 스타일 등)
+* 에러 처리 대응 방식
+* 코드 스타일 강제 사항
 
-[基于集群本能生成的内容]
+*예시:*
+1. "함수 작성 시 함수형 스타일 우선"
+2. "상태 변경 시 불변성 패턴 사용"
+3. "모듈 설계 시 클래스 기반 디자인 지양"
+→ **functional-patterns** 스킬로 진화
 
-## 步骤
-1. ...
-2. ...
+### → 에이전트 (심층 작업/격리 필요)
 
-```
+복잡하고 단계가 많으며 독립적으로 수행하는 것이 유리한 프로세스:
+* 디버깅 워크플로우
+* 대규모 리팩토링 시퀀스
+* 심층 연구 작업
 
-### 技能
+*예시:*
+1. "디버깅 시 로그 먼저 확인"
+2. "디버깅 시 고장난 컴포넌트 격리"
+3. "디버깅 시 최소 재현 환경 구축"
+4. "디버깅 시 테스트로 수정 사항 검증"
+→ **debugger** 에이전트로 진화
 
-```markdown
----
-name: functional-patterns
-description: 强制执行函数式编程模式
-evolved_from:
-  - prefer-functional
-  - use-immutable
-  - avoid-classes
----
+## 분석 및 생성 절차
 
-# 函数式模式技能
+1. 현재 프로젝트 컨텍스트를 감지합니다.
+2. 프로젝트 단위 및 전역 단위의 본능을 읽어옵니다 (ID 충돌 시 프로젝트 단위 우선).
+3. 트리거 또는 도메인 패턴에 따라 본능을 그룹화합니다.
+4. 다음 후보를 식별합니다:
+   * **스킬 후보**: 2개 이상의 본능이 포함된 트리거 클러스터
+   * **명령어 후보**: 신뢰도가 높은 워크플로우 관련 본능
+   * **에이전트 후보**: 범위가 넓고 신뢰도가 높은 대규모 클러스터
+5. 적절한 경우 프로젝트 단위에서 전역 단위로의 업그레이드 후보를 표시합니다.
+6. `--generate` 옵션 사용 시 다음 경로에 파일을 생성합니다:
+   * 프로젝트 범위: `~/.claude/homunculus/projects/<프로젝트-id>/evolved/`
+   * 전역 범위: `~/.claude/homunculus/evolved/`
 
-[基于聚类本能生成的内容]
-
-```
-
-### 代理
-
-```markdown
----
-name: debugger
-description: 系统性调试代理
-model: sonnet
-evolved_from:
-  - debug-check-logs
-  - debug-isolate
-  - debug-reproduce
----
-
-# 调试器代理
-
-[基于聚类本能生成的内容]
-
-```
+**핵심**: Evolve 명령어는 단편적인 학습 내용(본능)을 체계적인 지식 자산(명령어, 스킬, 에이전트)으로 탈바꿈시켜 에이전트의 능력을 영구적으로 향상시킵니다.

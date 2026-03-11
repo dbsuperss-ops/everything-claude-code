@@ -1,59 +1,61 @@
 ---
 name: instinct-status
-description: 展示已学习的本能（项目+全局）并充满信心
+description: 학습된 본능(instincts)의 목록 및 신뢰도를 프로젝트 및 전역 범위별로 표시합니다.
 command: true
 ---
 
-# 本能状态命令
+# 본능 상태 (Instinct Status) 명령어
 
-显示当前项目学习到的本能以及全局本能，按领域分组。
+현재 프로젝트에서 학습된 본능과 전역 본능을 도메인별로 그룹화하여 표시합니다.
 
-## 实现
+## 실행 방식
 
-使用插件根路径运行本能 CLI：
+플러그인 루트 경로를 사용하여 instinct CLI를 실행합니다:
 
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/continuous-learning-v2/scripts/instinct-cli.py" status
 ```
 
-或者，如果未设置 `CLAUDE_PLUGIN_ROOT`（手动安装），则使用：
+만약 `CLAUDE_PLUGIN_ROOT`가 설정되지 않은 경우(수동 설치 등):
 
 ```bash
 python3 ~/.claude/skills/continuous-learning-v2/scripts/instinct-cli.py status
 ```
 
-## 用法
+## 사용법
 
-```
+```text
 /instinct-status
 ```
 
-## 操作步骤
+## 처리 절차
 
-1. 检测当前项目上下文（git remote/路径哈希）
-2. 从 `~/.claude/homunculus/projects/<project-id>/instincts/` 读取项目本能
-3. 从 `~/.claude/homunculus/instincts/` 读取全局本能
-4. 合并并应用优先级规则（当ID冲突时，项目本能覆盖全局本能）
-5. 按领域分组显示，包含置信度条和观察统计数据
+1. 현재 프로젝트 컨텍스트(Git 원격 저장소 또는 경로 해시)를 감지합니다.
+2. 프로젝트 단위 본능을 읽어옵니다: `~/.claude/homunculus/projects/<프로젝트-id>/instincts/`
+3. 전역 단위 본능을 읽어옵니다: `~/.claude/homunculus/instincts/`
+4. 본능을 병합하고 우선순위 규칙을 적용합니다 (ID 충돌 시 프로젝트 단위 본능이 전역 본능을 덮어씁니다).
+5. 도메인별로 그룹화하여 신뢰도 막대 그래프 및 관찰 통계와 함께 표시합니다.
 
-## 输出格式
+## 출력 데이터 형식 (예시)
 
-```
+```text
 ============================================================
-  INSTINCT STATUS - 12 total
+  본능 상태 리포트 - 총 12개
 ============================================================
 
-  Project: my-app (a1b2c3d4e5f6)
-  Project instincts: 8
-  Global instincts:  4
+  프로젝트: my-app (a1b2c3d4e5f6)
+  프로젝트 본능: 8개
+  전역 본능: 4개
 
-## PROJECT-SCOPED (my-app)
-  ### WORKFLOW (3)
+## 📁 프로젝트 한정 본능 (my-app)
+  ### 워크플로우 (3)
     ███████░░░  70%  grep-before-edit [project]
-              trigger: when modifying code
+               트리거: 코드 수정 시
 
-## GLOBAL (apply to all projects)
-  ### SECURITY (2)
+## 🌐 전역 본능 (모든 프로젝트 적용)
+  ### 보안 (2)
     █████████░  85%  validate-user-input [global]
-              trigger: when handling user input
+               트리거: 사용자 입력 처리 시
 ```
+
+**핵심**: Instinct Status를 통해 에이전트가 어떤 습관과 지식을 학습했는지 실시간으로 파악할 수 있습니다. 신뢰도가 낮은 본능은 추가적인 학습이나 수동 조정을 통해 강화할 수 있습니다.

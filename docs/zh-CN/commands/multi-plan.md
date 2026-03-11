@@ -1,278 +1,109 @@
-# 计划 - 多模型协同规划
+---
+description: 다중 모델 협업을 통해 프로젝트 계획을 수립합니다. 컨텍스트 검색과 이중 모델(Codex & Gemini) 분석을 결합하여 단계별 실행 계획을 생성합니다.
+---
 
-多模型协同规划 - 上下文检索 + 双模型分析 → 生成分步实施计划。
+# /plan - 다중 모델 협업 계획 (Multi-Model Planning)
 
-$ARGUMENTS
+다중 모델 협업을 통해 고도로 정밀한 단계별 실행 계획을 수립합니다. 컨텍스트 검색과 이중 모델 분석을 결합하여 가시적인 결과물을 도출합니다.
 
-***
+## 핵심 프로토콜
 
-## 核心协议
+* **언어 규정**: 도구/모델과의 상호작용은 **영어**로, 사용자와의 소통은 사용자의 언어(**한국어**)로 수행합니다.
+* **병렬 실행 강제**: Codex/Gemini 호출 시 반드시 `run_in_background: true`를 사용하여 메인 프로세스의 블로킹을 방지합니다.
+* **코드 주권**: 외부 모델(Codex, Gemini)은 **파일 시스템 쓰기 권한이 없습니다.** 모든 수정은 Claude가 직접 수행합니다.
+* **계획 우선**: 이 명령어는 컨텍스트를 읽고 `.claude/plan/*` 경로에 계획 파일만 작성합니다. **절대로 소스 코드를 직접 수정하지 않습니다.**
 
-* **语言协议**：与工具/模型交互时使用 **英语**，与用户沟通时使用其语言
-* **强制并行**：Codex/Gemini 调用 **必须** 使用 `run_in_background: true`（包括单模型调用，以避免阻塞主线程）
-* **代码主权**：外部模型 **零文件系统写入权限**，所有修改由 Claude 执行
-* **止损机制**：在当前阶段输出验证完成前，不进入下一阶段
-* **仅限规划**：此命令允许读取上下文并写入 `.claude/plan/*` 计划文件，但 **绝不修改生产代码**
+---
 
-***
+## 다중 모델 호출 사양
 
-## 多模型调用规范
-
-**调用语法**（并行：使用 `run_in_background: true`）：
-
-```
-Bash({
-  command: "~/.claude/bin/codeagent-wrapper {{LITE_MODE_FLAG}}--backend <codex|gemini> {{GEMINI_MODEL_FLAG}}- \"$PWD\" <<'EOF'
-ROLE_FILE: <role prompt path>
+**호출 구문 (병렬 실행 예시)**:
+```bash
+~/.claude/bin/codeagent-wrapper --backend <codex|gemini> - "$PWD" <<'EOF'
+ROLE_FILE: <프롬프트 경로>
 <TASK>
-Requirement: <enhanced requirement>
-Context: <retrieved project context>
+요구사항: <보완된 요구사항>
+컨텍스트: <검색된 프로젝트 정보>
 </TASK>
-OUTPUT: Step-by-step implementation plan with pseudo-code. DO NOT modify any files.
-EOF",
-  run_in_background: true,
-  timeout: 3600000,
-  description: "Brief description"
-})
+OUTPUT: 의사코드(Pseudo-code)가 포함된 단계별 구현 계획. 파일 수정은 금지함.
+EOF
 ```
 
-**模型参数说明**：
-
-* `{{GEMINI_MODEL_FLAG}}`: 当使用 `--backend gemini` 时，替换为 `--gemini-model gemini-3-pro-preview`（注意尾随空格）；对于 codex 使用空字符串
-
-**角色提示**：
-
-| 阶段 | Codex | Gemini |
+**모델별 역할 분담**:
+| 단계 | Codex (백엔드) | Gemini (프론트엔드) |
 |-------|-------|--------|
-| 分析 | `~/.claude/.ccg/prompts/codex/analyzer.md` | `~/.claude/.ccg/prompts/gemini/analyzer.md` |
-| 规划 | `~/.claude/.ccg/prompts/codex/architect.md` | `~/.claude/.ccg/prompts/gemini/architect.md` |
+| **분석** | 기술적 타당성, 아키텍처 영향도 전문 | UI/UX 영향도, 디자인 정합성 전문 |
+| **계획** | 데이터 흐름, 에러 처리 설계 전문 | 정보 구조, 상호작용 흐름 설계 전문 |
 
-**会话复用**：每次调用返回 `SESSION_ID: xxx`（通常由包装器输出），**必须保存** 供后续 `/ccg:execute` 使用。
+---
 
-**等待后台任务**（最大超时 600000ms = 10 分钟）：
+## 실행 프로세스
 
-```
-TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
-```
+### [단계 1: 종합 컨텍스트 검색 (Research)]
+1. **프롬프트 보완**: 요구사항을 분석하여 더 명확한 검색 쿼리로 다듬습니다.
+2. **컨텍스트 검색**: 프로젝트의 관련 클래스, 함수, 타입 정의의 **전체 시그니처**를 확보합니다.
+   * 불충분한 경우 재귀적으로 검색을 수행합니다.
+3. **요구사항 정렬**: 모호한 부분이 있다면 사용자에게 질문하여 경계를 명확히 합니다.
 
-**重要提示**：
+### [단계 2: 다중 모델 협업 분석 (Analysis)]
+1. **입력 분배**: Codex(백엔드 분석)와 Gemini(프론트엔드 분석)를 병렬 호출합니다.
+2. **교차 검증**: 각 모델의 결과물을 통합하여 다음을 도출합니다.
+   * **합의 사항**: 강력한 기술적 신호로 채택
+   * **이견 사항**: 트레이드오프 분석 및 조율
+   * **상호 보완**: 백엔드 로직은 Codex, 프론트엔드 디자인은 Gemini의 의견을 우선 수용
+3. **실행 계획 생성**: 분석 결과를 종합하여 최종 **단계별 실행 계획**을 작성합니다.
 
-* 必须指定 `timeout: 600000`，否则默认 30 秒会导致过早超时
-* 如果 10 分钟后仍未完成，继续使用 `TaskOutput` 轮询，**绝不终止进程**
-* 如果因超时而跳过等待，**必须调用 `AskUserQuestion` 询问用户是继续等待还是终止任务**
+---
 
-***
-
-## 执行流程
-
-**规划任务**：$ARGUMENTS
-
-### 阶段 1：完整上下文检索
-
-`[Mode: Research]`
-
-#### 1.1 提示增强（必须先执行）
-
-**如果 ace-tool MCP 可用**，调用 `mcp__ace-tool__enhance_prompt` 工具：
-
-```
-mcp__ace-tool__enhance_prompt({
-  prompt: "$ARGUMENTS",
-  conversation_history: "<last 5-10 conversation turns>",
-  project_root_path: "$PWD"
-})
-```
-
-等待增强后的提示，**将所有后续阶段的原始 $ARGUMENTS 替换为增强结果**。
-
-**如果 ace-tool MCP 不可用**：跳过此步骤，并在所有后续阶段直接使用原始的 `$ARGUMENTS`。
-
-#### 1.2 上下文检索
-
-**如果 ace-tool MCP 可用**，调用 `mcp__ace-tool__search_context` 工具：
-
-```
-mcp__ace-tool__search_context({
-  query: "<semantic query based on enhanced requirement>",
-  project_root_path: "$PWD"
-})
-```
-
-* 使用自然语言构建语义查询（在哪里/是什么/怎么样）
-* **切勿基于假设回答**
-
-**如果 ace-tool MCP 不可用**，使用 Claude Code 内置工具作为备用方案：
-
-1. **Glob**：通过模式查找相关文件（例如，`Glob("**/*.ts")`、`Glob("src/**/*.py")`）
-2. **Grep**：搜索关键符号、函数名、类定义（例如，`Grep("className|functionName")`）
-3. **Read**：读取发现的文件以收集完整的上下文
-4. **Task (Explore agent)**：要进行更深入的探索，使用 `Task` 并配合 `subagent_type: "Explore"` 来搜索整个代码库
-
-#### 1.3 完整性检查
-
-* 必须获取相关类、函数、变量的 **完整定义和签名**
-* 如果上下文不足，触发 **递归检索**
-* 输出优先级：入口文件 + 行号 + 关键符号名称；仅在必要时添加最小代码片段以消除歧义
-
-#### 1.4 需求对齐
-
-* 如果需求仍有歧义，**必须** 输出引导性问题给用户
-* 直到需求边界清晰（无遗漏，无冗余）
-
-### 阶段 2：多模型协同分析
-
-`[Mode: Analysis]`
-
-#### 2.1 分发输入
-
-**并行调用** Codex 和 Gemini（`run_in_background: true`）：
-
-将 **原始需求**（不预设观点）分发给两个模型：
-
-1. **Codex 后端分析**：
-   * ROLE\_FILE：`~/.claude/.ccg/prompts/codex/analyzer.md`
-   * 重点：技术可行性、架构影响、性能考虑、潜在风险
-   * 输出：多视角解决方案 + 优缺点分析
-
-2. **Gemini 前端分析**：
-   * ROLE\_FILE：`~/.claude/.ccg/prompts/gemini/analyzer.md`
-   * 重点：UI/UX 影响、用户体验、视觉设计
-   * 输出：多视角解决方案 + 优缺点分析
-
-使用 `TaskOutput` 等待两个模型的完整结果。**保存 SESSION\_ID**（`CODEX_SESSION` 和 `GEMINI_SESSION`）。
-
-#### 2.2 交叉验证
-
-整合视角并迭代优化：
-
-1. **识别共识**（强信号）
-2. **识别分歧**（需要权衡）
-3. **互补优势**：后端逻辑遵循 Codex，前端设计遵循 Gemini
-4. **逻辑推理**：消除解决方案中的逻辑漏洞
-
-#### 2.3（可选但推荐）双模型计划草案
-
-为减少 Claude 综合计划中的遗漏风险，可以并行让两个模型输出“计划草案”（仍然 **不允许** 修改文件）：
-
-1. **Codex 计划草案**（后端权威）：
-   * ROLE\_FILE：`~/.claude/.ccg/prompts/codex/architect.md`
-   * 输出：分步计划 + 伪代码（重点：数据流/边缘情况/错误处理/测试策略）
-
-2. **Gemini 计划草案**（前端权威）：
-   * ROLE\_FILE：`~/.claude/.ccg/prompts/gemini/architect.md`
-   * 输出：分步计划 + 伪代码（重点：信息架构/交互/可访问性/视觉一致性）
-
-使用 `TaskOutput` 等待两个模型的完整结果，记录它们建议的关键差异。
-
-#### 2.4 生成实施计划（Claude 最终版本）
-
-综合两个分析，生成 **分步实施计划**：
+## 계획 보고서 (출력 형식)
 
 ```markdown
-## 实施计划：<任务名称>
+## 구현 계획: <기능명>
 
-### 任务类型
-- [ ] 前端 (→ Gemini)
-- [ ] 后端 (→ Codex)
-- [ ] 全栈 (→ 并行)
+### 작업 유형
+- [ ] 프론트엔드 (→ Gemini)
+- [ ] 백엔드 (→ Codex)
+- [ ] 풀스택 (→ 병렬 협업)
 
-### 技术解决方案
-<基于 Codex + Gemini 分析得出的最优解决方案>
+### 기술적 해결책
+<분석을 통해 도출된 최적의 방안 요약>
 
-### 实施步骤
-1. <步骤 1> - 预期交付物
-2. <步骤 2> - 预期交付物
-...
+### 상세 실행 단계
+1. <단계 1> - 예상 결과물
+2. <단계 2> - 예상 결과물
 
-### 关键文件
-| 文件 | 操作 | 描述 |
-|------|-----------|-------------|
-| path/to/file.ts:L10-L50 | 修改 | 描述 |
+### 핵심 변경 파일
+| 파일 경로 | 작업 성격 | 상세 내용 |
+|----------|---------|----------|
+| path/to/file.ts | 수정 | 구체적인 변경 지점 설명 |
 
-### 风险与缓解措施
-| 风险 | 缓解措施 |
-|------|------------|
-
-### SESSION_ID (供 /ccg:execute 使用)
-- CODEX_SESSION: <session_id>
-- GEMINI_SESSION: <session_id>
-
+### SESSION_ID (실행 시 필요)
+- CODEX_SESSION: <id_value>
+- GEMINI_SESSION: <id_value>
 ```
 
-### 阶段 2 结束：计划交付（非执行）
+---
 
-**`/ccg:plan` 的职责到此结束，必须执行以下操作**：
+## 계획 전달 및 종료 절차
 
-1. 向用户呈现完整的实施计划（包括伪代码）
+**주의: `/plan` 명령어는 계획 수립까지만 담당하며 실행은 하지 않습니다.**
 
-2. 将计划保存到 `.claude/plan/<feature-name>.md`（从需求中提取功能名称，例如 `user-auth`，`payment-module`）
-
-3. 以 **粗体文本** 输出提示（必须使用实际保存的文件路径）：
-
-   ***
-
-   **计划已生成并保存至 `.claude/plan/actual-feature-name.md`**
-
-   **请审阅以上计划。您可以：**
-
-   * **修改计划**：告诉我需要调整的内容，我会更新计划
-   * **执行计划**：复制以下命令到新会话
-
-   ```
-   /ccg:execute .claude/plan/actual-feature-name.md
-   ```
-
-   ***
-
-   **注意**：上面的 `actual-feature-name.md` 必须替换为实际保存的文件名！
-
-4. **立即终止当前响应**（在此停止。不再进行工具调用。）
-
-**绝对禁止**：
-
-* 询问用户“是/否”然后自动执行（执行是 `/ccg:execute` 的职责）
-* 任何对生产代码的写入操作
-* 自动调用 `/ccg:execute` 或任何实施操作
-* 当用户未明确请求修改时继续触发模型调用
+1. 작성된 계획을 사용자에게 시각적으로 보여줍니다.
+2. 계획을 `.claude/plan/<기능명>.md` 파일로 저장합니다.
+3. 다음과 같이 안내하며 응답을 마칩니다:
 
 ***
+**계획이 생성되어 `.claude/plan/<기능명>.md`에 저장되었습니다.**
 
-## 计划保存
-
-规划完成后，将计划保存至：
-
-* **首次规划**：`.claude/plan/<feature-name>.md`
-* **迭代版本**：`.claude/plan/<feature-name>-v2.md`，`.claude/plan/<feature-name>-v3.md`...
-
-计划文件写入应在向用户呈现计划前完成。
-
+**위 계획을 검토해 주십시오. 다음이 가능합니다:**
+* **계획 수정**: 특정 부분에 대한 수정을 요청하시면 반영해 드립니다.
+* **계획 실행**: 아래 명령어를 입력하여 실제 구현을 시작합니다.
+  ```text
+  /ccg:execute .claude/plan/<기능명>.md
+  ```
 ***
 
-## 计划修改流程
-
-如果用户请求修改计划：
-
-1. 根据用户反馈调整计划内容
-2. 更新 `.claude/plan/<feature-name>.md` 文件
-3. 重新呈现修改后的计划
-4. 提示用户再次审阅或执行
-
-***
-
-## 后续步骤
-
-用户批准后，**手动** 执行：
-
-```bash
-/ccg:execute .claude/plan/<feature-name>.md
-```
-
-***
-
-## 关键规则
-
-1. **仅规划，不实施** – 此命令不执行任何代码更改
-2. **无是/否提示** – 仅呈现计划，让用户决定后续步骤
-3. **信任规则** – 后端遵循 Codex，前端遵循 Gemini
-4. 外部模型 **零文件系统写入权限**
-5. **SESSION\_ID 交接** – 计划末尾必须包含 `CODEX_SESSION` / `GEMINI_SESSION`（供 `/ccg:execute resume <SESSION_ID>` 使用）
+**절대 금지 사항**:
+* 사용자 승인 없이 자동으로 코드를 수정하는 행위
+* `/ccg:execute` 명령어를 자동으로 호출하는 행위
+* 계획 수립 도중 소스 코드에 접근하여 실제 수정을 가하는 행위

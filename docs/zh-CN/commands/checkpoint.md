@@ -1,78 +1,74 @@
-# 检查点命令
+---
+description: 실시간 작업 흐름 중에 '체크포인트(검증 지점)'를 생성하거나 현재 상태를 특정 체크포인트와 비교하여 검증합니다.
+---
 
-在你的工作流中创建或验证一个检查点。
+# 체크포인트 (Checkpoint) 명령어
 
-## 用法
+작업 흐름의 특정 시점에서 상태를 저장하거나, 저장된 지점과 현재를 비교하여 검증합니다.
 
-`/checkpoint [create|verify|list] [name]`
+## 사용법
 
-## 创建检查点
+`/checkpoint [create|verify|list] [이름]`
 
-创建检查点时：
+## 체크포인트 생성 (Create)
 
-1. 运行 `/verify quick` 以确保当前状态是干净的
-2. 使用检查点名称创建一个 git stash 或提交
-3. 将检查点记录到 `.claude/checkpoints.log`：
+새로운 체크포인트를 생성할 때 다음 단계를 거칩니다:
 
-```bash
-echo "$(date +%Y-%m-%d-%H:%M) | $CHECKPOINT_NAME | $(git rev-parse --short HEAD)" >> .claude/checkpoints.log
-```
+1. `/verify quick`을 실행하여 현재 상태가 정상(Clean)인지 확인합니다.
+2. 체크포인트 이름을 식별자로 사용하여 `git stash` 또는 임시 커밋을 생성합니다.
+3. `.claude/checkpoints.log` 파일에 체크포인트 정보를 기록합니다:
+   ```bash
+   echo "$(date +%Y-%m-%d-%H:%M) | $CHECKPOINT_NAME | $(git rev-parse --short HEAD)" >> .claude/checkpoints.log
+   ```
+4. 생성 완료 사실을 사용자에게 알립니다.
 
-4. 报告检查点已创建
+## 체크포인트 검증 (Verify)
 
-## 验证检查点
+지정된 체크포인트와 현재 상태를 비교 검증합니다:
 
-根据检查点进行验证时：
+1. 로그 파일에서 해당 이름의 체크포인트를 찾아 읽습니다.
+2. 현재 상태와 체크포인트를 다음 항목에서 비교합니다:
+   * 체크포인트 생성 이후 **추가된 파일**
+   * 체크포인트 생성 이후 **수정된 파일**
+   * 당시와 현재의 **테스트 성공률** 차이
+   * 당시와 현재의 **테스트 커버리지** 차이
+3. 비교 리포트를 생성합니다:
+   ```
+   [체크포인트 비교 리포트]: $이름
+   ============================
+   변경된 파일 수: X
+   테스트 결과: +Y 성공 / -Z 실패
+   커버리지 변화: +X% / -Y%
+   빌드 상태: [PASS/FAIL]
+   ```
 
-1. 从日志中读取检查点
+## 체크포인트 목록 (List)
 
-2. 将当前状态与检查点进行比较：
-   * 自检查点以来新增的文件
-   * 自检查点以来修改的文件
-   * 现在的测试通过率与当时对比
-   * 现在的覆盖率与当时对比
+저장된 모든 체크포인트 목록을 표시합니다:
+* 이름
+* 생성 일시
+* Git SHA (해시값)
+* 상태 (현재 위치 대비 앞선 정도 등)
 
-3. 报告：
-
-```
-CHECKPOINT COMPARISON: $NAME
-============================
-Files changed: X
-Tests: +Y passed / -Z failed
-Coverage: +X% / -Y%
-Build: [PASS/FAIL]
-```
-
-## 列出检查点
-
-显示所有检查点，包含：
-
-* 名称
-* 时间戳
-* Git SHA
-* 状态（当前、落后、超前）
-
-## 工作流
-
-典型的检查点流程：
+## 권장 워크플로우
 
 ```
-[Start] --> /checkpoint create "feature-start"
+[시작] --> /checkpoint create "기능-시작"
    |
-[Implement] --> /checkpoint create "core-done"
+[구현 완료] --> /checkpoint create "핵심-완료"
    |
-[Test] --> /checkpoint verify "core-done"
+[테스트 수행] --> /checkpoint verify "핵심-완료"
    |
-[Refactor] --> /checkpoint create "refactor-done"
+[리팩토링] --> /checkpoint create "리팩토링-완료"
    |
-[PR] --> /checkpoint verify "feature-start"
+[PR 생성 전] --> /checkpoint verify "기능-시작"
 ```
 
-## 参数
+## 매개변수 (Arguments)
 
-$ARGUMENTS:
+* `create <이름>` - 지정된 이름으로 새 체크포인트 생성
+* `verify <이름>` - 지정된 이름의 체크포인트와 현재 상태 비교 검증
+* `list` - 모든 체크포인트 이력 보기
+* `clear` - 오래된 체크포인트 삭제 (최근 5개만 유지)
 
-* `create <name>` - 创建指定名称的检查点
-* `verify <name>` - 根据指定名称的检查点进行验证
-* `list` - 显示所有检查点
-* `clear` - 删除旧的检查点（保留最后5个）
+**핵심**: 체크포인트는 복잡한 작업을 수행할 때 '돌아갈 수 있는 지점'을 만들어주는 안전장치입니다. 유의미한 작업 단계가 끝날 때마다 습관적으로 활용하십시오.

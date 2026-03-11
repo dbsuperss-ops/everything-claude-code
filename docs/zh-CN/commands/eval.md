@@ -1,122 +1,119 @@
-# Eval 命令
+---
+description: 평가(Evaluation) 기반의 개발 워크플로우를 관리합니다. 기능별 역량 평가, 회귀 테스트 및 상세 보고서를 생성합니다.
+---
 
-管理基于评估的开发工作流。
+# 평가 (Eval) 명령어
 
-## 用法
+평가 기반 개발 워크플로우를 관리하고 실행합니다.
 
-`/eval [define|check|report|list] [feature-name]`
+## 사용법
 
-## 定义评估
+`/eval [define|check|report|list] [기능명]`
 
-`/eval define feature-name`
+## 평가 정의 (Define)
 
-创建新的评估定义：
+`/eval define 기능명`
 
-1. 使用模板创建 `.claude/evals/feature-name.md`：
+새로운 평가 정의를 생성합니다:
 
-```markdown
-## EVAL: 功能名称
-创建于: $(date)
+1. 템플릿을 사용하여 `.claude/evals/기능명.md` 파일을 생성합니다:
+   ```markdown
+   ## EVAL: 기능명
+   생성일: $(date)
 
-### 能力评估
-- [ ] [能力 1 的描述]
-- [ ] [能力 2 的描述]
+   ### 역량 평가 (Capability Eval)
+   - [ ] [역량 1에 대한 상세 설명]
+   - [ ] [역량 2에 대한 상세 설명]
 
-### 回归评估
-- [ ] [现有行为 1 仍然有效]
-- [ ] [现有行为 2 仍然有效]
+   ### 회귀 평가 (Regression Eval)
+   - [ ] [기존 동작 1이 여전히 유효함]
+   - [ ] [기존 동작 2가 여전히 유효함]
 
-### 成功标准
-- 能力评估的 pass@3 > 90%
-- 回归评估的 pass^3 = 100%
+   ### 성공 기준 (Success Criteria)
+   - 역량 평가 pass@3 > 90%
+   - 회귀 평가 pass^3 = 100%
+   ```
+2. 사용자에게 구체적인 기준 입력을 요청합니다.
 
-```
+## 평가 점검 (Check)
 
-2. 提示用户填写具体标准
+`/eval check 기능명`
 
-## 检查评估
+기능에 대한 평가를 실행합니다:
 
-`/eval check feature-name`
+1. `.claude/evals/기능명.md`에서 평가 정의를 읽어옵니다.
+2. **역량 평가** 수행:
+   * 각 기준을 검증하고 통과/실패 여부를 기록합니다.
+   * `.claude/evals/기능명.log`에 시도 이력을 남깁니다.
+3. **회귀 평가** 수행:
+   * 관련 테스트를 실행하고 기준점(Baseline)과 비교합니다.
+4. 현재 상태를 보고합니다:
+   ```
+   [평가 점검 결과]: 기능명
+   ========================
+   역량 검증: X/Y 통과
+   회귀 검증: X/Y 통과
+   상태: [진행 중 / 준비 완료]
+   ```
 
-为功能运行评估：
+## 평가 보고 (Report)
 
-1. 从 `.claude/evals/feature-name.md` 读取评估定义
-2. 对于每个能力评估：
-   * 尝试验证标准
-   * 记录 通过/失败
-   * 在 `.claude/evals/feature-name.log` 中记录尝试
-3. 对于每个回归评估：
-   * 运行相关测试
-   * 与基线比较
-   * 记录 通过/失败
-4. 报告当前状态：
+`/eval report 기능명`
 
-```
-EVAL CHECK: feature-name
-========================
-Capability: X/Y passing
-Regression: X/Y passing
-Status: IN PROGRESS / READY
-```
-
-## 报告评估
-
-`/eval report feature-name`
-
-生成全面的评估报告：
+종합적인 평가 보고서를 생성합니다:
 
 ```
-EVAL REPORT: feature-name
+[평가 보고서]: 기능명
 =========================
-Generated: $(date)
+생성일: $(date)
 
-CAPABILITY EVALS
+역량 평가 상세
 ----------------
-[eval-1]: PASS (pass@1)
-[eval-2]: PASS (pass@2) - required retry
-[eval-3]: FAIL - see notes
+[항목 1]: 성공 (pass@1)
+[항목 2]: 성공 (pass@2) - 재시도 필요함
+[항목 3]: 실패 - 비고란 참조
 
-REGRESSION EVALS
+회귀 평가 상세
 ----------------
-[test-1]: PASS
-[test-2]: PASS
-[test-3]: PASS
+[테스트 1]: 성공
+[테스트 2]: 성공
+[테스트 3]: 성공
 
-METRICS
+지표 (Metrics)
 -------
-Capability pass@1: 67%
-Capability pass@3: 100%
-Regression pass^3: 100%
+역량 pass@1: 67%
+역량 pass@3: 100%
+회귀 pass^3: 100%
 
-NOTES
+비고 (Notes)
 -----
-[Any issues, edge cases, or observations]
+[이슈, 특이사항, 관찰된 엣지 케이스 등]
 
-RECOMMENDATION
+최종 권고
 --------------
-[SHIP / NEEDS WORK / BLOCKED]
+[배포 가능 / 보완 필요 / 차단됨]
 ```
 
-## 列出评估
+## 평가 목록 (List)
 
 `/eval list`
 
-显示所有评估定义：
+정의된 모든 평가 목록을 보여줍니다:
 
 ```
-EVAL DEFINITIONS
+[평가 정의 목록]
 ================
-feature-auth      [3/5 passing] IN PROGRESS
-feature-search    [5/5 passing] READY
-feature-export    [0/4 passing] NOT STARTED
+기능-인증      [3/5 통과] 진행 중
+기능-검색      [5/5 통과] 준비 완료
+기능-내보내기  [0/4 통과] 시작 전
 ```
 
-## 参数
+## 매개변수 (Arguments)
 
-$ARGUMENTS:
+* `define <이름>` - 새로운 평가 정의 생성
+* `check <이름>` - 평가 실행 및 점검
+* `report <이름>` - 전체 보고서 작성
+* `list` - 저장된 모든 평가 보기
+* `clean` - 오래된 평가 로그 정리 (최근 10회 실행 이력만 보존)
 
-* `define <name>` - 创建新的评估定义
-* `check <name>` - 运行并检查评估
-* `report <name>` - 生成完整报告
-* `list` - 显示所有评估
-* `clean` - 删除旧的评估日志（保留最近 10 次运行）
+**핵심**: 평가(Eval)는 단순한 테스트를 넘어, 기능이 의도한 역량을 실제로 갖추었는지 객관적으로 증명하는 도구입니다. 배포 전 최종 관문으로 활용하십시오.
