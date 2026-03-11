@@ -1,75 +1,75 @@
 ---
 name: market-research
-description: Conduct market research, competitive analysis, investor due diligence, and industry intelligence with source attribution and decision-oriented summaries. Use when the user wants market sizing, competitor comparisons, fund research, technology scans, or research that informs business decisions.
+description: 출처 명시 및 의사결정 중심의 요약을 바탕으로 시장 조사, 경쟁사 분석, 투자자 실사 및 산업 인텔리전스를 수행합니다. 사용자가 시장 규모 산정, 경쟁사 비교, 펀드 조사, 기술 탐색 또는 비즈니스 의사결정에 도움이 되는 리서치를 원할 때 사용하십시오.
 origin: ECC
 ---
 
-# Market Research
+# 시장 조사 (Market Research)
 
-Produce research that supports decisions, not research theater.
+형식적인 조사가 아닌, 실제 의사결정을 뒷받침하는 리서치를 수행합니다.
 
-## When to Activate
+## 활성화 시기
 
-- researching a market, category, company, investor, or technology trend
-- building TAM/SAM/SOM estimates
-- comparing competitors or adjacent products
-- preparing investor dossiers before outreach
-- pressure-testing a thesis before building, funding, or entering a market
+- 시장, 카테고리, 회사, 투자자 또는 기술 트렌드를 조사할 때
+- TAM/SAM/SOM 추정치를 구축할 때
+- 경쟁사 또는 유사 제품을 비교할 때
+- 투자자 연락(Outreach) 전 투자자 자료(Dossier)를 준비할 때
+- 제품 개발, 투자 또는 시장 진입 전 가설을 검증(Pressure-testing)할 때
 
-## Research Standards
+## 리서치 표준
 
-1. Every important claim needs a source.
-2. Prefer recent data and call out stale data.
-3. Include contrarian evidence and downside cases.
-4. Translate findings into a decision, not just a summary.
-5. Separate fact, inference, and recommendation clearly.
+1. 모든 중요한 주장에는 출처가 필요합니다.
+2. 최신 데이터를 우선시하며, 오래된 데이터는 별도로 명시하십시오.
+3. 반대되는 증거와 최악의 경우(Downside cases)를 포함하십시오.
+4. 단순히 요약하는 데 그치지 말고, 조사 결과를 의사결정으로 연결하십시오.
+5. 사실, 추론, 권장 사항을 명확히 구분하십시오.
 
-## Common Research Modes
+## 공통 리서치 모드
 
-### Investor / Fund Diligence
-Collect:
-- fund size, stage, and typical check size
-- relevant portfolio companies
-- public thesis and recent activity
-- reasons the fund is or is not a fit
-- any obvious red flags or mismatches
+### 투자자 / 펀드 실사
+수집 항목:
+- 펀드 규모, 투자 단계, 전형적인 투자 규모(Check size)
+- 관련 포트폴리오 회사
+- 공개된 투자 가설(Thesis) 및 최근 활동
+- 해당 펀드가 적합한 혹은 적합하지 않은 이유
+- 명백한 위험 신호(Red flags) 또는 부적합 요소
 
-### Competitive Analysis
-Collect:
-- product reality, not marketing copy
-- funding and investor history if public
-- traction metrics if public
-- distribution and pricing clues
-- strengths, weaknesses, and positioning gaps
+### 경쟁사 분석
+수집 항목:
+- 마케팅 문구가 아닌 실제 제품의 실체
+- 공개된 경우 펀딩 및 투자 이력
+- 공개된 경우 성장 지표(Traction metrics)
+- 유통 및 가격 책정에 대한 단서
+- 강점, 약점 및 포지셔닝의 공백
 
-### Market Sizing
-Use:
-- top-down estimates from reports or public datasets
-- bottom-up sanity checks from realistic customer acquisition assumptions
-- explicit assumptions for every leap in logic
+### 시장 규모 산정 (Market Sizing)
+사용 원칙:
+- 보고서나 공공 데이터셋을 활용한 하향식(Top-down) 추정
+- 현실적인 고객 획득 가정을 바탕으로 한 상향식(Bottom-up) 건전성 확인
+- 논리적 비약이 있는 모든 지점에서의 명시적 가정 확인
 
-### Technology / Vendor Research
-Collect:
-- how it works
-- trade-offs and adoption signals
-- integration complexity
-- lock-in, security, compliance, and operational risk
+### 기술 / 벤더(Vendor) 조사
+수집 항목:
+- 작동 방식
+- 트레이드 오프(Trade-offs) 및 도입 신호
+- 통합 복잡성
+- 락인(Lock-in), 보안, 컴플라이언스 및 운영 리스크
 
-## Output Format
+## 출력 형식
 
-Default structure:
-1. executive summary
-2. key findings
-3. implications
-4. risks and caveats
-5. recommendation
-6. sources
+기본 구조:
+1. 요약 (Executive summary)
+2. 주요 조사 결과
+3. 시사점 (Implications)
+4. 리스크 및 주의 사항
+5. 권장 사항
+6. 출처
 
-## Quality Gate
+## 품질 검사 (Quality Gate)
 
-Before delivering:
-- all numbers are sourced or labeled as estimates
-- old data is flagged
-- the recommendation follows from the evidence
-- risks and counterarguments are included
-- the output makes a decision easier
+제출 전 확인 사항:
+- 모든 수치에 출처가 있거나 추정치로 표시되었는가
+- 오래된 데이터에 플래그 처리가 되었는가
+- 권장 사항이 증거로부터 도출되었는가
+- 리스크와 반론이 포함되었는가
+- 결과물이 의사결정을 더 쉽게 만들어주는가

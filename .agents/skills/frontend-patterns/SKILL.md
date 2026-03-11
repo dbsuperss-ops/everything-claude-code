@@ -1,29 +1,29 @@
 ---
 name: frontend-patterns
-description: Frontend development patterns for React, Next.js, state management, performance optimization, and UI best practices.
+description: React, Next.js, 상태 관리, 성능 최적화 및 UI 모범 사례를 위한 프론트엔드 개발 패턴입니다.
 origin: ECC
 ---
 
-# Frontend Development Patterns
+# 프론트엔드 개발 패턴 (Frontend Development Patterns)
 
-Modern frontend patterns for React, Next.js, and performant user interfaces.
+React, Next.js 및 고성능 사용자 인터페이스를 위한 현대적인 프론트엔드 패턴입니다.
 
-## When to Activate
+## 활성화 시기
 
-- Building React components (composition, props, rendering)
-- Managing state (useState, useReducer, Zustand, Context)
-- Implementing data fetching (SWR, React Query, server components)
-- Optimizing performance (memoization, virtualization, code splitting)
-- Working with forms (validation, controlled inputs, Zod schemas)
-- Handling client-side routing and navigation
-- Building accessible, responsive UI patterns
+- React 컴포넌트를 구축할 때 (합성, Props, 렌더링 등)
+- 상태를 관리할 때 (useState, useReducer, Zustand, Context 등)
+- 데이터 페칭(Data fetching)을 구현할 때 (SWR, React Query, 서버 컴포넌트 등)
+- 성능을 최적화할 때 (메모이제이션, 가상화, 코드 분할 등)
+- 폼(Form) 작업을 할 때 (유효성 검사, 제어 컴포넌트, Zod 스키마 등)
+- 클라이언트 사이드 라우팅 및 내비게이션을 처리할 때
+- 접근성이 좋고 반응형인 UI 패턴을 구축할 때
 
-## Component Patterns
+## 컴포넌트 패턴
 
-### Composition Over Inheritance
+### 상속보다 합성 (Composition Over Inheritance)
 
 ```typescript
-// ✅ GOOD: Component composition
+// ✅ 좋은 예: 컴포넌트 합성
 interface CardProps {
   children: React.ReactNode
   variant?: 'default' | 'outlined'
@@ -41,14 +41,14 @@ export function CardBody({ children }: { children: React.ReactNode }) {
   return <div className="card-body">{children}</div>
 }
 
-// Usage
+// 사용 예시
 <Card>
-  <CardHeader>Title</CardHeader>
-  <CardBody>Content</CardBody>
+  <CardHeader>제목</CardHeader>
+  <CardBody>콘텐츠 내용</CardBody>
 </Card>
 ```
 
-### Compound Components
+### 복합 컴포넌트 (Compound Components)
 
 ```typescript
 interface TabsContextValue {
@@ -77,7 +77,7 @@ export function TabList({ children }: { children: React.ReactNode }) {
 
 export function Tab({ id, children }: { id: string, children: React.ReactNode }) {
   const context = useContext(TabsContext)
-  if (!context) throw new Error('Tab must be used within Tabs')
+  if (!context) throw new Error('Tab은 Tabs 내부에서 사용되어야 합니다')
 
   return (
     <button
@@ -89,16 +89,16 @@ export function Tab({ id, children }: { id: string, children: React.ReactNode })
   )
 }
 
-// Usage
+// 사용 예시
 <Tabs defaultTab="overview">
   <TabList>
-    <Tab id="overview">Overview</Tab>
-    <Tab id="details">Details</Tab>
+    <Tab id="overview">개요</Tab>
+    <Tab id="details">상세 내용</Tab>
   </TabList>
 </Tabs>
 ```
 
-### Render Props Pattern
+### 렌더 프롭(Render Props) 패턴
 
 ```typescript
 interface DataLoaderProps<T> {
@@ -122,7 +122,7 @@ export function DataLoader<T>({ url, children }: DataLoaderProps<T>) {
   return <>{children(data, loading, error)}</>
 }
 
-// Usage
+// 사용 예시
 <DataLoader<Market[]> url="/api/markets">
   {(markets, loading, error) => {
     if (loading) return <Spinner />
@@ -132,9 +132,9 @@ export function DataLoader<T>({ url, children }: DataLoaderProps<T>) {
 </DataLoader>
 ```
 
-## Custom Hooks Patterns
+## 커스텀 후크(Custom Hooks) 패턴
 
-### State Management Hook
+### 상태 관리 후크
 
 ```typescript
 export function useToggle(initialValue = false): [boolean, () => void] {
@@ -147,11 +147,11 @@ export function useToggle(initialValue = false): [boolean, () => void] {
   return [value, toggle]
 }
 
-// Usage
+// 사용 예시
 const [isOpen, toggleOpen] = useToggle()
 ```
 
-### Async Data Fetching Hook
+### 비동기 데이터 페칭 후크
 
 ```typescript
 interface UseQueryOptions<T> {
@@ -195,18 +195,18 @@ export function useQuery<T>(
   return { data, error, loading, refetch }
 }
 
-// Usage
+// 사용 예시
 const { data: markets, loading, error, refetch } = useQuery(
   'markets',
   () => fetch('/api/markets').then(r => r.json()),
   {
-    onSuccess: data => console.log('Fetched', data.length, 'markets'),
-    onError: err => console.error('Failed:', err)
+    onSuccess: data => console.log(data.length, '개의 마켓 정보를 가져왔습니다'),
+    onError: err => console.error('가져오기 실패:', err)
   }
 )
 ```
 
-### Debounce Hook
+### 디바운스(Debounce) 후크
 
 ```typescript
 export function useDebounce<T>(value: T, delay: number): T {
@@ -223,7 +223,7 @@ export function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue
 }
 
-// Usage
+// 사용 예시
 const [searchQuery, setSearchQuery] = useState('')
 const debouncedQuery = useDebounce(searchQuery, 500)
 
@@ -234,9 +234,9 @@ useEffect(() => {
 }, [debouncedQuery])
 ```
 
-## State Management Patterns
+## 상태 관리 패턴
 
-### Context + Reducer Pattern
+### Context + Reducer 패턴
 
 ```typescript
 interface State {
@@ -284,27 +284,27 @@ export function MarketProvider({ children }: { children: React.ReactNode }) {
 
 export function useMarkets() {
   const context = useContext(MarketContext)
-  if (!context) throw new Error('useMarkets must be used within MarketProvider')
+  if (!context) throw new Error('useMarkets는 MarketProvider 내부에서 사용되어야 합니다')
   return context
 }
 ```
 
-## Performance Optimization
+## 성능 최적화
 
-### Memoization
+### 메모이제이션 (Memoization)
 
 ```typescript
-// ✅ useMemo for expensive computations
+// ✅ 계산 비용이 높은 작업을 위한 useMemo
 const sortedMarkets = useMemo(() => {
   return markets.sort((a, b) => b.volume - a.volume)
 }, [markets])
 
-// ✅ useCallback for functions passed to children
+// ✅ 자식 컴포넌트에 전달되는 함수를 위한 useCallback
 const handleSearch = useCallback((query: string) => {
   setSearchQuery(query)
 }, [])
 
-// ✅ React.memo for pure components
+// ✅ 순수 컴포넌트를 위한 React.memo
 export const MarketCard = React.memo<MarketCardProps>(({ market }) => {
   return (
     <div className="market-card">
@@ -315,12 +315,12 @@ export const MarketCard = React.memo<MarketCardProps>(({ market }) => {
 })
 ```
 
-### Code Splitting & Lazy Loading
+### 코드 분할 & 지연 로딩 (Lazy Loading)
 
 ```typescript
 import { lazy, Suspense } from 'react'
 
-// ✅ Lazy load heavy components
+// ✅ 무거운 컴포넌트 지연 로딩
 const HeavyChart = lazy(() => import('./HeavyChart'))
 const ThreeJsBackground = lazy(() => import('./ThreeJsBackground'))
 
@@ -339,7 +339,7 @@ export function Dashboard() {
 }
 ```
 
-### Virtualization for Long Lists
+### 긴 목록을 위한 가상화 (Virtualization)
 
 ```typescript
 import { useVirtualizer } from '@tanstack/react-virtual'
@@ -350,8 +350,8 @@ export function VirtualMarketList({ markets }: { markets: Market[] }) {
   const virtualizer = useVirtualizer({
     count: markets.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 100,  // Estimated row height
-    overscan: 5  // Extra items to render
+    estimateSize: () => 100,  // 예상 행 높이
+    overscan: 5  // 미리 렌더링할 아이템 개수
   })
 
   return (
@@ -383,9 +383,9 @@ export function VirtualMarketList({ markets }: { markets: Market[] }) {
 }
 ```
 
-## Form Handling Patterns
+## 폼 처리 패턴
 
-### Controlled Form with Validation
+### 유효성 검사가 포함된 제어 폼 (Controlled Form)
 
 ```typescript
 interface FormData {
@@ -413,17 +413,17 @@ export function CreateMarketForm() {
     const newErrors: FormErrors = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required'
+      newErrors.name = '이름은 필수 항목입니다'
     } else if (formData.name.length > 200) {
-      newErrors.name = 'Name must be under 200 characters'
+      newErrors.name = '이름은 200자 이내여야 합니다'
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'Description is required'
+      newErrors.description = '설명은 필수 항목입니다'
     }
 
     if (!formData.endDate) {
-      newErrors.endDate = 'End date is required'
+      newErrors.endDate = '종료일은 필수 항목입니다'
     }
 
     setErrors(newErrors)
@@ -437,9 +437,9 @@ export function CreateMarketForm() {
 
     try {
       await createMarket(formData)
-      // Success handling
+      // 성공 처리
     } catch (error) {
-      // Error handling
+      // 에러 처리
     }
   }
 
@@ -448,19 +448,19 @@ export function CreateMarketForm() {
       <input
         value={formData.name}
         onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-        placeholder="Market name"
+        placeholder="마켓 이름"
       />
       {errors.name && <span className="error">{errors.name}</span>}
 
-      {/* Other fields */}
+      {/* 기타 필드들 */}
 
-      <button type="submit">Create Market</button>
+      <button type="submit">마켓 생성</button>
     </form>
   )
 }
 ```
 
-## Error Boundary Pattern
+## 에러 바운더리(Error Boundary) 패턴
 
 ```typescript
 interface ErrorBoundaryState {
@@ -482,17 +482,17 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error boundary caught:', error, errorInfo)
+    console.error('에러 바운더리에 포착됨:', error, errorInfo)
   }
 
   render() {
     if (this.state.hasError) {
       return (
         <div className="error-fallback">
-          <h2>Something went wrong</h2>
+          <h2>문제가 발생했습니다</h2>
           <p>{this.state.error?.message}</p>
           <button onClick={() => this.setState({ hasError: false })}>
-            Try again
+            다시 시도
           </button>
         </div>
       )
@@ -502,20 +502,20 @@ export class ErrorBoundary extends React.Component<
   }
 }
 
-// Usage
+// 사용 예시
 <ErrorBoundary>
   <App />
 </ErrorBoundary>
 ```
 
-## Animation Patterns
+## 애니메이션 패턴
 
-### Framer Motion Animations
+### Framer Motion 애니메이션
 
 ```typescript
 import { motion, AnimatePresence } from 'framer-motion'
 
-// ✅ List animations
+// ✅ 리스트 애니메이션
 export function AnimatedMarketList({ markets }: { markets: Market[] }) {
   return (
     <AnimatePresence>
@@ -534,7 +534,7 @@ export function AnimatedMarketList({ markets }: { markets: Market[] }) {
   )
 }
 
-// ✅ Modal animations
+// ✅ 모달 애니메이션
 export function Modal({ isOpen, onClose, children }: ModalProps) {
   return (
     <AnimatePresence>
@@ -562,9 +562,9 @@ export function Modal({ isOpen, onClose, children }: ModalProps) {
 }
 ```
 
-## Accessibility Patterns
+## 접근성 패턴
 
-### Keyboard Navigation
+### 키보드 내비게이션
 
 ```typescript
 export function Dropdown({ options, onSelect }: DropdownProps) {
@@ -599,13 +599,13 @@ export function Dropdown({ options, onSelect }: DropdownProps) {
       aria-haspopup="listbox"
       onKeyDown={handleKeyDown}
     >
-      {/* Dropdown implementation */}
+      {/* 드롭다운 구현 내용 */}
     </div>
   )
 }
 ```
 
-### Focus Management
+### 포커스 관리 (Focus Management)
 
 ```typescript
 export function Modal({ isOpen, onClose, children }: ModalProps) {
@@ -614,13 +614,13 @@ export function Modal({ isOpen, onClose, children }: ModalProps) {
 
   useEffect(() => {
     if (isOpen) {
-      // Save currently focused element
+      // 현재 포커스된 엘리먼트 저장
       previousFocusRef.current = document.activeElement as HTMLElement
 
-      // Focus modal
+      // 모달로 포커스 이동
       modalRef.current?.focus()
     } else {
-      // Restore focus when closing
+      // 닫힐 때 이전 포커스 복구
       previousFocusRef.current?.focus()
     }
   }, [isOpen])
@@ -639,4 +639,4 @@ export function Modal({ isOpen, onClose, children }: ModalProps) {
 }
 ```
 
-**Remember**: Modern frontend patterns enable maintainable, performant user interfaces. Choose patterns that fit your project complexity.
+**기억해 두세요**: 현대적인 프론트엔드 패턴은 유지보수가 쉽고 성능이 뛰어난 사용자 인터페이스를 가능하게 합니다. 프로젝트의 복잡도에 맞는 적절한 패턴을 선택하십시오.
