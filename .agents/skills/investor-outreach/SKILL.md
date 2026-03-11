@@ -1,76 +1,76 @@
 ---
 name: investor-outreach
-description: Draft cold emails, warm intro blurbs, follow-ups, update emails, and investor communications for fundraising. Use when the user wants outreach to angels, VCs, strategic investors, or accelerators and needs concise, personalized, investor-facing messaging.
+description: 콜드 메일, 지인 소개용 문구(Warm intro blurbs), 후속 연락(Follow-ups), 업데이트 메일 및 투자 유치를 위한 투자자 커뮤니케이션 초안을 작성합니다. 사용자가 엔젤 투자자, VC, 전략적 투자자 또는 액셀러레이터를 대상으로 간결하고 개인화된 맞춤형 메시지를 보내고 싶을 때 사용하십시오.
 origin: ECC
 ---
 
-# Investor Outreach
+# 투자자 아웃리치 (Investor Outreach)
 
-Write investor communication that is short, personalized, and easy to act on.
+짧고 개인화되어 있으며, 행동으로 옮기기 쉬운 투자자 커뮤니케이션을 작성합니다.
 
-## When to Activate
+## 활성화 시기
 
-- writing a cold email to an investor
-- drafting a warm intro request
-- sending follow-ups after a meeting or no response
-- writing investor updates during a process
-- tailoring outreach based on fund thesis or partner fit
+- 투자자에게 콜드 메일을 보낼 때
+- 지인 소개 요청 문구를 작성할 때
+- 미팅 후 또는 무응답 시 후속 연락을 보낼 때
+- 진행 과정 중 투자자 업데이트 메일을 작성할 때
+- 펀드의 투자 테마나 파트너의 성향에 맞춰 아웃리치 내용을 조정할 때
 
-## Core Rules
+## 핵심 규칙
 
-1. Personalize every outbound message.
-2. Keep the ask low-friction.
-3. Use proof, not adjectives.
-4. Stay concise.
-5. Never send generic copy that could go to any investor.
+1. 모든 발신 메시지를 개인화(Personalize)하십시오.
+2. 요청 사항(the ask)의 부담을 낮추십시오.
+3. 형용사 대신 증거(Proof)를 사용하십시오.
+4. 간결함을 유지하십시오.
+5. 어떤 투자자에게나 보낼 수 있는 평이한 문구는 절대 보내지 마십시오.
 
-## Cold Email Structure
+## 콜드 메일 구조
 
-1. subject line: short and specific
-2. opener: why this investor specifically
-3. pitch: what the company does, why now, what proof matters
-4. ask: one concrete next step
-5. sign-off: name, role, one credibility anchor if needed
+1. 제목: 짧고 구체적으로 작성하십시오.
+2. 도입부: 왜 하필 이 투자자인지 명시하십시오.
+3. 피칭: 회사가 무엇을 하는지, 왜 지금인지, 어떤 성과 지표가 중요한지 설명하십시오.
+4. 요청 사항: 구체적인 다음 단계 한 가지를 제안하십시오.
+5. 맺음말: 이름, 역할, 필요한 경우 신뢰도를 높여줄 요소를 포함하십시오.
 
-## Personalization Sources
+## 개인화 소스 (Personalization Sources)
 
-Reference one or more of:
-- relevant portfolio companies
-- a public thesis, talk, post, or article
-- a mutual connection
-- a clear market or product fit with the investor's focus
+다음 중 하나 이상을 언급하십시오:
+- 관련 있는 포트폴리오 회사
+- 공개된 투자 테마, 강연, 게시물 또는 아티클
+- 공통의 지인
+- 투자자의 관심 분야와 일치하는 명확한 시장 또는 제품 적합성
 
-If that context is missing, ask for it or state that the draft is a template awaiting personalization.
+해당 정보가 없는 경우, 사용자에게 요청하거나 현재 초안이 개인화가 필요한 템플릿 상태임을 알리십시오.
 
-## Follow-Up Cadence
+## 후속 연락 주기 (Follow-Up Cadence)
 
-Default:
-- day 0: initial outbound
-- day 4-5: short follow-up with one new data point
-- day 10-12: final follow-up with a clean close
+기본 설정:
+- 0일차: 초기 발신
+- 4~5일차: 새로운 데이터 포인트 하나를 포함한 짧은 후속 연락
+- 10~12일차: 깔끔하게 마무리하는 마지막 후속 연락
 
-Do not keep nudging after that unless the user wants a longer sequence.
+사용자가 더 긴 시퀀스를 원하지 않는 한, 그 이후에는 더 이상 독촉하지 마십시오.
 
-## Warm Intro Requests
+## 지인 소개 요청 (Warm Intro Requests)
 
-Make life easy for the connector:
-- explain why the intro is a fit
-- include a forwardable blurb
-- keep the forwardable blurb under 100 words
+소개해주는 사람이 편하도록 만드십시오:
+- 왜 이 소개가 적합한지 설명하십시오.
+- 그대로 전달할 수 있는 문구(Forwardable blurb)를 포함하십시오.
+- 전달용 문구는 100단어 이내로 유지하십시오.
 
-## Post-Meeting Updates
+## 미팅 후 업데이트
 
-Include:
-- the specific thing discussed
-- the answer or update promised
-- one new proof point if available
-- the next step
+포함 항목:
+- 논의되었던 구체적인 내용
+- 약속했던 답변 또는 업데이트 사항
+- 가능한 경우 새로운 성과 지표 하나
+- 다음 단계
 
-## Quality Gate
+## 품질 검사 (Quality Gate)
 
-Before delivering:
-- message is personalized
-- the ask is explicit
-- there is no fluff or begging language
-- the proof point is concrete
-- word count stays tight
+제출 전 확인 사항:
+- 메시지가 개인화되었는가
+- 요청 사항이 명시적으로 드러나는가
+- 군더더기나 구걸하는 듯한 표현이 없는가
+- 성과 지표가 구체적인가
+- 전체 분량이 간결하게 유지되는가

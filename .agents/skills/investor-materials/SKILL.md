@@ -1,96 +1,96 @@
 ---
 name: investor-materials
-description: Create and update pitch decks, one-pagers, investor memos, accelerator applications, financial models, and fundraising materials. Use when the user needs investor-facing documents, projections, use-of-funds tables, milestone plans, or materials that must stay internally consistent across multiple fundraising assets.
+description: 피치 덱, 요약서(One-pagers), 투자자 메모, 액셀러레이터 신청서, 재무 모델 및 펀드레이징 자료를 생성하고 업데이트합니다. 사용자가 투자자용 문서, 추정치, 자금 사용 계획표, 마일스톤 계획 또는 여러 투자 유치 자산 간에 내부적 일관성을 유지해야 하는 자료가 필요할 때 사용하십시오.
 origin: ECC
 ---
 
-# Investor Materials
+# 투자자 자료 (Investor Materials)
 
-Build investor-facing materials that are consistent, credible, and easy to defend.
+일관성 있고 신뢰할 수 있으며, 방어 가능한 투자자용 자료를 구축합니다.
 
-## When to Activate
+## 활성화 시기
 
-- creating or revising a pitch deck
-- writing an investor memo or one-pager
-- building a financial model, milestone plan, or use-of-funds table
-- answering accelerator or incubator application questions
-- aligning multiple fundraising docs around one source of truth
+- 피치 덱을 생성하거나 수정할 때
+- 투자자 메모나 요약서(One-pager)를 작성할 때
+- 재무 모델, 마일스톤 계획 또는 자금 사용 계획표를 작성할 때
+- 액셀러레이터 또는 인큐베이터 신청 질문에 답변할 때
+- 여러 투자 유치 문서를 하나의 '단일 진실 공급원(Source of Truth)'에 맞춰 조정할 때
 
-## Golden Rule
+## 황금률
 
-All investor materials must agree with each other.
+모든 투자자 자료는 서로 일치해야 합니다.
 
-Create or confirm a single source of truth before writing:
-- traction metrics
-- pricing and revenue assumptions
-- raise size and instrument
-- use of funds
-- team bios and titles
-- milestones and timelines
+작성 전 다음 항목들에 대해 단일 진실 공급원을 생성하거나 확인하십시오:
+- 지표(Traction metrics)
+- 가격 책정 및 매출 가정(Assumptions)
+- 투자 유치 규모 및 방식(Instrument)
+- 자금 사용 계획(Use of funds)
+- 팀원 약력 및 직함
+- 마일스톤 및 타임라인
 
-If conflicting numbers appear, stop and resolve them before drafting.
+서로 상충하는 숫자가 발견되면, 초안을 작성하기 전에 중단하고 이를 먼저 해결하십시오.
 
-## Core Workflow
+## 핵심 워크플로우
 
-1. inventory the canonical facts
-2. identify missing assumptions
-3. choose the asset type
-4. draft the asset with explicit logic
-5. cross-check every number against the source of truth
+1. 공식적인 사실(Canonical facts) 목록을 작성합니다.
+2. 누락된 가정(Assumptions)을 식별합니다.
+3. 자산 유형을 선택합니다.
+4. 명확한 로직을 바탕으로 자산 초안을 작성합니다.
+5. 모든 숫자를 단일 진실 공급원과 대조하여 교차 검증합니다.
 
-## Asset Guidance
+## 자산별 가이드라인
 
-### Pitch Deck
-Recommended flow:
-1. company + wedge
-2. problem
-3. solution
-4. product / demo
-5. market
-6. business model
-7. traction
-8. team
-9. competition / differentiation
-10. ask
-11. use of funds / milestones
-12. appendix
+### 피치 덱 (Pitch Deck)
+권장 흐름:
+1. 회사 소개 + 핵심 공략 지점(Wedge)
+2. 문제 정의 (Problem)
+3. 해결책 (Solution)
+4. 제품 / 데모
+5. 시장성 (Market)
+6. 비즈니스 모델
+7. 지표 / 성과 (Traction)
+8. 팀 구성
+9. 경쟁 / 차별화 요소
+10. 요청 사항 (Ask)
+11. 자금 사용 계획 / 마일스톤
+12. 부록 (Appendix)
 
-If the user wants a web-native deck, pair this skill with `frontend-slides`.
+사용자가 웹 네이티브 방식의 덱을 원하는 경우, 이 스킬을 `frontend-slides` 스킬과 함께 사용하십시오.
 
-### One-Pager / Memo
-- state what the company does in one clean sentence
-- show why now
-- include traction and proof points early
-- make the ask precise
-- keep claims easy to verify
+### 요약서(One-Pager) / 메모
+- 회사가 무엇을 하는지 한 문장으로 깔끔하게 명시하십시오.
+- '왜 지금인가(Why now)'를 보여주십시오.
+- 지표와 증거가 되는 지점(Proof points)을 앞부분에 포함하십시오.
+- 요청 사항을 정교하게 작성하십시오.
+- 주장을 쉽게 검증할 수 있도록 유지하십시오.
 
-### Financial Model
-Include:
-- explicit assumptions
-- bear / base / bull cases when useful
-- clean layer-by-layer revenue logic
-- milestone-linked spending
-- sensitivity analysis where the decision hinges on assumptions
+### 재무 모델
+포함 항목:
+- 명시적인 가정(Assumptions)
+- 유용한 경우 비관(Bear) / 기본(Base) / 낙관(Bull) 케이스 설정
+- 층층이 쌓인(Layer-by-layer) 깔끔한 수익 로직
+- 마일스톤과 연계된 비용 지출
+- 가정에 따라 결정이 크게 달라지는 부분에 대한 민감도 분석
 
-### Accelerator Applications
-- answer the exact question asked
-- prioritize traction, insight, and team advantage
-- avoid puffery
-- keep internal metrics consistent with the deck and model
+### 액셀러레이터 신청서
+- 질문에 정확히 답변하십시오.
+- 지표, 통찰력 및 팀의 강점을 우선순위에 두십시오.
+- 과장된 표현을 피하십시오.
+- 내부 지표를 덱 및 재무 모델과 일관되게 유지하십시오.
 
-## Red Flags to Avoid
+## 피해야 할 위험 신호 (Red Flags)
 
-- unverifiable claims
-- fuzzy market sizing without assumptions
-- inconsistent team roles or titles
-- revenue math that does not sum cleanly
-- inflated certainty where assumptions are fragile
+- 검증 불가능한 주장
+- 가정 없는 모호한 시장 규모 산정
+- 일관성 없는 팀 역할 또는 직함
+- 합계가 맞지 않는 수익 계산
+- 근거가 약한 가정을 바탕으로 한 지나친 확신
 
-## Quality Gate
+## 품질 검사 (Quality Gate)
 
-Before delivering:
-- every number matches the current source of truth
-- use of funds and revenue layers sum correctly
-- assumptions are visible, not buried
-- the story is clear without hype language
-- the final asset is defensible in a partner meeting
+제출 전 확인 사항:
+- 모든 숫자가 현재의 단일 진실 공급원과 일치하는가
+- 자금 사용 계획과 수익 계층의 합계가 정확한가
+- 가정(Assumptions)이 숨겨져 있지 않고 명확하게 보이는가
+- 과장된 어조 없이 스토리가 명확하게 전달되는가
+- 최종 결과물이 파트너 미팅에서 방어 가능한 수준인가
