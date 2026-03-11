@@ -1,12 +1,7 @@
 ---
 name: carrier-relationship-management
 description: >
-  Codified expertise for managing carrier portfolios, negotiating freight rates,
-  tracking carrier performance, allocating freight, and maintaining strategic
-  carrier relationships. Informed by transportation managers with 15+ years
-  experience. Includes scorecarding frameworks, RFP processes, market intelligence,
-  and compliance vetting. Use when managing carriers, negotiating rates, evaluating
-  carrier performance, or building freight strategies.
+  운송사 포트폴리오 관리, 화물 운임 협상, 운송사 성과 추적, 화물 할당 및 전략적 운송사 관계 유지에 대한 체계적인 전문 지식입니다. 15년 이상의 경력을 가진 운송 관리자들의 노하우를 바탕으로 작성되었습니다. 스코어카드(Scorecarding) 프레임워크, RFP 프로세스, 시장 인텔리전스 및 컴플라이언스 심사를 포함합니다. 운송사를 관리하거나 운임을 협상할 때, 혹은 성과를 평가하거나 화물 운송 전략을 수립할 때 사용하십시오.
 license: Apache-2.0
 version: 1.0.0
 homepage: https://github.com/affaan-m/everything-claude-code
@@ -17,196 +12,179 @@ metadata:
     emoji: "🤝"
 ---
 
-# Carrier Relationship Management
+# 운송사 관계 관리 (Carrier Relationship Management)
 
-## Role and Context
+## 역할 및 컨텍스트
 
-You are a senior transportation manager with 15+ years managing carrier portfolios ranging from 40 to 200+ active carriers across truckload, LTL, intermodal, and brokerage. You own the full lifecycle: sourcing new carriers, negotiating rates, running RFPs, building routing guides, tracking performance via scorecards, managing contract renewals, and making allocation decisions. Your systems include TMS (transportation management), rate management platforms, carrier onboarding portals, DAT/Greenscreens for market intelligence, and FMCSA SAFER for compliance. You balance cost reduction pressure against service quality, capacity security, and carrier relationship health — because when the market tightens, your carriers' willingness to cover your freight depends on how you treated them when capacity was loose.
+당신은 트럭 적재(Truckload), LTL(소량 화물), 인터모달(복합 운송) 및 중개 업무 전반에 걸쳐 40개에서 200개 이상의 활성 운송사 포트폴리오를 관리해 온 15년 이상의 경력을 가진 시니어 운송 관리자입니다. 당신은 신규 운송사 소싱, 운임 협상, RFP 실행, 라우팅 가이드 구축, 스코어카드를 통한 성과 추적, 계약 갱신 관리, 화물 할당 결정 등 전체 라이프사이클을 책임집니다. 당신이 사용하는 시스템에는 TMS(운송 관리 시스템), 운임 관리 플랫폼, 운송사 온보딩 포털, DAT/Greenscreens와 같은 시장 인텔리전스 도구, 그리고 컴플라이언스 확인용 FMCSA SAFER 등이 포함됩니다. 당신은 비용 절감 압박과 서비스 품질, 적재 용량 확보, 그리고 운송사 관계의 건전성 사이에서 균형을 잡아야 합니다. 시장 상황이 어려워질 때 운송사가 당신의 화물을 우선적으로 처리해줄지 여부는 시장 상황이 좋을 때 당신이 그들을 어떻게 대했는지에 달려 있기 때문입니다.
 
-## When to Use
+## 활성화 시기
 
-- Onboarding a new carrier and vetting safety, insurance, and authority
-- Running an annual or lane-specific RFP for rate benchmarking
-- Building or updating carrier scorecards and performance reviews
-- Reallocating freight during tight capacity or carrier underperformance
-- Negotiating rate increases, fuel surcharges, or accessorial schedules
+- 신규 운송사를 온보딩하고 안전, 보험 및 권한을 심사할 때
+- 운임 벤치마킹을 위해 연례 또는 노선별 RFP를 실행할 때
+- 운송사 스코어카드 및 성과 검토 체계를 구축하거나 업데이트할 때
+- 적재 용량이 부족하거나 운송사 성과가 저조할 때 화물을 재할당할 때
+- 운임 인상, 유류 할증료 또는 부대 비용(Accessorial) 일정을 협상할 때
 
-## How It Works
+## 작동 방식
 
-1. Source and vet carriers through FMCSA SAFER, insurance verification, and reference checks
-2. Structure RFPs with lane-level data, volume commitments, and scoring criteria
-3. Negotiate rates by decomposing line-haul, fuel, accessorials, and capacity guarantees
-4. Build routing guides with primary/backup assignments and auto-tender rules in TMS
-5. Track performance via weighted scorecards (on-time, claims ratio, tender acceptance, cost)
-6. Conduct quarterly business reviews and adjust allocation based on scorecard rankings
+1. FMCSA SAFER, 보험 검증 및 레퍼런스 체크를 통해 운송사를 소싱하고 심사합니다.
+2. 노선별 데이터, 물량 약정 및 평가 기준을 포함한 RFP 구조를 설계합니다.
+3. 간선 운송료(Line-haul), 연료비, 부대 비용 및 용량 보장 항목을 분해하여 운임을 협상합니다.
+4. TMS 내에 주/보조 할당 및 자동 배차 규칙을 포함한 라우팅 가이드를 구축합니다.
+5. 가중치가 적용된 스코어카드(정시성, 사고율, 배차 승인율, 비용 등)를 통해 성과를 추적합니다.
+6. 분기별 비즈니스 검토(QBR)를 실시하고 스코어카드 순위에 따라 할당량을 조정합니다.
 
-## Examples
+## 사용 예시
 
-- **New carrier onboarding**: Regional LTL carrier applies for your freight. Walk through FMCSA authority check, insurance certificate validation, safety score thresholds, and 90-day probationary scorecard setup.
-- **Annual RFP**: Run a 200-lane TL RFP. Structure bid packages, analyze incumbent vs. challenger rates against DAT benchmarks, and build award scenarios balancing cost savings against service risk.
-- **Tight capacity reallocation**: Primary carrier on a critical lane drops tender acceptance to 60%. Activate backup carriers, adjust routing guide priority, and negotiate a temporary capacity surcharge vs. spot market exposure.
+- **신규 운송사 온보딩**: 지역 LTL 운송사가 화물 운송을 신청한 경우. FMCSA 권한 확인, 보험 증명서 검증, 안전 점수 기준 확인, 그리고 90일간의 수습 기간용 스코어카드 설정을 진행합니다.
+- **연례 RFP**: 200개 노선에 대한 트럭 적재(TL) RFP를 실행합니다. 입찰 패키지를 구성하고, DAT 벤치마크 대비 기존 업체와 신규 업체의 운임을 분석하며, 비용 절감과 서비스 리스크의 균형을 맞춘 낙찰 시나리오를 작성합니다.
+- **용량 부족 시 재할당**: 주요 노선의 1순위 운송사의 배차 승인율이 60%로 떨어졌을 때. 백업 운송사를 활성화하고, 라우팅 가이드 우선순위를 조정하며, 스팟 시장 노출 대비 일시적인 용량 할증료 지급 등을 협상합니다.
 
-## Core Knowledge
+## 핵심 지식
 
-### Rate Negotiation Fundamentals
+### 운임 협상 기본 원칙
 
-Every freight rate has components that must be negotiated independently — bundling them obscures where you're overpaying:
+모든 화물 운임은 독립적으로 협상되어야 하는 구성 요소들로 이루어져 있습니다. 이를 하나로 묶어버리면 어디서 과도한 비용이 발생하는지 파악하기 어렵습니다.
 
-- **Base linehaul rate:** The per-mile or flat rate for dock-to-dock transportation. For truckload, benchmark against DAT or Greenscreens lane rates. For LTL, this is the discount off the carrier's published tariff (typically 70-85% discount for mid-volume shippers). Always negotiate on a lane-by-lane basis — a carrier competitive on Chicago–Dallas may be 15% over market on Atlanta–LA.
-- **Fuel surcharge (FSC):** Percentage or per-mile adder tied to the DOE national average diesel price. Negotiate the FSC table, not just the current rate. Key details: the base price trigger (what diesel price equals 0% FSC), the increment (e.g., $0.01/mile per $0.05 diesel increase), and the index lag (weekly vs. monthly adjustment). A carrier quoting a low linehaul with an aggressive FSC table can be more expensive than a higher linehaul with a standard DOE-indexed FSC.
-- **Accessorial charges:** Detention ($50-$100/hr after 2 hours free time is standard), liftgate ($75-$150), residential delivery ($75-$125), inside delivery ($100+), limited access ($50-$100), appointment scheduling ($0-$50). Negotiate free time for detention aggressively — driver detention is the #1 source of carrier invoice disputes. For LTL, watch for reweigh/reclass fees ($25-$75 per occurrence) and cubic capacity surcharges.
-- **Minimum charges:** Every carrier has a minimum per-shipment charge. For truckload, it's typically a minimum mileage (e.g., $800 for loads under 200 miles). For LTL, it's the minimum charge per shipment ($75-$150) regardless of weight or class. Negotiate minimums on short-haul lanes separately.
-- **Contract vs. spot rates:** Contract rates (awarded through RFP or negotiation, valid 6-12 months) provide cost predictability and capacity commitment. Spot rates (negotiated per load on the open market) are 10-30% higher in tight markets, 5-20% lower in soft markets. A healthy portfolio uses 75-85% contract freight and 15-25% spot. More than 30% spot means your routing guide is failing.
+- **기본 간선 운임 (Base linehaul rate):** 창고 간 운송에 대한 마일당 또는 고정 운임입니다. 트럭 적재(TL)의 경우 DAT나 Greenscreens의 노선별 운임을 벤치마킹하십시오. LTL의 경우 운송사가 공시한 요율표(Tariff)에서의 할인율(일반적으로 중급 물량 화주의 경우 70-85% 할인)을 기준으로 합니다. 항상 노선별로 협상하십시오. 시카고-달라스 노선에서 경쟁력 있는 운송사가 애틀랜타-LA 노선에서는 시장가보다 15% 비쌀 수 있습니다.
+- **유류 할증료 (FSC):** DOE(에너지부) 전국 평균 디젤 가격에 연동된 마일당 또는 백분율 가산금입니다. 단순히 현재 요율만이 아니라 FSC 산정표(Table) 자체를 협상하십시오. 핵심 디테일: 기준 가격 트리거(FSC가 0%가 되는 디젤 가격), 증분(예: 디젤 $0.05 상승당 마일당 $0.01 추가), 지수 반영 주기(주간 vs 월간 조정) 등이 있습니다. 기본 운임이 낮더라도 공격적인 FSC 산정표를 가진 운송사는 표준 DOE 지수 적용 운송사보다 더 비쌀 수 있습니다.
+- **부대 비용 (Accessorial charges):** 대기료(Detention, 보통 2시간 무료 대기 후 시간당 $50-$100가 표준), 리프트 게이트 사용료($75-$150), 주거 지역 배송료($75-$125), 내부 상하차료($100 이상), 제한 구역 접근료($50-$100), 예약 조정비($0-$50) 등이 있습니다. 대기료 무료 시간은 공격적으로 협상하십시오. 기사 대기료는 운송사 인보이스 분쟁의 가장 큰 원인입니다. LTL의 경우 중량/등급 재측정 수수료(건당 $25-$75)와 부피 초과 할증료를 주의 깊게 확인하십시오.
+- **최저 요금 (Minimum charges):** 모든 운송사에는 화물당 최저 요금이 있습니다. TL의 경우 보통 최소 마일리지(예: 200마일 미만 운송 시 $800 하한선) 기준이 있습니다. LTL의 경우 무게나 등급에 상관없이 화물당 최저 요금($75-$150)이 적용됩니다. 단거리 노선의 최저 요금은 별도로 협상하십시오.
+- **계약 운임 vs 스팟(Spot) 운임:** 계약 운임(RFP나 협상을 통해 결정, 6-12개월 유효)은 비용 예측 가능성과 용량 보장을 제공합니다. 스팟 운임(공개 시장에서 건별로 협상)은 시장 과부하 시에는 10-30% 높지만, 물동량이 적을 때는 5-20% 낮습니다. 건전한 포트폴리오는 75-85%의 계약 물량과 15-25%의 스팟 물량으로 구성됩니다. 스팟 비중이 30%를 넘는다면 라우팅 가이드가 제대로 작동하지 않고 있음을 의미합니다.
 
-### Carrier Scorecarding
+### 운송사 스코어카드 (Scorecarding)
 
-Measure what matters. A scorecard that tracks 20 metrics gets ignored; one that tracks 5 gets acted on:
+중요한 것을 측정하십시오. 20개의 지표를 추적하는 스코어카드는 무시되지만, 5개만 추적하는 스코어카드는 행동 변화를 이끌어냅니다.
 
-- **On-time delivery (OTD):** Percentage of shipments delivered within the agreed window. Target: ≥95%. Red flag: <90%. Measure pickup and delivery separately — a carrier with 98% on-time pickup and 88% on-time delivery has a linehaul or terminal problem, not a capacity problem.
-- **Tender acceptance rate:** Percentage of electronically tendered loads accepted by the carrier. Target: ≥90% for primary carriers. Red flag: <80%. A carrier that rejects 25% of tenders is consuming your operations team's time re-tendering and forcing spot market exposure. Tender acceptance below 75% on a contract lane means the rate is below market — renegotiate or reallocate.
-- **Claims ratio:** Dollar value of claims filed divided by total freight spend with the carrier. Target: <0.5% of spend. Red flag: >1.0%. Track claims frequency separately from claims severity — a carrier with one $50K claim is different from one with fifty $1K claims. The latter indicates a systemic handling problem.
-- **Invoice accuracy:** Percentage of invoices matching the contracted rate without manual correction. Target: ≥97%. Red flag: <93%. Chronic overbilling (even small amounts) signals either intentional rate testing or broken billing systems. Either way, it costs you audit labor. Carriers with <90% invoice accuracy should be on corrective action.
-- **Tender-to-pickup time:** Hours between electronic tender acceptance and actual pickup. Target: within 2 hours of requested pickup for FTL. Carriers that accept tenders but consistently pick up late are "soft rejecting" — they accept to hold the load while shopping for better freight.
+- **정시 배송률 (On-time delivery, OTD):** 약속된 시간 내에 배송된 화물의 비율입니다. 목표: 95% 이상. 위험: 90% 미만. 상차와 하차 정시성을 분리해서 측정하십시오. 상차는 98% 정시인데 하차가 88%라면 이는 적재 용량의 문제가 아니라 운송 경로(Linehaul)나 터미널 운영의 문제입니다.
+- **배차 승인율 (Tender acceptance rate):** 전자적으로 배차 요청된 화물을 운송사가 수락한 비율입니다. 목표: 1순위 운송사의 경우 90% 이상. 위험: 80% 미만. 배차의 25%를 거절하는 운송사는 운영팀의 시간을 낭비하게 만들고 스팟 시장 노출을 강제합니다. 계약 노선에서 승인율이 75% 미만이라면 운임이 시장가보다 낮다는 의미이므로 재협상하거나 물량을 재할당하십시오.
+- **사고율 (Claims ratio):** 운송사에 지불한 총 비용 대비 제기된 청구금(사고 배상금 등)의 가치입니다. 목표: 비용의 0.5% 미만. 위험: 1.0% 이상. 사고 빈도와 사고 강도를 별도로 추적하십시오. 5만 달러짜리 사고 1건과 1천 달러짜리 사고 50건은 다릅니다. 후자는 시스템적인 취급 부주의 문제를 나타냅니다.
+- **인보이스 정확도:** 수동 수정 없이 계약된 운임과 일치하는 인보이스의 비율입니다. 목표: 97% 이상. 위험: 93% 미만. 만성적인 과다 청구(소액이라도)는 의도적인 운임 테스트이거나 청구 시스템의 결함을 의미합니다. 어느 쪽이든 검수 인건비가 발생합니다. 인보이스 정확도가 90% 미만인 운송사는 시정 조치 대상입니다.
+- **배차 후 상차 대기 시간:** 전자 배차 수락 후 실제 상차까지 걸린 시간입니다. 목표: FTL의 경우 요청된 상차 시간으로부터 2시간 이내. 배차는 수락하지만 지속적으로 늦게 상차하는 운송사는 "소프트 거절(Soft rejecting)"을 하는 것입니다. 즉, 더 좋은 화물을 찾는 동안 일단 물량을 잡아두는 행위입니다.
 
-### Portfolio Strategy
+### 포트폴리오 전략
 
-Your carrier portfolio is an investment portfolio — diversification manages risk, concentration drives leverage:
+운송사 포트폴리오는 투자 포트폴리오와 같습니다. 다각화는 리스크를 관리하고, 집중은 협상력을 높입니다.
 
-- **Asset carriers vs. brokers:** Asset carriers own trucks. They provide capacity certainty, consistent service, and direct accountability — but they're less flexible on pricing and may not cover all your lanes. Brokers source capacity from thousands of small carriers. They offer pricing flexibility and lane coverage, but introduce counterparty risk (double-brokering, carrier quality variance, payment chain complexity). A typical mix is 60-70% asset carriers, 20-30% brokers, and 5-15% niche/specialty carriers as a separate bucket reserved for temperature-controlled, hazmat, oversized, or other special handling lanes.
-- **Routing guide structure:** Build a 3-deep routing guide for every lane with >2 loads/week. Primary carrier gets first tender (target: 80%+ acceptance). Secondary gets the fallback (target: 70%+ acceptance on overflow). Tertiary is your price ceiling — often a broker whose rate represents the "do not exceed" for spot procurement. For lanes with <2 loads/week, use a 2-deep guide or a regional broker with broad coverage.
-- **Lane density and carrier concentration:** Award enough volume per carrier per lane to matter to them. A carrier running 2 loads/week on your lane will prioritize you over a shipper giving them 2 loads/month. But don't give one carrier more than 40% of any single lane — a carrier exit or service failure on a concentrated lane is catastrophic. For your top 20 lanes by volume, maintain at least 3 active carriers.
-- **Small carrier value:** Carriers with 10-50 trucks often provide better service, more flexible pricing, and stronger relationships than mega-carriers. They answer the phone. Their owner-operators care about your freight. The tradeoff: less technology integration, thinner insurance, and capacity limits during peak. Use small carriers for consistent, mid-volume lanes where relationship quality matters more than surge capacity.
+- **실물 자산 운송사(Asset carriers) vs 중개 업체(Brokers):** 자산 운송사는 트럭을 직접 소유합니다. 용량의 확실성, 일관된 서비스, 직접적인 책임을 제공하지만 운임 유연성이 낮고 모든 노선을 커버하지 못할 수 있습니다. 중개 업체는 수천 명의 소형 운송사로부터 용량을 소싱합니다. 운임 유연성과 노선 커버리지가 뛰어나지만 상대방 위험(이중 중개, 품질 편차, 결제 대금 사고 등)이 존재합니다. 일반적인 믹스는 자산 운송사 60-70%, 중개 업체 20-30%, 그리고 온도 조절, 위험물, 대형 화물 등을 위한 전문 운송사 5-15%입니다.
+- **라우팅 가이드 구조:** 주 2회 이상 물동량이 있는 모든 노선에 대해 3순위까지 라우팅 가이드를 구축하십시오. 1순위 운송사는 첫 배차 권한을 가집니다(목표: 80% 이상 수락). 2순위는 백업 역할을 합니다(목표: 초과 물량에 대해 70% 이상 수락). 3순위는 가격 상한선 역할을 하며 보통 스팟 조달의 기준이 되는 중개 업체가 맡습니다. 주 2회 미만 노선은 2순위까지만 구축하거나 광범위한 커버리지를 가진 지역 중개 업체를 활용하십시오.
+- **노선 밀도와 운송사 집중도:** 한 운송사에게 해당 노선에서 의미를 가질 만큼 충분한 물량을 할당하십시오. 주 2회 운송하는 운송사는 월 2회 운송하는 운송사보다 당신을 더 우선시할 것입니다. 하지만 특정 노선 물량의 40% 이상을 한 운송사에게 몰아주지 마십시오. 해당 운송사의 탈퇴나 서비스 실패 시 치명적입니다. 물동량 상위 20개 노선에 대해서는 최소 3개의 활성 운송사를 유지하십시오.
+- **소형 운송사의 가치:** 10-50대 트럭을 보유한 소형 운송사는 대형 운송사보다 더 나은 서비스, 유연한 운임 및 강한 유대 관계를 제공하는 경우가 많습니다. 그들은 전화를 잘 받으며, 오너 기사들은 당신의 화물을 소중히 다룹니다. 단점으로는 기술 통합이 부족하고 보험 한도가 낮을 수 있으며 성수기 용량 제한이 있다는 점입니다. 관계의 질이 중요한 일관된 중간 규모 노선에 소형 운송사를 활용하십시오.
 
-### RFP Process
+### RFP 프로세스
 
-A well-run freight RFP takes 8-12 weeks and touches every active and prospective carrier:
+잘 운영되는 화물 RFP는 8-12주가 소요되며 모든 기존 및 잠재 운송사를 대상으로 합니다.
 
-- **Pre-RFP:** Analyze 12 months of shipment data. Identify lanes by volume, spend, and current service levels. Flag underperforming lanes and lanes where current rates exceed market benchmarks (DAT, Greenscreens, Chainalytics). Set targets: cost reduction percentage, service level minimums, carrier diversity goals.
-- **RFP design:** Include lane-level detail (origin/destination zip, volume range, required equipment, any special handling), current transit time expectations, accessorial requirements, payment terms, insurance minimums, and your evaluation criteria with weightings. Make carriers bid lane-by-lane — portfolio bids ("we'll give you 5% off everything") hide cross-subsidization.
-- **Bid evaluation:** Don't award on price alone. Weight cost at 40-50%, service history at 25-30%, capacity commitment at 15-20%, and operational fit at 10-15%. A carrier 3% above the lowest bid but with 97% OTD and 95% tender acceptance is cheaper than the lowest bidder with 85% OTD and 70% tender acceptance — the service failures cost more than the rate difference.
-- **Award and implementation:** Award in waves — primary carriers first, then secondary. Give carriers 2-3 weeks to operationalize new lanes before you start tendering. Run a 30-day parallel period where old and new routing guides overlap. Cut over cleanly.
+- **RFP 전 단계:** 12개월간의 선적 데이터를 분석합니다. 물량, 비용, 현재 서비스 수준에 따라 노선을 식별합니다. 성과가 저조한 노선과 현재 운임이 시장 벤치마크(DAT 등)를 초과하는 노선을 표시합니다. 목표를 설정하십시오: 비용 절감 비율, 최소 서비스 수준, 운송사 다이나믹스 목표 등.
+- **RFP 설계:** 노선별 상세 정보(출발/도착 우편번호, 물량 범위, 필요 장비, 특수 취급 주의사항), 예상 운송 시간, 부대 비용 요구사항, 결제 조건, 최소 보험 한도 및 가중치가 포함된 평가 기준을 포함하십시오. 운송사가 노선별로 입찰하게 하십시오. 포트폴리오 입찰("전체 5% 할인")은 교차 보조를 숨길 수 있습니다.
+- **입찰 평가:** 가격만으로 낙찰자를 결정하지 마십시오. 가중치 예시: 비용 40-50%, 서비스 이력 25-30%, 용량 보장 15-20%, 운영 적합성 10-15%. 최저가보다 3% 비싸더라도 정시성(OTD) 97%에 승인율 95%인 운송사가 서비스 실패가 잦은 최저가 업체보다 결국에는 더 저렴합니다. 서비스 실패 비용은 운임 차이보다 훨씬 큽니다.
+- **낙찰 및 구현:** 파상적으로 낙찰을 통보하십시오. 1순위 업체를 먼저 확정하고 그 다음 2순위를 확정합니다. 운송사가 새로운 노선을 운영할 준비를 할 수 있도록 배차 시작 전 2-3주의 시간을 주십시오. 30일간의 병행 기간을 두어 이전 라우팅 가이드와 새 가이드가 겹치게 하고, 이후에 깔끔하게 전환하십시오.
 
-### Market Intelligence
+### 시장 인텔리전스
 
-Rate cycles are predictable in direction, unpredictable in magnitude:
+운임 사이클은 방향성은 예측 가능하지만 그 크기는 예측하기 어렵습니다.
 
-- **DAT and Greenscreens:** DAT RateView provides lane-level spot and contract rate benchmarks based on broker-reported transactions. Greenscreens provides carrier-specific pricing intelligence and predictive analytics. Use both — DAT for market direction, Greenscreens for carrier-specific negotiation leverage. Neither is perfectly accurate, but both are better than negotiating blind.
-- **Freight market cycles:** The truckload market oscillates between shipper-favorable (excess capacity, falling rates, high tender acceptance) and carrier-favorable (tight capacity, rising rates, tender rejections). Cycles last 18-36 months peak-to-peak. Key indicators: DAT load-to-truck ratio (>6:1 signals tight market), OTRI (Outbound Tender Rejection Index — >10% signals carrier leverage shifting), Class 8 truck orders (leading indicator of capacity addition 6-12 months out).
-- **Seasonal patterns:** Produce season (April-July) tightens reefer capacity in the Southeast and West. Peak retail season (October-January) tightens dry van capacity nationally. The last week of each month and quarter sees volume spikes as shippers meet revenue targets. Budget RFP timing to avoid awarding contracts at the peak or trough of a cycle — award during the transition for more realistic rates.
+- **DAT 및 Greenscreens:** DAT RateView는 중개 업체가 보고한 거래를 기반으로 노선별 스팟 및 계약 운임 벤치마크를 제공합니다. Greenscreens는 운송사별 가격 정보와 예측 분석을 제공합니다. 둘 다 사용하십시오. DAT는 시장 방향성을 파악하는 데, Greenscreens는 구체적인 운송사 협상력을 확보하는 데 유용합니다. 둘 다 완벽하지는 않지만 아무 정보 없이 협상하는 것보다는 훨씬 낫습니다.
+- **화물 시장 사이클:** 트럭 시장은 화주 우위(용량 과잉, 운임 하락)와 운송사 우위(용량 부족, 운임 상승) 사이를 오갑니다. 사이클은 고점 기준으로 18-36개월 정도 지속됩니다. 핵심 지표: DAT 화물-트럭 비율(6:1 이상이면 용량 부족 신호), OTRI(배차 거절 지수, 10% 이상이면 운송사 우위로 전환), 8종 트럭 주문량(6-12개월 뒤 용량 추가의 선행 지표) 등이 있습니다.
+- **계절적 패턴:** 농산물 시즌(4월-7월)에는 동남부와 서부 지역의 냉장 용량이 부족해집니다. 연말 쇼핑 성수기(10월-1월)에는 전국적으로 드라이 밴(Dry van) 용량이 부족해집니다. 매달 말과 매 분기 말에는 화주들이 매출 목표 달성을 위해 물량을 쏟아내기 때문에 스파이크가 발생합니다. 사이클의 고점이나 저점에서 계약을 맺지 않도록 RFP 타이밍을 조절하십시오. 전환기에 계약을 맺는 것이 현실적인 운임을 산정하는 방법입니다.
 
-### FMCSA Compliance Vetting
+### FMCSA 컴플라이언스 심사
 
-Every carrier in your portfolio must pass compliance screening before their first load and on a recurring quarterly basis:
+포트폴리오 내의 모든 운송사는 첫 배차 전과 매 분기별로 컴플라이언스 심사를 통과해야 합니다.
 
-- **Operating authority:** Verify active MC (Motor Carrier) or FF (Freight Forwarder) authority via FMCSA SAFER. An "authorized" status that hasn't been updated in 12+ months may indicate a carrier that's technically authorized but operationally inactive. Check the "authorized for" field — a carrier authorized for "property" cannot legally carry household goods.
-- **Insurance minimums:** $750K minimum for general freight (per FMCSA §387.9), $1M for hazmat, $5M for household goods. Require $1M minimum from all carriers regardless of commodity — the FMCSA minimum of $750K doesn't cover a serious accident. Verify insurance through the FMCSA Insurance tab, not just the certificate the carrier provides — certificates can be forged or outdated.
-- **Safety rating:** FMCSA assigns Satisfactory, Conditional, or Unsatisfactory ratings based on compliance reviews. Never use a carrier with an Unsatisfactory rating. Conditional carriers require case-by-case evaluation — understand what the conditions are. Carriers with no rating ("unrated") make up the majority — use their CSA (Compliance, Safety, Accountability) scores instead. Focus on Unsafe Driving, Hours-of-Service, and Vehicle Maintenance BASICs. A carrier in the top 25% percentile (worst) on Unsafe Driving is a liability risk.
-- **Broker bond verification:** If using brokers, verify their $75K surety bond or trust fund is active. A broker whose bond has been revoked or reduced is likely in financial distress. Check the FMCSA Bond/Trust tab. Also verify the broker has contingent cargo insurance — this protects you if the broker's underlying carrier causes a loss and the carrier's insurance is insufficient.
+- **영업 권한 (Operating authority):** FMCSA SAFER를 통해 활성 MC(Motor Carrier) 또는 FF(Freight Forwarder) 권한을 확인하십시오. "인가됨(Authorized)" 상태가 12개월 이상 업데이트되지 않았다면 서류상으로는 존재하지만 실제로는 운영되지 않는 업체일 수 있습니다. "인가 대상" 필드를 확인하십시오. "Property" 인가만 받은 업체는 법적으로 이삿짐(household goods)을 운송할 수 없습니다.
+- **최소 보험 한도:** 일반 화물은 최소 75만 달러(FMCSA §387.9 기준), 위험물은 100만 달러, 이삿짐은 500만 달러입니다. 화물 종류에 상관없이 모든 운송사에게 최소 100만 달러의 한도를 요구하십시오. 75만 달러는 심각한 사고 발생 시 충분하지 않습니다. 운송사가 제출한 증명서 외에도 FMCSA 보험 탭을 통해 직접 검증하십시오. 증명서는 위조되거나 기한이 지났을 수 있습니다.
+- **안전 등급:** FMCSA는 심사를 통해 Satisfactory(만족), Conditional(조건부), Unsatisfactory(불만족) 등급을 부여합니다. 불만족 등급 업체는 절대 사용하지 마십시오. 조건부 업체는 사례별 평가가 필요하며 구체적인 조건을 파악해야 합니다. 대다수인 무등급(Unrated) 업체는 CSA 점수를 활용하십시오. 부주의 운전(Unsafe Driving), 근무 시간 준수(Hours-of-Service), 차량 정비 항목에 집중하십시오. 부주의 운전 수치가 하위 25% 이내인 업체는 위험 요소로 간주하십시오.
+- **중개 업체 보증(Bond) 확인:** 중개 업체를 사용하는 경우 7.5만 달러의 보증 보험이나 수탁 기금이 활성 상태인지 확인하십시오. 보증이 취소되거나 줄어든 업체는 재정적 위기 상태일 가능성이 높습니다. 또한 중개 업체가 배상 책임 보험(Contingent cargo insurance)을 가입했는지 확인하십시오. 이는 운송사가 낸 사고에 대해 운송사 보험이 부족할 경우 당신을 보호해줍니다.
 
-## Decision Frameworks
+## 의사결정 프레임워크
 
-### Carrier Selection for New Lanes
+### 신규 노선 운송사 선택
 
-When adding a new lane to your network, evaluate candidates on this decision tree:
+네트워크에 새 노선을 추가할 때 다음 단계에 따라 후보를 평가하십시오.
 
-1. **Do existing portfolio carriers cover this lane?** If yes, negotiate with incumbents first — adding a new carrier for one lane introduces onboarding cost ($500-$1,500) and relationship management overhead. Offer existing carriers the new lane as incremental volume in exchange for a rate concession on an existing lane.
-2. **If no incumbent covers the lane:** Source 3-5 candidates. For lanes >500 miles, prioritize asset carriers with domicile within 100 miles of the origin. For lanes <300 miles, consider regional carriers and dedicated fleets. For infrequent lanes (<1 load/week), a broker with strong regional coverage may be the most practical option.
-3. **Evaluate:** Run FMCSA compliance check. Request 12-month service history on the specific lane from each candidate (not just their network average). Check DAT lane rates for market benchmark. Compare total cost (linehaul + FSC + expected accessorials), not just linehaul.
-4. **Trial period:** Award 30-day trial at contracted rates. Set clear KPIs: OTD ≥93%, tender acceptance ≥85%, invoice accuracy ≥95%. Review at 30 days — do not lock in a 12-month commitment without operational validation.
+1. **기존 포트폴리오 운송사가 이 노선을 커버할 수 있는가?** 가능하다면 기존 업체와 먼저 협상하십시오. 새 업체를 온보딩하는 데는 $500-$1,500의 비용과 관리 오버헤드가 발생합니다. 기존 노선의 운임을 깎는 조건으로 새 노선 물량을 인센티브로 제안하십시오.
+2. **기존 업체가 없는 경우:** 3-5개의 후보를 소싱합니다. 500마일 이상 노선은 출발지 100마일 이내에 거점을 둔 자산 운송사를 우선순위에 둡니다. 300마일 이하 노선은 지역 운송사나 전담 차량(Dedicated fleet)을 고려하십시오. 주 1회 미만 노선은 지역적 강점이 있는 중개 업체가 실용적일 수 있습니다.
+3. **평가:** FMCSA 컴플라이언스를 체크합니다. 단순히 네트워크 전체 평균이 아니라 해당 노선에서의 12개월간의 서비스 이력을 요청하십시오. DAT 운임 벤치마크를 확인하고, 단순히 운임만이 아니라 유류 할증료와 예상 부대 비용을 포함한 '총 비용(Total cost)'을 비교하십시오.
+4. **시범 기간:** 계약 운임으로 30일간 시범 운영합니다. 명확한 KPI를 설정하십시오: OTD 93% 이상, 승인율 85% 이상, 인보이스 정확도 95% 이상. 30일 뒤 결과를 검증하기 전까지는 12개월 장기 계약을 맺지 마십시오.
 
-### When to Consolidate vs. Diversify
+### 통합 vs 다각화 결정 시점
 
-- **Consolidate (reduce carrier count) when:** You have more than 3 carriers on a lane with <5 loads/week (each carrier gets too little volume to care). Your carrier management resources are stretched. You need deeper pricing from a strategic partner (volume concentration = leverage). The market is loose and carriers are competing for your freight.
-- **Diversify (add carriers) when:** A single carrier handles >40% of a critical lane. Tender rejections are rising above 15% on a lane. You're entering peak season and need surge capacity. A carrier shows financial distress indicators (late payments to drivers reported on Carrier411, FMCSA insurance lapses, sudden driver turnover visible via CDL postings).
+- **통합(운송사 수 축소)이 필요한 상황:** 주 5회 미만 물량 노선에 3개 이상의 운송사가 있을 때(각 업체에 돌아가는 물량이 너무 적어 관심을 못 받음). 관리 자원이 부족할 때. 전략적 파트너로부터 더 낮은 운임을 끌어내야 할 때(물량 집중 = 레버리지). 시장 물동량이 줄어 운송사들이 경쟁 중일 때.
+- **다각화(운송사 추가)가 필요한 상황:** 한 운송사가 핵심 노선의 40% 이상을 차지하고 있을 때. 배차 거절률이 15%를 넘어설 때. 성수기에 진입하여 급증할 물량에 대비해야 할 때. 운송사의 재무적 부실 징후(결제 지연, 보험 만료, 갑작스러운 기사 이직 등)가 보일 때.
 
-### Spot vs. Contract Decisions
+### 스팟 vs 계약 결정 기준
 
-- **Stay on contract when:** The spread between contract and spot is <10%. You have consistent, predictable volume. Capacity is tightening (spot rates are rising). The lane is customer-critical with tight delivery windows.
-- **Go to spot when:** Spot rates are >15% below your contract rate (market is soft). The lane is irregular (<1 load/week). You need one-time surge capacity beyond your routing guide. Your contract carrier is consistently rejecting tenders on this lane (they're effectively pricing you into spot anyway).
-- **Renegotiate contract when:** The spread between your contract rate and DAT benchmark exceeds 15% for 60+ consecutive days. A carrier's tender acceptance drops below 75% for 30 days. You've had a significant volume change (up or down) that changes the lane economics.
+- **계약 운임을 유지해야 할 때:** 계약과 스팟의 가격 차이가 10% 미만일 때. 물량이 일정하고 예측 가능할 때. 시장 용량이 부족해지고 있을 때(스팟 가격 상승 중). 고객에게 매우 중요하고 배송 시간이 엄격한 노선일 때.
+- **스팟 시장으로 갈 때:** 스팟 가격이 계약 가격보다 15% 이상 낮을 때(시장 침체기). 노선이 불규칙할 때. 라우팅 가이드 범위를 넘어서는 일시적인 물량 급증 시. 계약 운송사가 지속적으로 배차를 거절할 때.
+- **계약 재협상이 필요한 때:** 계약 가격과 DAT 벤치마크 차이가 60일 연속 15%를 초과할 때. 운송사의 승인율이 30일간 75% 미만으로 떨어졌을 때. 물량 규모가 크게 바뀌어 노선 경제성이 변했을 때.
 
-### Carrier Exit Criteria
+### 운송사 퇴출 기준
 
-Remove a carrier from your active routing guide when any of these thresholds are met, after documented corrective action has failed:
+시정 조치가 실패한 후 다음 기준 중 하나라도 해당되면 라우팅 가이드에서 해당 운송사를 삭제하십시오.
 
-- OTD below 85% for 60 consecutive days
-- Tender acceptance below 70% for 30 consecutive days with no communication
-- Claims ratio exceeds 2% of spend for 90 days
-- FMCSA authority revoked, insurance lapsed, or safety rating downgraded to Unsatisfactory
-- Invoice accuracy below 88% for 90 days after corrective notice
-- Discovery of double-brokering your freight
-- Evidence of financial distress: bond revocation, driver complaints on CarrierOK or Carrier411, unexplained service collapse
+- 60일 연속 정시성(OTD) 85% 미만
+- 아무런 소통 없이 30일 연속 배차 승인율 70% 미만
+- 90일간 사고 보상 청구액이 운송료의 2% 초과
+- FMCSA 권한 취소, 보험 만료, 또는 안전 등급이 불만족(Unsatisfactory)으로 하락
+- 시정 공고 후 90일간 인보이스 정확도 88% 미만
+- 당신의 화물을 이중 중개(Double-brokering)한 사실 적발
+- 재무적 부실 증거 포착: 보증 보험 취소, 기사들의 임금 체불 불만 급증, 설명되지 않는 서비스 붕괴 등
 
-## Key Edge Cases
+## 주요 에지 케이스 (Edge Cases)
 
-These are situations where standard playbook decisions lead to poor outcomes. Brief summaries are included here so you can expand them into project-specific playbooks if needed.
+표준 원칙만으로는 대처하기 어려운 상황들입니다.
 
-1. **Capacity squeeze during a hurricane:** Your top carrier evacuates drivers from the Gulf Coast. Spot rates triple. The temptation is to pay any rate to move freight. The expert move: activate pre-positioned regional carriers, reroute through unaffected corridors, and negotiate multi-load commitments with spot carriers to lock a rate ceiling.
+1. **허리케인 등 재난으로 인한 용량 압박:** 주요 운송사가 기사들을 대피시키고 스팟 가격이 3배로 치솟습니다. 어떤 가격에든 화물을 옮기고 싶은 유혹이 생기지만, 전문가는 미리 배치된 다른 지역 운송사를 활성화하고, 영향받지 않는 우회 경로를 찾으며, 스팟 업체와 다회차 약정을 맺어 가격 상한선을 방어합니다.
+2. **이중 중개 적발:** 상차하러 온 트럭이 배차한 운송사의 차량이 아닙니다. 보험 체계가 깨져 사고 시 위험이 큽니다. 아직 상차 전이라면 거부하십시오. 이미 이동 중이라면 모든 것을 문서화하고 24시간 내에 서면 설명을 요구하십시오.
+3. **물량 40% 급감 후의 운임 재협상:** 주요 고객을 잃어 물량이 줄었습니다. 기존 계약 운임은 당신이 약속했던 물동량을 전제로 한 것입니다. 운송사가 나중에 인보이스를 보고 알게 되기 전에 선제적으로 재협상하는 것이 신뢰 관계를 보존하는 길입니다.
+4. **운송사 부실 징후 포착:** 업체가 망하기 몇 달 전부터 전조가 나타납니다. 기사 정산 지연, 보험사 잦은 교체, 보증금 하락 등입니다. 실패가 터질 때까지 기다리지 말고 단계적으로 물량 노출을 줄이십시오.
+5. **전문 파트너사의 대형 업체 인수:** 당신과 잘 맞던 지역 강소 업체가 전국구 대형 업체에 인수되었습니다. 통합 과정에서의 서비스 혼선, 운임 인상 시도, 전담 매니저 교체 등을 예상하십시오. 전환이 완료되기 전에 대안 용량을 확보해 두십시오.
+6. **유류 할증료 조작:** 운송사가 기본 운임은 아주 낮게 제시하면서, 실제로는 시장가보다 훨씬 비싼 유류 할증료 산정표를 제안할 수 있습니다. 디젤 가격대를 다양하게 설정($3.50, $4.00, $4.50 등)하여 총 비용 시뮬레이션을 돌려보아야 이 전술을 파악할 수 있습니다.
+7. **규모 있는 대기료 분쟁:** 대기료 청구액이 전체 청구액의 5%를 넘는다면, 이는 운송사의 과청구보다는 상하차 시설 운영 방식의 문제인 경우가 많습니다. 운송사와 싸우기 전에 내부 운영 이슈를 먼저 해결하지 않으면 운송사를 잃게 됩니다.
 
-2. **Double-brokering discovery:** You're told the truck that arrived isn't from the carrier on your BOL. The insurance chain may be broken and your freight is at higher risk. Do not accept the load if it hasn't departed. If in transit, document everything and demand a written explanation within 24 hours.
+## 커뮤니케이션 패턴
 
-3. **Rate renegotiation after 40% volume loss:** Your company lost a major customer and your freight volume dropped. Your carriers' contract rates were predicated on volume commitments you can no longer meet. Proactive renegotiation preserves relationships; letting carriers discover the shortfall at invoice time destroys trust.
+### 운임 협상의 어조
 
-4. **Carrier financial distress indicators:** The warning signs appear months before a carrier fails: delayed driver settlements, FMCSA insurance filings changing underwriters frequently, bond amount dropping, Carrier411 complaints spiking. Reduce exposure incrementally — don't wait for the failure.
+운임 협상은 일회성 거래가 아닌 장기적 관계를 위한 대화입니다. 어조를 조절하십시오.
 
-5. **Mega-carrier acquisition of your niche partner:** Your best regional carrier just got acquired by a national fleet. Expect service disruption during integration, rate renegotiation attempts, and potential loss of your dedicated account manager. Secure alternative capacity before the transition completes.
+- **초기 제안:** 요구 사항이 아닌 데이터로 대화를 시작하십시오. "DAT 데이터를 보면 지난 90일간 이 노선의 평균은 2.15달러입니다. 현재 우리 계약은 2.45달러인데, 이에 대한 조정을 논의하고 싶습니다." "당신네 가격이 비싸다"고 말하지 말고 "시장이 변했으니 함께 경쟁력 있는 위치에 있는지 확인하고 싶다"고 말하십시오.
+- **역제안:** 운송사의 입장을 이해해 주십시오. "기사님들 임금 인상 압박은 현실적임을 이해합니다. 노선의 매력도를 유지하면서도 우리 회사의 경쟁력을 잃지 않는 지점을 찾아봅시다." 기본 운임에서는 절충점을 찾되, 부대 비용과 유류 할증료 산정표에 대해서는 더 엄격하게 협상하십시오.
+- **연례 검토:** 비용 절감이 아닌 파트너십 점검으로 프레임화하십시오. 물량 예측치, 성장 계획, 노선 변화를 공유하십시오. 운송사를 도울 수 있는 운영적 개선점(상차 대기 시간 단축, 고정 일정화, 트레일러 드랍 프로그램 등)이 있는지 물어보십시오. 운송사는 기사들의 삶을 편하게 해주는 화주에게 더 좋은 운임을 줍니다.
 
-6. **Fuel surcharge manipulation:** A carrier proposes an artificially low base rate with an aggressive FSC schedule that inflates the total cost above market. Always model total cost across a range of diesel prices ($3.50, $4.00, $4.50/gal) to expose this tactic.
+### 성과 검토
 
-7. **Detention and accessorial disputes at scale:** When detention charges represent >5% of a carrier's total billing, the root cause is usually shipper facility operations, not carrier overcharging. Address the operational issue before disputing the charges — or lose the carrier.
+- **긍정적 검토:** 구체적으로 칭찬하십시오. "이번 분기 시카고-달라스 노선에서 보여준 97%의 정시성 덕분에 약 4.5만 달러의 긴급 배송 비용을 아낄 수 있었습니다. 해당 노선의 물량 할당량을 60%에서 75%로 상향하겠습니다." 운송사는 성과에 보상해 주는 화주와의 관계에 투자합니다.
+- **교정적 검토:** 비난이 아닌 데이터로 접근하십시오. 스코어카드를 제시하십시오. 기준치에 못 미치는 특정 지표를 식별하십시오. 30/60/90일 단위의 시정 계획을 요청하십시오. 명확한 결과를 고지하십시오. "60일 시점까지 정시성이 92%에 도달하지 못하면 물량의 50%를 다른 업체로 이전할 수밖에 없습니다."
 
-## Communication Patterns
+## 에스컬레이션 프로토콜
 
-### Rate Negotiation Tone
+### 자동 에스컬레이션 트리거
 
-Rate negotiations are long-term relationship conversations, not one-time transactions. Calibrate tone:
-
-- **Opening position:** Lead with data, not demands. "DAT shows this lane averaging $2.15/mile over the last 90 days. Our current contract is $2.45. We'd like to discuss alignment." Never say "your rate is too high" — say "the market has shifted and we want to make sure we're in a competitive position together."
-- **Counter-offers:** Acknowledge the carrier's perspective. "We understand driver pay increases are real. Let's find a number that keeps this lane attractive for your drivers while keeping us competitive." Meet in the middle on base rate, negotiate harder on accessorials and FSC table.
-- **Annual reviews:** Frame as partnership check-ins, not cost-cutting exercises. Share your volume forecast, growth plans, and lane changes. Ask what you can do operationally to help the carrier (faster dock times, consistent scheduling, drop-trailer programs). Carriers give better rates to shippers who make their drivers' lives easier.
-
-### Performance Reviews
-
-- **Positive reviews:** Be specific. "Your 97% OTD on the Chicago–Dallas lane saved us approximately $45K in expedite costs this quarter. We're increasing your allocation from 60% to 75% on that lane." Carriers invest in relationships that reward performance.
-- **Corrective reviews:** Lead with data, not accusations. Present the scorecard. Identify the specific metrics below threshold. Ask for a corrective action plan with a 30/60/90-day timeline. Set a clear consequence: "If OTD on this lane doesn't reach 92% by the 60-day mark, we'll need to shift 50% of volume to an alternate carrier."
-
-Use the review patterns above as a base and adapt the language to your carrier contracts, escalation paths, and customer commitments.
-
-## Escalation Protocols
-
-### Automatic Escalation Triggers
-
-| Trigger | Action | Timeline |
+| 트리거 | 조치 | 기한 |
 |---|---|---|
-| Carrier tender acceptance drops below 70% for 2 consecutive weeks | Notify procurement, schedule carrier call | Within 48 hours |
-| Spot spend exceeds 30% of lane budget for any lane | Review routing guide, initiate carrier sourcing | Within 1 week |
-| Carrier FMCSA authority or insurance lapses | Immediately suspend tendering, notify operations | Within 1 hour |
-| Single carrier controls >50% of a critical lane | Initiate secondary carrier qualification | Within 2 weeks |
-| Claims ratio exceeds 1.5% for any carrier for 60+ days | Schedule formal performance review | Within 1 week |
-| Rate variance >20% from DAT benchmark on 5+ lanes | Initiate contract renegotiation or mini-bid | Within 2 weeks |
-| Carrier reports driver shortage or service disruption | Activate backup carriers, increase monitoring | Within 4 hours |
-| Double-brokering confirmed on any load | Immediate carrier suspension, compliance review | Within 2 hours |
+| 배차 승인율이 2주 연속 70% 미만 | 구매팀 통보, 운송사 미팅 일정 조율 | 48시간 이내 |
+| 특정 노선의 스팟 비용이 예산의 30% 초과 | 라우팅 가이드 재검토, 운송사 소싱 시작 | 1주일 내 |
+| 운송사 권한 정지 또는 보험 만료 | 즉시 배차 중단, 운영팀 통보 | 1시간 내 |
+| 단일 운송사가 핵심 노선의 50% 이상 점유 | 보조 운송사 자격 심사 시작 | 2주 내 |
+| 사고율이 60일 이상 1.5% 초과 | 공식 성과 검토 회의 소집 | 1주일 내 |
+| 주요 5개 노선에서 벤치마크 대비 운임 편차 20% 초과 | 계약 재협상 또는 미니 입찰(Mini-bid) 실행 | 2주 내 |
+| 운송사의 기사 부족 또는 서비스 붕괴 보고 | 백업 운송사 활성화, 모니터링 강화 | 4시간 내 |
+| 이중 중개 사실 확인됨 | 즉시 해당 업체 정지, 전체 컴플라이언스 재심사 | 2시간 내 |
 
-### Escalation Chain
+## 주요 성과 지표 (KPI)
 
-Analyst → Transportation Manager (48 hours) → Director of Transportation (1 week) → VP Supply Chain (persistent issue or >$100K exposure)
+매주 추적하고, 매월 운영팀과 검토하며, 분기별로 운송사와 공유하십시오.
 
-## Performance Indicators
-
-Track weekly, review monthly with carrier management team, share quarterly with carriers:
-
-| Metric | Target | Red Flag |
+| 지표 | 목표 | 위험 신호 |
 |---|---|---|
-| Contract rate vs. DAT benchmark | Within ±8% | >15% premium or discount |
-| Routing guide compliance (% of freight on guide) | ≥85% | <70% |
-| Primary tender acceptance | ≥90% | <80% |
-| Weighted average OTD across portfolio | ≥95% | <90% |
-| Carrier portfolio claims ratio | <0.5% of spend | >1.0% |
-| Average carrier invoice accuracy | ≥97% | <93% |
-| Spot freight percentage | <20% | >30% |
-| RFP cycle time (launch to implementation) | ≤12 weeks | >16 weeks |
-
-## Additional Resources
-
-- Track carrier scorecards, exception trends, and routing-guide compliance in the same operating review so pricing and service decisions stay tied together.
-- Capture your organization's preferred negotiation positions, accessorial guardrails, and escalation triggers alongside this skill before using it in production.
+| 계약 운임 대비 DAT 벤치마크 | ±8% 이내 | 15% 이상 차이 |
+| 라우팅 가이드 준수율 | 85% 이상 | 70% 미만 |
+| 1순위 배차 승인율 | 90% 이상 | 80% 미만 |
+| 전체 포트폴리오 가중 평균 정시성(OTD) | 95% 이상 | 90% 미만 |
+| 전체 포트폴리오 사고율 | 비용의 0.5% 미만 | 1.0% 초과 |
+| 평균 인보이스 정확도 | 97% 이상 | 93% 미만 |
+| 스팟 화물 비중 | 20% 미만 | 30% 초과 |
+| RFP 소요 시간 (시작부터 구현까지) | 12주 이하 | 16주 초과 |
