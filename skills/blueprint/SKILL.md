@@ -1,105 +1,99 @@
 ---
 name: blueprint
 description: >-
-  Turn a one-line objective into a step-by-step construction plan for
-  multi-session, multi-agent engineering projects. Each step has a
-  self-contained context brief so a fresh agent can execute it cold.
-  Includes adversarial review gate, dependency graph, parallel step
-  detection, anti-pattern catalog, and plan mutation protocol.
-  TRIGGER when: user requests a plan, blueprint, or roadmap for a
-  complex multi-PR task, or describes work that needs multiple sessions.
-  DO NOT TRIGGER when: task is completable in a single PR or fewer
-  than 3 tool calls, or user says "just do it".
+  한 줄의 목표를 다중 세션, 다중 에이전트 엔지니어링 프로젝트를 위한 단계별 구축 계획으로 변환합니다. 각 단계는 독립적인 컨텍스트 브리프(Context brief)를 포함하여 새로운 에이전트가 사전 지식 없이도 즉시 실행할 수 있게 합니다. 적대적 리뷰 게이트(Adversarial review gate), 의존성 그래프, 병렬 단계 감지, 안티 패턴 카탈로그 및 계획 변경 프로토콜을 포함합니다.
+  트리거 조건: 사용자가 복잡한 다중 PR 작업에 대한 계획, 블루프린트 또는 로드맵을 요청하거나, 여러 세션이 필요한 작업을 설명할 때.
+  비트리거 조건: 단일 PR로 완료 가능한 작업, 3회 미만의 도구 호출로 해결 가능한 작업, 또는 사용자가 "그냥 해줘(just do it)"라고 말할 때.
 origin: community
 ---
 
-# Blueprint — Construction Plan Generator
+# Blueprint — 구축 계획 생성기 (Construction Plan Generator)
 
-Turn a one-line objective into a step-by-step construction plan that any coding agent can execute cold.
+한 줄의 목표를 코딩 에이전트가 즉시 실행할 수 있는 단계별 구축 계획으로 변환합니다.
 
-## When to Use
+## 사용 시기
 
-- Breaking a large feature into multiple PRs with clear dependency order
-- Planning a refactor or migration that spans multiple sessions
-- Coordinating parallel workstreams across sub-agents
-- Any task where context loss between sessions would cause rework
+- 대규모 기능을 명확한 의존성 순서에 따라 여러 PR로 나눌 때
+- 여러 세션에 걸친 리팩토링이나 마이그레이션을 계획할 때
+- 하위 에이전트 간의 병렬 작업 흐름을 조정할 때
+- 세션 간의 컨텍스트 손실로 인해 재작업이 발생할 수 있는 모든 작업
 
-**Do not use** for tasks completable in a single PR, fewer than 3 tool calls, or when the user says "just do it."
+**다음의 경우 사용하지 마십시오**: 단일 PR로 완료 가능한 작업, 3회 미만의 도구 호출로 해결 가능한 작업, 또는 사용자가 "그냥 해줘"라고 말할 때.
 
-## How It Works
+## 작동 방식
 
-Blueprint runs a 5-phase pipeline:
+Blueprint는 5단계 파이프라인으로 실행됩니다:
 
-1. **Research** — Pre-flight checks (git, gh auth, remote, default branch), then reads project structure, existing plans, and memory files to gather context.
-2. **Design** — Breaks the objective into one-PR-sized steps (3–12 typical). Assigns dependency edges, parallel/serial ordering, model tier (strongest vs default), and rollback strategy per step.
-3. **Draft** — Writes a self-contained Markdown plan file to `plans/`. Every step includes a context brief, task list, verification commands, and exit criteria — so a fresh agent can execute any step without reading prior steps.
-4. **Review** — Delegates adversarial review to a strongest-model sub-agent (e.g., Opus) against a checklist and anti-pattern catalog. Fixes all critical findings before finalizing.
-5. **Register** — Saves the plan, updates memory index, and presents the step count and parallelism summary to the user.
+1. **조사 (Research)** — 실행 전 점검(git, gh 인증, 원격지, 기본 브랜치 등)을 수행한 후, 프로젝트 구조, 기존 계획 및 메모리 파일을 읽어 컨텍스트를 수집합니다.
+2. **설계 (Design)** — 목표를 단일 PR 크기의 단계(보통 3~12단계)로 나눕니다. 각 단계별 의존성 관계, 병렬/직렬 순서, 모델 티어(tier; 가장 강력한 모델 vs 기본 모델), 롤백 전략을 할당합니다.
+3. **초안 작성 (Draft)** — `plans/` 디렉토리에 독립적인 마크다운 계획 파일을 작성합니다. 모든 단계에는 컨텍스트 브리프, 작업 목록, 검증 명령 및 종료 기준이 포함되므로, 새로운 에이전트가 이전 단계를 읽지 않고도 어떤 단계든 바로 실행할 수 있습니다.
+4. **검토 (Review)** — 체크리스트와 안티 패턴 카탈로그를 기반으로 가장 강력한 모델(예: Opus)의 하위 에이전트에게 적대적 리뷰를 위임합니다. 모든 중대한 발견 사항을 수정한 후 계획을 확정합니다.
+5. **등록 (Register)** — 계획을 저장하고, 메모리 인덱스를 업데이트하며, 사용자에게 단계 수와 병렬 작업 요약을 제안합니다.
 
-Blueprint detects git/gh availability automatically. With git + GitHub CLI, it generates full branch/PR/CI workflow plans. Without them, it switches to direct mode (edit-in-place, no branches).
+Blueprint는 git/gh 사용 가능 여부를 자동으로 감지합니다. git + GitHub CLI가 있는 경우 브랜치/PR/CI 워크플로우를 포함한 전체 계획을 생성합니다. 없는 경우 직접 모드(브랜치 없이 즉시 수정)로 전환됩니다.
 
-## Examples
+## 예시
 
-### Basic usage
-
-```
-/blueprint myapp "migrate database to PostgreSQL"
-```
-
-Produces `plans/myapp-migrate-database-to-postgresql.md` with steps like:
-- Step 1: Add PostgreSQL driver and connection config
-- Step 2: Create migration scripts for each table
-- Step 3: Update repository layer to use new driver
-- Step 4: Add integration tests against PostgreSQL
-- Step 5: Remove old database code and config
-
-### Multi-agent project
+### 기본 사용법
 
 ```
-/blueprint chatbot "extract LLM providers into a plugin system"
+/blueprint myapp "데이터베이스를 PostgreSQL로 마이그레이션"
 ```
 
-Produces a plan with parallel steps where possible (e.g., "implement Anthropic plugin" and "implement OpenAI plugin" run in parallel after the plugin interface step is done), model tier assignments (strongest for the interface design step, default for implementation), and invariants verified after every step (e.g., "all existing tests pass", "no provider imports in core").
+위 명령은 다음과 같은 단계가 포함된 `plans/myapp-migrate-database-to-postgresql.md` 파일을 생성합니다:
+- 1단계: PostgreSQL 드라이버 및 연결 설정 추가
+- 2단계: 각 테이블에 대한 마이그레이션 스크립트 작성
+- 3단계: 새 드라이버를 사용하도록 저장소 레이어 업데이트
+- 4단계: PostgreSQL에 대한 통합 테스트 추가
+- 5단계: 이전 데이터베이스 코드 및 설정 제거
 
-## Key Features
+### 다중 에이전트 프로젝트
 
-- **Cold-start execution** — Every step includes a self-contained context brief. No prior context needed.
-- **Adversarial review gate** — Every plan is reviewed by a strongest-model sub-agent against a checklist covering completeness, dependency correctness, and anti-pattern detection.
-- **Branch/PR/CI workflow** — Built into every step. Degrades gracefully to direct mode when git/gh is absent.
-- **Parallel step detection** — Dependency graph identifies steps with no shared files or output dependencies.
-- **Plan mutation protocol** — Steps can be split, inserted, skipped, reordered, or abandoned with formal protocols and audit trail.
-- **Zero runtime risk** — Pure Markdown skill. The entire repository contains only `.md` files — no hooks, no shell scripts, no executable code, no `package.json`, no build step. Nothing runs on install or invocation beyond Claude Code's native Markdown skill loader.
+```
+/blueprint chatbot "LLM 프로바이더를 플러그인 시스템으로 추출"
+```
 
-## Installation
+가능한 경우 병렬 단계가 포함된 계획을 생성합니다(예: 플러그인 인터페이스 단계 완료 후 "Anthropic 플러그인 구현"과 "OpenAI 플러그인 구현"을 병렬로 진행). 또한 모델 티어 할당(인터페이스 설계 단계는 가장 강력한 모델, 구현은 기본 모델)을 수행하고, 매 단계 후 불변성 검증(예: "모든 기존 테스트 통과", "코어에 프로바이더 임포트 없음")을 포함합니다.
 
-This skill ships with Everything Claude Code. No separate installation is needed when ECC is installed.
+## 주요 특징
 
-### Full ECC install
+- **콜드 스타트(Cold-start) 실행** — 모든 단계에 독립적인 컨텍스트 브리프가 포함되어 이전 컨텍스트 없이도 작업이 가능합니다.
+- **적대적 리뷰 게이트** — 모든 계획은 가장 강력한 모델의 하위 에이전트가 완전성, 의존성 정확성, 안티 패턴 탐지 체크리스트를 기반으로 검토합니다.
+- **브랜치/PR/CI 워크플로우** — 모든 단계에 내장되어 있습니다. git/gh가 없는 경우 직접 모드로 유연하게 전환됩니다.
+- **병렬 단계 감지** — 의존성 그래프를 통해 공유 파일이나 출력 의존성이 없는 단계를 식별합니다.
+- **계획 변경 프로토콜** — 공식 프로토콜과 감사 추적(Audit trail)을 통해 단계를 분할, 삽입, 건너뛰기, 재정렬 또는 폐기할 수 있습니다.
+- **런타임 리스크 제로** — 순수 마크다운 스킬입니다. 전체 리포지토리는 오직 `.md` 파일만 포함하며 후크, 셸 스크립트, 실행 코드, `package.json`, 빌드 단계가 전혀 없습니다. Claude Code의 네이티브 마크다운 스킬 로더 외에는 설치나 호출 시 아무것도 실행되지 않습니다.
 
-If you are working from the ECC repository checkout, verify the skill is present with:
+## 설치
+
+이 스킬은 Everything Claude Code와 함께 제공됩니다. ECC가 설치되어 있다면 별도의 설치가 필요하지 않습니다.
+
+### 전체 ECC 설치
+
+ECC 리포지토리를 체크아웃하여 작업 중이라면 다음 명령으로 스킬이 있는지 확인하십시오:
 
 ```bash
 test -f skills/blueprint/SKILL.md
 ```
 
-To update later, review the ECC diff before updating:
+추후 업데이트 시에는 업데이트 전 ECC 차이점(diff)을 검토하십시오:
 
 ```bash
 cd /path/to/everything-claude-code
 git fetch origin main
-git log --oneline HEAD..origin/main       # review new commits before updating
-git checkout <reviewed-full-sha>          # pin to a specific reviewed commit
+git log --oneline HEAD..origin/main       # 업데이트 전 새 커밋 검토
+git checkout <검토된-전체-SHA>              # 검토된 특정 커밋으로 고정
 ```
 
-### Vendored standalone install
+### 독립 실행형(Vendored standalone) 설치
 
-If you are vendoring only this skill outside the full ECC install, copy the reviewed file from the ECC repository into `~/.claude/skills/blueprint/SKILL.md`. Vendored copies do not have a git remote, so update them by re-copying the file from a reviewed ECC commit rather than running `git pull`.
+전체 ECC가 아닌 이 스킬만 가져와서 사용하는 경우, 검토된 파일을 ECC 리포지토리에서 `~/.claude/skills/blueprint/SKILL.md`로 복사하십시오. 이 경우 git 원격지가 없으므로 `git pull` 대신 검토된 ECC 커밋에서 파일을 다시 복사하여 업데이트하십시오.
 
-## Requirements
+## 요구 사항
 
-- Claude Code (for `/blueprint` slash command)
-- Git + GitHub CLI (optional — enables full branch/PR/CI workflow; Blueprint detects absence and auto-switches to direct mode)
+- Claude Code (`/blueprint` 슬래시 명령용)
+- Git + GitHub CLI (선택 사항 — 전체 브랜치/PR/CI 워크플로우 활성화 시 필요. Blueprint가 부재를 감지하면 자동으로 직접 모드로 전환함)
 
-## Source
+## 출처
 
-Inspired by antbotlab/blueprint — upstream project and reference design.
+antbotlab/blueprint에서 영감을 얻었으며, 이는 상위 프로젝트이자 참조 설계입니다.
