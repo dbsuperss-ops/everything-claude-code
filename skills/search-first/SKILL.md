@@ -1,161 +1,51 @@
 ---
 name: search-first
-description: Research-before-coding workflow. Search for existing tools, libraries, and patterns before writing custom code. Invokes the researcher agent.
+description: 개발 전 조사(Research-before-coding) 워크플로우 가이드입니다. 직접 코드를 작성하기 전에 기존 도구, 라이브러리 및 패턴을 먼저 검색하여 효율성을 높입니다.
 origin: ECC
 ---
 
-# /search-first — Research Before You Code
+# /search-first — 코딩 전 검색부터 (Research Before You Code)
 
-Systematizes the "search for existing solutions before implementing" workflow.
+"구현하기 전에 기존 솔루션을 먼저 검색한다"는 워크플로우를 체계화합니다.
 
-## Trigger
+## 활성화 시점
 
-Use this skill when:
-- Starting a new feature that likely has existing solutions
-- Adding a dependency or integration
-- The user asks "add X functionality" and you're about to write code
-- Before creating a new utility, helper, or abstraction
+- 기존 솔루션이 있을 법한 새로운 기능을 시작할 때
+- 새로운 의존성(Dependency)이나 통합(Integration) 기능을 추가할 때
+- "X 기능을 추가해줘"라는 요청을 받고 코드를 작성하기 직전
+- 새로운 유틸리티, 헬퍼 함수, 또는 추상화 계층을 만들기 전
 
-## Workflow
+## 워크플로우
 
-```
-┌─────────────────────────────────────────────┐
-│  1. NEED ANALYSIS                           │
-│     Define what functionality is needed      │
-│     Identify language/framework constraints  │
-├─────────────────────────────────────────────┤
-│  2. PARALLEL SEARCH (researcher agent)      │
-│     ┌──────────┐ ┌──────────┐ ┌──────────┐  │
-│     │  npm /   │ │  MCP /   │ │  GitHub / │  │
-│     │  PyPI    │ │  Skills  │ │  Web      │  │
-│     └──────────┘ └──────────┘ └──────────┘  │
-├─────────────────────────────────────────────┤
-│  3. EVALUATE                                │
-│     Score candidates (functionality, maint, │
-│     community, docs, license, deps)         │
-├─────────────────────────────────────────────┤
-│  4. DECIDE                                  │
-│     ┌─────────┐  ┌──────────┐  ┌─────────┐  │
-│     │  Adopt  │  │  Extend  │  │  Build   │  │
-│     │ as-is   │  │  /Wrap   │  │  Custom  │  │
-│     └─────────┘  └──────────┘  └─────────┘  │
-├─────────────────────────────────────────────┤
-│  5. IMPLEMENT                               │
-│     Install package / Configure MCP /       │
-│     Write minimal custom code               │
-└─────────────────────────────────────────────┘
-```
+1. **니즈 분석**: 필요한 기능과 언어/프레임워크 제약 사항을 정의합니다.
+2. **병렬 검색**: npm/PyPI, MCP 서버, Claude Code 스킬, GitHub 등을 동시에 탐색합니다.
+3. **평가**: 기능성, 유지보수 상태, 커뮤니티 활성도, 문서, 라이선스 등을 기준으로 후보군에 점수를 매깁니다.
+4. **결정**: 그대로 도입(Adopt), 확장/래핑(Extend/Wrap), 또는 직접 개발(Build Custom) 중 하나를 선택합니다.
+5. **구현**: 패키지 설치, MCP 설정, 또는 최소한의 커스텀 코드 작성을 진행합니다.
 
-## Decision Matrix
+## 결정 매트릭스 (Decision Matrix)
 
-| Signal | Action |
-|--------|--------|
-| Exact match, well-maintained, MIT/Apache | **Adopt** — install and use directly |
-| Partial match, good foundation | **Extend** — install + write thin wrapper |
-| Multiple weak matches | **Compose** — combine 2-3 small packages |
-| Nothing suitable found | **Build** — write custom, but informed by research |
+- **완벽 일치, 유지보수 양호, 허용적 라이선스**: **도입(Adopt)** — 즉시 설치하여 사용하십시오.
+- **부분 일치, 좋은 기반**: **확장(Extend)** — 설치 후 얇은 래퍼(Wrapper)를 작성하십시오.
+- **적합한 것 없음**: **개발(Build)** — 조사를 통해 얻은 정보를 바탕으로 직접 구현하십시오.
 
-## How to Use
+## 사용 방법
 
-### Quick Mode (inline)
+- **퀵 모드**: 유틸리티 작성 전, "이게 이미 레포에 있나?", "흔한 문제인가?(npm/PyPI 검색)", "MCP나 스킬이 있나?"를 자문해 보십시오.
+- **풀 모드 (에이전트)**: 복잡한 기능의 경우, 리서처 에이전트(Researcher Agent)를 실행하여 구조화된 비교 보고서와 추천안을 받으십시오.
 
-Before writing a utility or adding functionality, mentally run through:
+## 카테고리별 검색 팁
 
-0. Does this already exist in the repo? → `rg` through relevant modules/tests first
-1. Is this a common problem? → Search npm/PyPI
-2. Is there an MCP for this? → Check `~/.claude/settings.json` and search
-3. Is there a skill for this? → Check `~/.claude/skills/`
-4. Is there a GitHub implementation/template? → Run GitHub code search for maintained OSS before writing net-new code
+- **개발 도구**: Linting(`eslint`, `ruff`), Formatting(`prettier`, `black`), Testing(`jest`, `pytest`) 등.
+- **AI/LLM 통합**: 최신 SDK, 프롬프트 관리 MCP, 문서 처리 라이브러리(`pdfplumber` 등).
+- **데이터 & API**: `httpx`, `zod`, `pydantic` 등 검증 및 통신 라이브러리.
 
-### Full Mode (agent)
+## 피해야 할 안티 패턴
 
-For non-trivial functionality, launch the researcher agent:
+- **바로 코딩부터 하기**: 기존 유틸리티가 있는지 확인도 안 하고 새로 만드는 행위.
+- **MCP 무시**: 이미 기능을 제공하는 MCP 서버가 있는지 확인하지 않는 경우.
+- **과도한 커스터마이징**: 외부 라이브러리를 너무 심하게 래핑하여 원래의 장점을 잃게 만드는 행위.
+- **의존성 비대화**: 아주 작은 기능을 위해 너무 거대한 패키지를 설치하는 경우.
 
-```
-Task(subagent_type="general-purpose", prompt="
-  Research existing tools for: [DESCRIPTION]
-  Language/framework: [LANG]
-  Constraints: [ANY]
-
-  Search: npm/PyPI, MCP servers, Claude Code skills, GitHub
-  Return: Structured comparison with recommendation
-")
-```
-
-## Search Shortcuts by Category
-
-### Development Tooling
-- Linting → `eslint`, `ruff`, `textlint`, `markdownlint`
-- Formatting → `prettier`, `black`, `gofmt`
-- Testing → `jest`, `pytest`, `go test`
-- Pre-commit → `husky`, `lint-staged`, `pre-commit`
-
-### AI/LLM Integration
-- Claude SDK → Context7 for latest docs
-- Prompt management → Check MCP servers
-- Document processing → `unstructured`, `pdfplumber`, `mammoth`
-
-### Data & APIs
-- HTTP clients → `httpx` (Python), `ky`/`got` (Node)
-- Validation → `zod` (TS), `pydantic` (Python)
-- Database → Check for MCP servers first
-
-### Content & Publishing
-- Markdown processing → `remark`, `unified`, `markdown-it`
-- Image optimization → `sharp`, `imagemin`
-
-## Integration Points
-
-### With planner agent
-The planner should invoke researcher before Phase 1 (Architecture Review):
-- Researcher identifies available tools
-- Planner incorporates them into the implementation plan
-- Avoids "reinventing the wheel" in the plan
-
-### With architect agent
-The architect should consult researcher for:
-- Technology stack decisions
-- Integration pattern discovery
-- Existing reference architectures
-
-### With iterative-retrieval skill
-Combine for progressive discovery:
-- Cycle 1: Broad search (npm, PyPI, MCP)
-- Cycle 2: Evaluate top candidates in detail
-- Cycle 3: Test compatibility with project constraints
-
-## Examples
-
-### Example 1: "Add dead link checking"
-```
-Need: Check markdown files for broken links
-Search: npm "markdown dead link checker"
-Found: textlint-rule-no-dead-link (score: 9/10)
-Action: ADOPT — npm install textlint-rule-no-dead-link
-Result: Zero custom code, battle-tested solution
-```
-
-### Example 2: "Add HTTP client wrapper"
-```
-Need: Resilient HTTP client with retries and timeout handling
-Search: npm "http client retry", PyPI "httpx retry"
-Found: got (Node) with retry plugin, httpx (Python) with built-in retry
-Action: ADOPT — use got/httpx directly with retry config
-Result: Zero custom code, production-proven libraries
-```
-
-### Example 3: "Add config file linter"
-```
-Need: Validate project config files against a schema
-Search: npm "config linter schema", "json schema validator cli"
-Found: ajv-cli (score: 8/10)
-Action: ADOPT + EXTEND — install ajv-cli, write project-specific schema
-Result: 1 package + 1 schema file, no custom validation logic
-```
-
-## Anti-Patterns
-
-- **Jumping to code**: Writing a utility without checking if one exists
-- **Ignoring MCP**: Not checking if an MCP server already provides the capability
-- **Over-customizing**: Wrapping a library so heavily it loses its benefits
-- **Dependency bloat**: Installing a massive package for one small feature
+**기억하십시오**: "바퀴를 다시 발명하지 마십시오(Don't reinvent the wheel)". 훌륭한 엔지니어는 기존의 도구를 잘 활용하여 빠르게 가치를 만들어냅니다.
+    

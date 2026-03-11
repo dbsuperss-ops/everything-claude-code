@@ -1,63 +1,64 @@
 ---
 name: agentic-engineering
-description: Operate as an agentic engineer using eval-first execution, decomposition, and cost-aware model routing.
+description: 평가 우선(Eval-first) 실행, 기능 분해 및 비용 인식 모델 라우팅을 사용하여 에이전트 기반 엔지니어로 활동합니다.
 origin: ECC
 ---
 
-# Agentic Engineering
+# 에이전틱 엔지니어링 (Agentic Engineering)
 
-Use this skill for engineering workflows where AI agents perform most implementation work and humans enforce quality and risk controls.
+AI 에이전트가 대부분의 구현 작업을 수행하고 사람이 품질 및 리스크를 관리하는 엔지니어링 워크플로우를 위해 이 스킬을 사용하십시오.
 
-## Operating Principles
+## 운영 원칙
 
-1. Define completion criteria before execution.
-2. Decompose work into agent-sized units.
-3. Route model tiers by task complexity.
-4. Measure with evals and regression checks.
+1. 실행 전에 완료 기준을 정의하십시오.
+2. 작업을 에이전트가 처리 가능한 단위로 분해하십시오.
+3. 작업의 복잡도에 따라 모델 티어(Tier)를 라우팅하십시오.
+4. 평가(Evals) 및 회귀(Regression) 체크를 통해 성과를 측정하십시오.
 
-## Eval-First Loop
+## 평가 우선(Eval-First) 루프
 
-1. Define capability eval and regression eval.
-2. Run baseline and capture failure signatures.
-3. Execute implementation.
-4. Re-run evals and compare deltas.
+1. 기능 평가와 회귀 평가를 정의하십시오.
+2. 베이스라인을 실행하고 실패 시그니처를 캡처하십시오.
+3. 구현을 실행하십시오.
+4. 평가를 다시 실행하고 변경 사항을 비교하십시오.
 
-## Task Decomposition
+## 작업 분해 (Task Decomposition)
 
-Apply the 15-minute unit rule:
-- each unit should be independently verifiable
-- each unit should have a single dominant risk
-- each unit should expose a clear done condition
+'15분 단위 규칙'을 적용하십시오:
+- 각 단위는 독립적으로 검증 가능해야 합니다.
+- 각 단위는 하나의 핵심 리스크를 가져야 합니다.
+- 각 단위는 명확한 완료 조건을 제시해야 합니다.
 
-## Model Routing
+## 모델 라우팅 (Model Routing)
 
-- Haiku: classification, boilerplate transforms, narrow edits
-- Sonnet: implementation and refactors
-- Opus: architecture, root-cause analysis, multi-file invariants
+- Haiku: 분류, 보일러플레이트 변환, 좁은 범위의 수정 작업
+- Sonnet: 구현 및 리팩토링 작업
+- Opus: 아키텍처 설계, 근본 원인 분석, 여러 파일에 걸친 불변성(Invariants) 확인
 
-## Session Strategy
+## 세션 전략
 
-- Continue session for closely-coupled units.
-- Start fresh session after major phase transitions.
-- Compact after milestone completion, not during active debugging.
+- 밀접하게 연결된 작업 단위에는 기존 세션을 이어가십시오.
+- 주요 단계(Phase)가 전환된 후에는 새로운 세션을 시작하십시오.
+- 활발하게 디버깅하는 중이 아니라, 마일스톤이 완료된 후에 압축(Compact)을 수행하십시오.
 
-## Review Focus for AI-Generated Code
+## AI 생성 코드 리뷰 초점
 
-Prioritize:
-- invariants and edge cases
-- error boundaries
-- security and auth assumptions
-- hidden coupling and rollout risk
+다음에 우선순위를 두십시오:
+- 불변성 및 에지 케이스(Edge cases)
+- 에러 경계(Error boundaries)
+- 보안 및 인증 관련 가정
+- 숨겨진 결합(Coupling) 및 배포(Rollout) 리스크
 
-Do not waste review cycles on style-only disagreements when automated format/lint already enforce style.
+자동화된 포맷터/린터가 이미 스타일을 강제하고 있다면, 스타일 관련 의견 차이로 리뷰 시간을 낭비하지 마십시오.
 
-## Cost Discipline
+## 비용 관리
 
-Track per task:
-- model
-- token estimate
-- retries
-- wall-clock time
-- success/failure
+작업별로 다음을 추적하십시오:
+- 사용 모델
+- 토큰 예상치
+- 재시도 횟수
+- 실제 소요 시간
+- 성공/실패 여부
 
-Escalate model tier only when lower tier fails with a clear reasoning gap.
+하위 티어 모델이 명확한 추론 한계로 인해 실패한 경우에만 모델 티어를 상향하십시오.
+    

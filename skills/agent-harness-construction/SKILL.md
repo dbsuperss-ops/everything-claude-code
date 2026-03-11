@@ -1,73 +1,74 @@
 ---
 name: agent-harness-construction
-description: Design and optimize AI agent action spaces, tool definitions, and observation formatting for higher completion rates.
+description: 높은 완료율을 위해 AI 에이전트의 액션 스페이스(Action space), 도구 정의 및 관찰 형식(Observation formatting)을 설계하고 최적화합니다.
 origin: ECC
 ---
 
-# Agent Harness Construction
+# 에이전트 하네스 구축 (Agent Harness Construction)
 
-Use this skill when you are improving how an agent plans, calls tools, recovers from errors, and converges on completion.
+에이전트의 계획 수립, 도구 호출, 에러 복구 및 작업 완료 수렴 방식을 개선할 때 이 스킬을 사용하십시오.
 
-## Core Model
+## 핵심 모델
 
-Agent output quality is constrained by:
-1. Action space quality
-2. Observation quality
-3. Recovery quality
-4. Context budget quality
+에이전트 출력 품질은 다음 요소들에 의해 결정됩니다:
+1. 액션 스페이스(Action space)의 품질
+2. 관찰(Observation)의 품질
+3. 복구(Recovery)의 품질
+4. 컨텍스트 버짓(Context budget)의 품질
 
-## Action Space Design
+## 액션 스페이스 설계
 
-1. Use stable, explicit tool names.
-2. Keep inputs schema-first and narrow.
-3. Return deterministic output shapes.
-4. Avoid catch-all tools unless isolation is impossible.
+1. 안정적이고 명시적인 도구 이름을 사용하십시오.
+2. 입력값은 스키마 우선(Schema-first)으로 좁게 유지하십시오.
+3. 결정론적인 출력 형태를 반환하십시오.
+4. 격리가 불가능한 경우가 아니면 범용 도구(Catch-all tools)를 피하십시오.
 
-## Granularity Rules
+## 세분화 규칙 (Granularity Rules)
 
-- Use micro-tools for high-risk operations (deploy, migration, permissions).
-- Use medium tools for common edit/read/search loops.
-- Use macro-tools only when round-trip overhead is the dominant cost.
+- 고위험 작업(배포, 마이그레이션, 권한 설정 등)에는 마이크로 도구(Micro-tools)를 사용하십시오.
+- 일반적인 수정/읽기/검색 루프에는 중간 규모의 도구를 사용하십시오.
+- 라운드트립 오버헤드가 주요 비용 요인인 경우에만 매크로 도구(Macro-tools)를 사용하십시오.
 
-## Observation Design
+## 관찰(Observation) 설계
 
-Every tool response should include:
+모든 도구 응답에는 다음이 포함되어야 합니다:
 - `status`: success|warning|error
-- `summary`: one-line result
-- `next_actions`: actionable follow-ups
-- `artifacts`: file paths / IDs
+- `summary`: 한 줄로 요약된 결과
+- `next_actions`: 실행 가능한 후속 조치
+- `artifacts`: 파일 경로 또는 ID
 
-## Error Recovery Contract
+## 에러 복구 계약 (Error Recovery Contract)
 
-For every error path, include:
-- root cause hint
-- safe retry instruction
-- explicit stop condition
+모든 에러 경로에는 다음이 포함되어야 합니다:
+- 근본 원인 힌트
+- 안전한 재시도 지침
+- 명시적인 중단 조건
 
-## Context Budgeting
+## 컨텍스트 버짓 관리
 
-1. Keep system prompt minimal and invariant.
-2. Move large guidance into skills loaded on demand.
-3. Prefer references to files over inlining long documents.
-4. Compact at phase boundaries, not arbitrary token thresholds.
+1. 시스템 프롬프트는 최소한으로 유지하고 불변(Invariant)하게 만드십시오.
+2. 긴 가이드는 필요할 때 로드되는 스킬(Skills)로 옮기십시오.
+3. 긴 문서를 직접 포함하기보다 파일 경로를 참조하는 방식을 선호하십시오.
+4. 임의의 토큰 임계값이 아닌, 단계(Phase) 경계에서 압축을 수행하십시오.
 
-## Architecture Pattern Guidance
+## 아키텍처 패턴 가이드
 
-- ReAct: best for exploratory tasks with uncertain path.
-- Function-calling: best for structured deterministic flows.
-- Hybrid (recommended): ReAct planning + typed tool execution.
+- ReAct: 경로가 불확실한 탐색적 작업에 가장 적합합니다.
+- 함수 호출(Function-calling): 구조화되고 결정론적인 흐름에 가장 적합합니다.
+- 하이브리드(권장): ReAct 계획 수립 + 타입이 정의된 도구 실행 방식입니다.
 
-## Benchmarking
+## 벤치마킹
 
-Track:
-- completion rate
-- retries per task
-- pass@1 and pass@3
-- cost per successful task
+다음 항목들을 추적하십시오:
+- 완료율(Completion rate)
+- 작업당 재시도 횟수
+- pass@1 및 pass@3 결과
+- 성공한 작업당 비용
 
-## Anti-Patterns
+## 안티 패턴
 
-- Too many tools with overlapping semantics.
-- Opaque tool output with no recovery hints.
-- Error-only output without next steps.
-- Context overloading with irrelevant references.
+- 의미가 겹치는 너무 많은 도구 정의
+- 복구 힌트가 없는 불투명한 도구 출력
+- 후속 단계 안내가 없는 에러 전용 출력
+- 관련 없는 참조로 인한 컨텍스트 과부하
+    

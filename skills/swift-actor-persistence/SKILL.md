@@ -1,143 +1,47 @@
 ---
 name: swift-actor-persistence
-description: Thread-safe data persistence in Swift using actors — in-memory cache with file-backed storage, eliminating data races by design.
+description: Swift 액터(Actor)를 사용한 스레드 안전 데이터 지속성 유지 — 파일 기반 저장소와 인 메모리 캐시를 결합하여 데이터 경쟁(Data race)을 설계적으로 제거합니다.
 origin: ECC
 ---
 
-# Swift Actors for Thread-Safe Persistence
+# 스레드 안전 지속성을 위한 Swift 액터 (Swift Actors)
 
-Patterns for building thread-safe data persistence layers using Swift actors. Combines in-memory caching with file-backed storage, leveraging the actor model to eliminate data races at compile time.
+Swift 액터를 사용하여 스레드 안전한 데이터 지속성 계층을 구축하는 패턴입니다. 인 메모리 캐싱과 파일 기반 저장소를 결합하고, 액터 모델을 활용하여 컴파일 타임에 데이터 경쟁을 제거합니다.
 
-## When to Activate
+## 활성화 시점
 
-- Building a data persistence layer in Swift 5.5+
-- Need thread-safe access to shared mutable state
-- Want to eliminate manual synchronization (locks, DispatchQueues)
-- Building offline-first apps with local storage
+- Swift 5.5+ 환경에서 데이터 지속성 계층을 구축할 때
+- 공유 가변 상태(Shared mutable state)에 대한 스레드 안전한 접근이 필요할 때
+- 수동 동기화(Locks, DispatchQueue 등)를 제거하고 싶을 때
+- 로컬 저장소를 사용하는 오프라인 우선(Offline-first) 앱을 구축할 때
 
-## Core Pattern
+## 핵심 패턴: 액터 기반 리포지토리
 
-### Actor-Based Repository
+액터 모델은 순차적 접근을 보장하며, 컴파일러에 의해 데이터 경쟁이 방지됩니다.
 
-The actor model guarantees serialized access — no data races, enforced by the compiler.
+- **인 메모리 캐시**: 빠른 읽기(O(1))를 위해 딕셔너리 사용.
+- **파일 지속성**: 데이터 변경 시 JSON 파일로 원자적(`atomic`) 쓰기 수행.
+- **자동 비동기**: 액터 격리(Isolation)로 인해 모든 외부 호출은 자동으로 비동기(`async/await`) 처리됩니다.
 
-```swift
-public actor LocalRepository<T: Codable & Identifiable> where T.ID == String {
-    private var cache: [String: T] = [:]
-    private let fileURL: URL
+## 주요 설계 결정
 
-    public init(directory: URL = .documentsDirectory, filename: String = "data.json") {
-        self.fileURL = directory.appendingPathComponent(filename)
-        // Synchronous load during init (actor isolation not yet active)
-        self.cache = Self.loadSynchronously(from: fileURL)
-    }
+- **액터 사용**: 클래스+잠금(Lock) 방식보다 안전하며 컴파일러가 스레드 안전성을 강제합니다.
+- **원자적 쓰기(`.atomic`)**: 쓰기 도중 앱이 종료되어 데이터가 손상되는 것을 방지합니다.
+- **동기식 초기 로딩**: `init`에서 파일 동기 로딩을 수행하여 비동기 초기화의 복잡도를 피합니다.
+- **제네릭 활용**: `Codable & Identifiable`을 준수하는 모든 모델 타입에 재사용 가능합니다.
 
-    // MARK: - Public API
+## 최선 관행 (Best Practices)
 
-    public func save(_ item: T) throws {
-        cache[item.id] = item
-        try persistToFile()
-    }
+- **`Sendable` 타입 사용**: 액터 경계를 넘나드는 모든 데이터는 `Sendable`이어야 합니다.
+- **최소한의 공개 API**: 도메인 작업만 노출하고 지속성 세부 사항은 숨기십시오.
+- **`@Observable`과 결합**: 반응형 UI 업데이트를 위해 뷰 모델과 함께 사용하십시오.
 
-    public func delete(_ id: String) throws {
-        cache[id] = nil
-        try persistToFile()
-    }
+## 피해야 할 안티 패턴
 
-    public func find(by id: String) -> T? {
-        cache[id]
-    }
+- 새로운 동구 환경에서 액터 대신 `DispatchQueue`나 `NSLock` 사용하기.
+- 액터 내부 캐시를 외부로 직접 노출하기.
+- 액터 격리를 우회하기 위해 `nonisolated` 남용하기.
+- 모든 액터 호출이 `await`임을 잊고 비동기 컨텍스트 처리를 누락하는 것.
 
-    public func loadAll() -> [T] {
-        Array(cache.values)
-    }
-
-    // MARK: - Private
-
-    private func persistToFile() throws {
-        let data = try JSONEncoder().encode(Array(cache.values))
-        try data.write(to: fileURL, options: .atomic)
-    }
-
-    private static func loadSynchronously(from url: URL) -> [String: T] {
-        guard let data = try? Data(contentsOf: url),
-              let items = try? JSONDecoder().decode([T].self, from: data) else {
-            return [:]
-        }
-        return Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
-    }
-}
-```
-
-### Usage
-
-All calls are automatically async due to actor isolation:
-
-```swift
-let repository = LocalRepository<Question>()
-
-// Read — fast O(1) lookup from in-memory cache
-let question = await repository.find(by: "q-001")
-let allQuestions = await repository.loadAll()
-
-// Write — updates cache and persists to file atomically
-try await repository.save(newQuestion)
-try await repository.delete("q-001")
-```
-
-### Combining with @Observable ViewModel
-
-```swift
-@Observable
-final class QuestionListViewModel {
-    private(set) var questions: [Question] = []
-    private let repository: LocalRepository<Question>
-
-    init(repository: LocalRepository<Question> = LocalRepository()) {
-        self.repository = repository
-    }
-
-    func load() async {
-        questions = await repository.loadAll()
-    }
-
-    func add(_ question: Question) async throws {
-        try await repository.save(question)
-        questions = await repository.loadAll()
-    }
-}
-```
-
-## Key Design Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| Actor (not class + lock) | Compiler-enforced thread safety, no manual synchronization |
-| In-memory cache + file persistence | Fast reads from cache, durable writes to disk |
-| Synchronous init loading | Avoids async initialization complexity |
-| Dictionary keyed by ID | O(1) lookups by identifier |
-| Generic over `Codable & Identifiable` | Reusable across any model type |
-| Atomic file writes (`.atomic`) | Prevents partial writes on crash |
-
-## Best Practices
-
-- **Use `Sendable` types** for all data crossing actor boundaries
-- **Keep the actor's public API minimal** — only expose domain operations, not persistence details
-- **Use `.atomic` writes** to prevent data corruption if the app crashes mid-write
-- **Load synchronously in `init`** — async initializers add complexity with minimal benefit for local files
-- **Combine with `@Observable`** ViewModels for reactive UI updates
-
-## Anti-Patterns to Avoid
-
-- Using `DispatchQueue` or `NSLock` instead of actors for new Swift concurrency code
-- Exposing the internal cache dictionary to external callers
-- Making the file URL configurable without validation
-- Forgetting that all actor method calls are `await` — callers must handle async context
-- Using `nonisolated` to bypass actor isolation (defeats the purpose)
-
-## When to Use
-
-- Local data storage in iOS/macOS apps (user data, settings, cached content)
-- Offline-first architectures that sync to a server later
-- Any shared mutable state that multiple parts of the app access concurrently
-- Replacing legacy `DispatchQueue`-based thread safety with modern Swift concurrency
+**기억하십시오**: Swift 액터는 동시성 프로그래밍의 복잡성을 획기적으로 줄여줍니다. 수동으로 잠금을 관리하는 대신 언어 차원의 안전 장치를 활용하십시오.
+    

@@ -5,14 +5,14 @@ paths:
   - "**/go.sum"
 ---
 
-# Go 钩子
+# Go 후크 (Hooks)
 
-> 本文件通过 Go 特定内容扩展了 [common/hooks.md](../common/hooks.md)。
+> 이 문서는 [common/hooks.md](../common/hooks.md)의 내용을 바탕으로 Go 언어에 특화된 내용을 확장합니다.
 
-## PostToolUse 钩子
+## PostToolUse 후크
 
-在 `~/.claude/settings.json` 中配置：
+`~/.claude/settings.json` 파일에 다음 항목을 구성하십시오:
 
-* **gofmt/goimports**：编辑后自动格式化 `.go` 文件
-* **go vet**：编辑 `.go` 文件后运行静态分析
-* **staticcheck**：对修改的包运行扩展静态检查
+* **gofmt/goimports**: `.go` 파일 편집 후 자동으로 포매팅을 수행합니다.
+* **go vet**: `.go` 파일 편집 후 정적 분석을 수행합니다.
+* **staticcheck**: 수정된 패키지에 대해 확장 정적 검사를 수행합니다.

@@ -1,41 +1,41 @@
 ---
 name: django-tdd
-description: Django 测试策略，包括 pytest-django、TDD 方法、factory_boy、模拟、覆盖率以及测试 Django REST Framework API。
+description: pytest-django, TDD 방법론, factory_boy, 모킹(Mocking), 커버리지 측정 및 Django REST Framework API 테스트를 포함한 Django 테스트 전략 가이드입니다.
 origin: ECC
 ---
 
-# 使用 TDD 进行 Django 测试
+# TDD를 활용한 Django 테스트
 
-使用 pytest、factory\_boy 和 Django REST Framework 进行 Django 应用程序的测试驱动开发。
+pytest, factory_boy 및 Django REST Framework(DRF)를 사용한 테스트 주도 개발(Test-Driven Development) 가이드입니다.
 
-## 何时激活
+## 적용 시점
 
-* 编写新的 Django 应用程序时
-* 实现 Django REST Framework API 时
-* 测试 Django 模型、视图和序列化器时
-* 为 Django 项目设置测试基础设施时
+* 새로운 Django 애플리케이션을 개발할 때
+* Django REST Framework API를 구현하고 검증할 때
+* Django 모델, 뷰, 시리얼라이저를 테스트할 때
+* Django 프로젝트의 테스트 인프라를 구축할 때
 
-## Django 的 TDD 工作流
+## Django TDD 워크플로우
 
-### 红-绿-重构循环
+### Red-Green-Refactor 사이클
 
 ```python
-# Step 1: RED - Write failing test
+# 1단계: RED - 실패하는 테스트 작성
 def test_user_creation():
     user = User.objects.create_user(email='test@example.com', password='testpass123')
     assert user.email == 'test@example.com'
     assert user.check_password('testpass123')
     assert not user.is_staff
 
-# Step 2: GREEN - Make test pass
-# Create User model or factory
+# 2단계: GREEN - 테스트를 통과시키는 최소한의 코드 작성
+# (모델 정의 또는 팩토리 생성 등)
 
-# Step 3: REFACTOR - Improve while keeping tests green
+# 3단계: REFACTOR - 테스트 통과 상태를 유지하며 코드 구조 개선
 ```
 
-## 设置
+## 환경 설정
 
-### pytest 配置
+### pytest 설정
 
 ```ini
 # pytest.ini
@@ -46,72 +46,68 @@ python_files = test_*.py
 python_classes = Test*
 python_functions = test_*
 addopts =
-    --reuse-db
-    --nomigrations
-    --cov=apps
+    --reuse-db           # 데이터베이스 재사용 (속도 향상)
+    --nomigrations       # 마이그레이션 건너뛰기
+    --cov=apps           # 커버리지 측정 대상 앱
     --cov-report=html
     --cov-report=term-missing
     --strict-markers
 markers =
-    slow: marks tests as slow
-    integration: marks tests as integration tests
+    slow: 실행이 오래 걸리는 테스트
+    integration: 통합 테스트
 ```
 
-### 测试设置
+### 테스트 전용 settings 설정
 
 ```python
 # config/settings/test.py
 from .base import *
 
-DEBUG = True
+DEBUG = True # 테스트 에러 확인을 위해 True 설정
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
+        'NAME': ':memory:', # 메모리 DB 사용으로 속도 최적화
     }
 }
 
-# Disable migrations for speed
+# 속도를 위해 마이그레이션 비활성화
 class DisableMigrations:
-    def __contains__(self, item):
-        return True
-
-    def __getitem__(self, item):
-        return None
+    def __contains__(self, item): return True
+    def __getitem__(self, item): return None
 
 MIGRATION_MODULES = DisableMigrations()
 
-# Faster password hashing
+# 비밀번호 해싱 속도 향상 (보안보다 테스트 속도 중시)
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.MD5PasswordHasher',
 ]
 
-# Email backend
+# 실제 메일 발송 대신 콘솔 출력
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Celery always eager
+# Celery 작업을 비동기가 아닌 동기 방식으로 즉시 실행
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
 ```
 
-### conftest.py
+### conftest.py (공통 픽스처 설정)
 
 ```python
 # tests/conftest.py
 import pytest
-from django.utils import timezone
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 @pytest.fixture(autouse=True)
 def timezone_settings(settings):
-    """Ensure consistent timezone."""
+    """모든 테스트에서 일관된 타임존 사용."""
     settings.TIME_ZONE = 'UTC'
 
 @pytest.fixture
 def user(db):
-    """Create a test user."""
+    """기본 테스트 사용자 생성."""
     return User.objects.create_user(
         email='test@example.com',
         password='testpass123',
@@ -119,611 +115,185 @@ def user(db):
     )
 
 @pytest.fixture
-def admin_user(db):
-    """Create an admin user."""
-    return User.objects.create_superuser(
-        email='admin@example.com',
-        password='adminpass123',
-        username='admin'
-    )
-
-@pytest.fixture
-def authenticated_client(client, user):
-    """Return authenticated client."""
-    client.force_login(user)
-    return client
-
-@pytest.fixture
 def api_client():
-    """Return DRF API client."""
+    """DRF API 테스트 클라이언트 반환."""
     from rest_framework.test import APIClient
     return APIClient()
 
 @pytest.fixture
 def authenticated_api_client(api_client, user):
-    """Return authenticated API client."""
+    """인증된 API 클라이언트 반환."""
     api_client.force_authenticate(user=user)
     return api_client
 ```
 
-## Factory Boy
+## Factory Boy (데이터 생성 자동화)
 
-### 工厂设置
+### 팩토리 설정
 
 ```python
 # tests/factories.py
 import factory
 from factory import fuzzy
-from datetime import datetime, timedelta
 from django.contrib.auth import get_user_model
 from apps.products.models import Product, Category
 
 User = get_user_model()
 
 class UserFactory(factory.django.DjangoModelFactory):
-    """Factory for User model."""
-
     class Meta:
         model = User
 
     email = factory.Sequence(lambda n: f"user{n}@example.com")
     username = factory.Sequence(lambda n: f"user{n}")
     password = factory.PostGenerationMethodCall('set_password', 'testpass123')
-    first_name = factory.Faker('first_name')
-    last_name = factory.Faker('last_name')
+    first_name = factory.Faker('first_name', locale='ko_KR')
+    last_name = factory.Faker('last_name', locale='ko_KR')
     is_active = True
 
-class CategoryFactory(factory.django.DjangoModelFactory):
-    """Factory for Category model."""
-
-    class Meta:
-        model = Category
-
-    name = factory.Faker('word')
-    slug = factory.LazyAttribute(lambda obj: obj.name.lower())
-    description = factory.Faker('text')
-
 class ProductFactory(factory.django.DjangoModelFactory):
-    """Factory for Product model."""
-
     class Meta:
         model = Product
 
     name = factory.Faker('sentence', nb_words=3)
     slug = factory.LazyAttribute(lambda obj: obj.name.lower().replace(' ', '-'))
-    description = factory.Faker('text')
     price = fuzzy.FuzzyDecimal(10.00, 1000.00, 2)
     stock = fuzzy.FuzzyInteger(0, 100)
-    is_active = True
-    category = factory.SubFactory(CategoryFactory)
-    created_by = factory.SubFactory(UserFactory)
-
-    @factory.post_generation
-    def tags(self, create, extracted, **kwargs):
-        """Add tags to product."""
-        if not create:
-            return
-        if extracted:
-            for tag in extracted:
-                self.tags.add(tag)
+    category = factory.SubFactory('tests.factories.CategoryFactory')
 ```
 
-### 使用工厂
+### 팩토리 활용 예시
 
 ```python
 # tests/test_models.py
-import pytest
-from tests.factories import ProductFactory, UserFactory
-
-def test_product_creation():
-    """Test product creation using factory."""
+def test_product_creation(db):
+    """팩토리를 사용한 상품 생성 테스트."""
     product = ProductFactory(price=100.00, stock=50)
     assert product.price == 100.00
     assert product.stock == 50
-    assert product.is_active is True
 
-def test_product_with_tags():
-    """Test product with tags."""
-    tags = [TagFactory(name='electronics'), TagFactory(name='new')]
-    product = ProductFactory(tags=tags)
-    assert product.tags.count() == 2
-
-def test_multiple_products():
-    """Test creating multiple products."""
+def test_multiple_products(db):
+    """여러 개의 상품 대량 생성 테스트."""
     products = ProductFactory.create_batch(10)
     assert len(products) == 10
 ```
 
-## 模型测试
-
-### 模型测试
+## 모델 테스트
 
 ```python
 # tests/test_models.py
-import pytest
-from django.core.exceptions import ValidationError
-from tests.factories import UserFactory, ProductFactory
-
-class TestUserModel:
-    """Test User model."""
-
-    def test_create_user(self, db):
-        """Test creating a regular user."""
-        user = UserFactory(email='test@example.com')
-        assert user.email == 'test@example.com'
-        assert user.check_password('testpass123')
-        assert not user.is_staff
-        assert not user.is_superuser
-
-    def test_create_superuser(self, db):
-        """Test creating a superuser."""
-        user = UserFactory(
-            email='admin@example.com',
-            is_staff=True,
-            is_superuser=True
-        )
-        assert user.is_staff
-        assert user.is_superuser
-
-    def test_user_str(self, db):
-        """Test user string representation."""
-        user = UserFactory(email='test@example.com')
-        assert str(user) == 'test@example.com'
-
+@pytest.mark.django_db
 class TestProductModel:
-    """Test Product model."""
-
-    def test_product_creation(self, db):
-        """Test creating a product."""
-        product = ProductFactory()
-        assert product.id is not None
-        assert product.is_active is True
-        assert product.created_at is not None
-
-    def test_product_slug_generation(self, db):
-        """Test automatic slug generation."""
+    def test_product_slug_generation(self):
+        """자동 슬러그 생성 테스트."""
         product = ProductFactory(name='Test Product')
         assert product.slug == 'test-product'
 
-    def test_product_price_validation(self, db):
-        """Test price cannot be negative."""
+    def test_product_price_validation(self):
+        """가격 음수 검증 테스트."""
+        from django.core.exceptions import ValidationError
         product = ProductFactory(price=-10)
         with pytest.raises(ValidationError):
             product.full_clean()
-
-    def test_product_manager_active(self, db):
-        """Test active manager method."""
-        ProductFactory.create_batch(5, is_active=True)
-        ProductFactory.create_batch(3, is_active=False)
-
-        active_count = Product.objects.active().count()
-        assert active_count == 5
-
-    def test_product_stock_management(self, db):
-        """Test stock management."""
-        product = ProductFactory(stock=10)
-        product.reduce_stock(5)
-        product.refresh_from_db()
-        assert product.stock == 5
-
-        with pytest.raises(ValueError):
-            product.reduce_stock(10)  # Not enough stock
 ```
 
-## 视图测试
-
-### Django 视图测试
-
-```python
-# tests/test_views.py
-import pytest
-from django.urls import reverse
-from tests.factories import ProductFactory, UserFactory
-
-class TestProductViews:
-    """Test product views."""
-
-    def test_product_list(self, client, db):
-        """Test product list view."""
-        ProductFactory.create_batch(10)
-
-        response = client.get(reverse('products:list'))
-
-        assert response.status_code == 200
-        assert len(response.context['products']) == 10
-
-    def test_product_detail(self, client, db):
-        """Test product detail view."""
-        product = ProductFactory()
-
-        response = client.get(reverse('products:detail', kwargs={'slug': product.slug}))
-
-        assert response.status_code == 200
-        assert response.context['product'] == product
-
-    def test_product_create_requires_login(self, client, db):
-        """Test product creation requires authentication."""
-        response = client.get(reverse('products:create'))
-
-        assert response.status_code == 302
-        assert response.url.startswith('/accounts/login/')
-
-    def test_product_create_authenticated(self, authenticated_client, db):
-        """Test product creation as authenticated user."""
-        response = authenticated_client.get(reverse('products:create'))
-
-        assert response.status_code == 200
-
-    def test_product_create_post(self, authenticated_client, db, category):
-        """Test creating a product via POST."""
-        data = {
-            'name': 'Test Product',
-            'description': 'A test product',
-            'price': '99.99',
-            'stock': 10,
-            'category': category.id,
-        }
-
-        response = authenticated_client.post(reverse('products:create'), data)
-
-        assert response.status_code == 302
-        assert Product.objects.filter(name='Test Product').exists()
-```
-
-## DRF API 测试
-
-### 序列化器测试
-
-```python
-# tests/test_serializers.py
-import pytest
-from rest_framework.exceptions import ValidationError
-from apps.products.serializers import ProductSerializer
-from tests.factories import ProductFactory
-
-class TestProductSerializer:
-    """Test ProductSerializer."""
-
-    def test_serialize_product(self, db):
-        """Test serializing a product."""
-        product = ProductFactory()
-        serializer = ProductSerializer(product)
-
-        data = serializer.data
-
-        assert data['id'] == product.id
-        assert data['name'] == product.name
-        assert data['price'] == str(product.price)
-
-    def test_deserialize_product(self, db):
-        """Test deserializing product data."""
-        data = {
-            'name': 'Test Product',
-            'description': 'Test description',
-            'price': '99.99',
-            'stock': 10,
-            'category': 1,
-        }
-
-        serializer = ProductSerializer(data=data)
-
-        assert serializer.is_valid()
-        product = serializer.save()
-
-        assert product.name == 'Test Product'
-        assert float(product.price) == 99.99
-
-    def test_price_validation(self, db):
-        """Test price validation."""
-        data = {
-            'name': 'Test Product',
-            'price': '-10.00',
-            'stock': 10,
-        }
-
-        serializer = ProductSerializer(data=data)
-
-        assert not serializer.is_valid()
-        assert 'price' in serializer.errors
-
-    def test_stock_validation(self, db):
-        """Test stock cannot be negative."""
-        data = {
-            'name': 'Test Product',
-            'price': '99.99',
-            'stock': -5,
-        }
-
-        serializer = ProductSerializer(data=data)
-
-        assert not serializer.is_valid()
-        assert 'stock' in serializer.errors
-```
-
-### API ViewSet 测试
+## DRF API 테스트
 
 ```python
 # tests/test_api.py
 import pytest
-from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse
-from tests.factories import ProductFactory, UserFactory
 
+@pytest.mark.django_db
 class TestProductAPI:
-    """Test Product API endpoints."""
-
-    @pytest.fixture
-    def api_client(self):
-        """Return API client."""
-        return APIClient()
-
-    def test_list_products(self, api_client, db):
-        """Test listing products."""
-        ProductFactory.create_batch(10)
-
+    def test_list_products(self, api_client):
+        """상품 목록 조회 API 테스트."""
+        ProductFactory.create_batch(5)
         url = reverse('api:product-list')
         response = api_client.get(url)
-
         assert response.status_code == status.HTTP_200_OK
-        assert response.data['count'] == 10
+        assert response.data['count'] == 5
 
-    def test_retrieve_product(self, api_client, db):
-        """Test retrieving a product."""
-        product = ProductFactory()
-
-        url = reverse('api:product-detail', kwargs={'pk': product.id})
-        response = api_client.get(url)
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['id'] == product.id
-
-    def test_create_product_unauthorized(self, api_client, db):
-        """Test creating product without authentication."""
+    def test_create_product_authorized(self, authenticated_api_client):
+        """인증된 사용자의 상품 생성 API 테스트."""
         url = reverse('api:product-list')
-        data = {'name': 'Test Product', 'price': '99.99'}
-
-        response = api_client.post(url, data)
-
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-    def test_create_product_authorized(self, authenticated_api_client, db):
-        """Test creating product as authenticated user."""
-        url = reverse('api:product-list')
-        data = {
-            'name': 'Test Product',
-            'description': 'Test',
-            'price': '99.99',
-            'stock': 10,
-        }
-
+        data = {'name': 'New Product', 'price': '99.99', 'stock': 10}
         response = authenticated_api_client.post(url, data)
-
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['name'] == 'Test Product'
-
-    def test_update_product(self, authenticated_api_client, db):
-        """Test updating a product."""
-        product = ProductFactory(created_by=authenticated_api_client.user)
-
-        url = reverse('api:product-detail', kwargs={'pk': product.id})
-        data = {'name': 'Updated Product'}
-
-        response = authenticated_api_client.patch(url, data)
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['name'] == 'Updated Product'
-
-    def test_delete_product(self, authenticated_api_client, db):
-        """Test deleting a product."""
-        product = ProductFactory(created_by=authenticated_api_client.user)
-
-        url = reverse('api:product-detail', kwargs={'pk': product.id})
-        response = authenticated_api_client.delete(url)
-
-        assert response.status_code == status.HTTP_204_NO_CONTENT
-
-    def test_filter_products_by_price(self, api_client, db):
-        """Test filtering products by price."""
-        ProductFactory(price=50)
-        ProductFactory(price=150)
-
-        url = reverse('api:product-list')
-        response = api_client.get(url, {'price_min': 100})
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['count'] == 1
-
-    def test_search_products(self, api_client, db):
-        """Test searching products."""
-        ProductFactory(name='Apple iPhone')
-        ProductFactory(name='Samsung Galaxy')
-
-        url = reverse('api:product-list')
-        response = api_client.get(url, {'search': 'Apple'})
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['count'] == 1
 ```
 
-## 模拟与打补丁
+## 모킹 (Mocking) 및 패칭 (Patching)
 
-### 模拟外部服务
+### 외부 서비스 모킹 (Stripe 등)
 
 ```python
-# tests/test_views.py
-from unittest.mock import patch, Mock
-import pytest
+from unittest.mock import patch
 
-class TestPaymentView:
-    """Test payment view with mocked payment gateway."""
-
-    @patch('apps.payments.services.stripe')
-    def test_successful_payment(self, mock_stripe, client, user, product):
-        """Test successful payment with mocked Stripe."""
-        # Configure mock
-        mock_stripe.Charge.create.return_value = {
-            'id': 'ch_123',
-            'status': 'succeeded',
-            'amount': 9999,
-        }
-
-        client.force_login(user)
-        response = client.post(reverse('payments:process'), {
-            'product_id': product.id,
-            'token': 'tok_visa',
-        })
-
-        assert response.status_code == 302
-        mock_stripe.Charge.create.assert_called_once()
-
-    @patch('apps.payments.services.stripe')
-    def test_failed_payment(self, mock_stripe, client, user, product):
-        """Test failed payment."""
-        mock_stripe.Charge.create.side_effect = Exception('Card declined')
-
-        client.force_login(user)
-        response = client.post(reverse('payments:process'), {
-            'product_id': product.id,
-            'token': 'tok_visa',
-        })
-
-        assert response.status_code == 302
-        assert 'error' in response.url
+@patch('apps.payments.services.stripe.Charge.create')
+def test_successful_payment(self, mock_charge, authenticated_api_client, product):
+    """Stripe 결제 성공 시나리오 모킹 테스트."""
+    mock_charge.return_value = {'id': 'ch_123', 'status': 'succeeded'}
+    
+    url = reverse('api:purchase', kwargs={'pk': product.id})
+    response = authenticated_api_client.post(url, {'token': 'tok_visa'})
+    
+    assert response.status_code == status.HTTP_201_CREATED
+    mock_charge.assert_called_once()
 ```
 
-### 模拟邮件发送
+### 이메일 발송 테스트
 
 ```python
-# tests/test_email.py
 from django.core import mail
-from django.test import override_settings
 
-@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-def test_order_confirmation_email(db, order):
-    """Test order confirmation email."""
+def test_order_email(db, order):
+    """주문 완료 시 메일 발송 여부 테스트."""
     order.send_confirmation_email()
-
     assert len(mail.outbox) == 1
-    assert order.user.email in mail.outbox[0].to
-    assert 'Order Confirmation' in mail.outbox[0].subject
+    assert '주문 확인' in mail.outbox[0].subject
 ```
 
-## 集成测试
+## 테스트 베스트 프랙티스
 
-### 完整流程测试
+### 권장 사항 (DO)
+* **팩토리(Factory) 사용**: 직접 객체를 생성하지 말고 Factory Boy를 활용하십시오.
+* **하나의 단언(One Assertion)**: 테스트 하나는 하나의 목적에만 집중하십시오.
+* **명확한 테스트 이름**: `test_user_cannot_delete_others_post`와 같이 의도를 드러내십시오.
+* **경계값 테스트**: 빈 입력, None, 최대치 등 엣지 케이스를 테스트하십시오.
+* **외부 서비스 격리**: 실제 API를 호출하지 말고 모킹(Mock)하십시오.
+* **속도 유지**: `--reuse-db`, `--nomigrations`를 활용하여 피드백 사이클을 단축하십시오.
 
-```python
-# tests/test_integration.py
-import pytest
-from django.urls import reverse
-from tests.factories import UserFactory, ProductFactory
+### 금지 사항 (DON'T)
+* **Django 내부 로직 테스트**: Django 프레임워크 자체의 동작은 신뢰하십시오.
+* **서드파티 라이브러리 테스트**: 외부 라이브러리는 이미 테스트되었다고 가정하십시오.
+* **실패 무시**: 모든 테스트는 반드시 통과해야 합니다.
+* **테스트 간 의존성**: 각 테스트는 독립적으로, 어떤 순서로든 실행 가능해야 합니다.
+* **운영 DB 사용**: 테스트 중 데이터가 손실될 수 있으므로 전용 테스트 DB만 사용하십시오.
 
-class TestCheckoutFlow:
-    """Test complete checkout flow."""
-
-    def test_guest_to_purchase_flow(self, client, db):
-        """Test complete flow from guest to purchase."""
-        # Step 1: Register
-        response = client.post(reverse('users:register'), {
-            'email': 'test@example.com',
-            'password': 'testpass123',
-            'password_confirm': 'testpass123',
-        })
-        assert response.status_code == 302
-
-        # Step 2: Login
-        response = client.post(reverse('users:login'), {
-            'email': 'test@example.com',
-            'password': 'testpass123',
-        })
-        assert response.status_code == 302
-
-        # Step 3: Browse products
-        product = ProductFactory(price=100)
-        response = client.get(reverse('products:detail', kwargs={'slug': product.slug}))
-        assert response.status_code == 200
-
-        # Step 4: Add to cart
-        response = client.post(reverse('cart:add'), {
-            'product_id': product.id,
-            'quantity': 1,
-        })
-        assert response.status_code == 302
-
-        # Step 5: Checkout
-        response = client.get(reverse('checkout:review'))
-        assert response.status_code == 200
-        assert product.name in response.content.decode()
-
-        # Step 6: Complete purchase
-        with patch('apps.checkout.services.process_payment') as mock_payment:
-            mock_payment.return_value = True
-            response = client.post(reverse('checkout:complete'))
-
-        assert response.status_code == 302
-        assert Order.objects.filter(user__email='test@example.com').exists()
-```
-
-## 测试最佳实践
-
-### 应该做
-
-* **使用工厂**：而不是手动创建对象
-* **每个测试一个断言**：保持测试聚焦
-* **描述性测试名称**：`test_user_cannot_delete_others_post`
-* **测试边界情况**：空输入、None 值、边界条件
-* **模拟外部服务**：不要依赖外部 API
-* **使用夹具**：消除重复
-* **测试权限**：确保授权有效
-* **保持测试快速**：使用 `--reuse-db` 和 `--nomigrations`
-
-### 不应该做
-
-* **不要测试 Django 内部**：相信 Django 能正常工作
-* **不要测试第三方代码**：相信库能正常工作
-* **不要忽略失败的测试**：所有测试必须通过
-* **不要让测试产生依赖**：测试应该能以任何顺序运行
-* **不要过度模拟**：只模拟外部依赖
-* **不要测试私有方法**：测试公共接口
-* **不要使用生产数据库**：始终使用测试数据库
-
-## 覆盖率
-
-### 覆盖率配置
+## 커버리지 (Coverage)
 
 ```bash
-# Run tests with coverage
-pytest --cov=apps --cov-report=html --cov-report=term-missing
+# 커버리지와 함께 테스트 실행
+pytest --cov=apps --cov-report=term-missing
 
-# Generate HTML report
-open htmlcov/index.html
+# 권장 커버리지 목표
+# - 모델: 90%+
+# - 서비스/비즈니스 로직: 90%+
+# - 시리얼라이저: 85%+
+# - 뷰/컨트롤러: 80%+
 ```
 
-### 覆盖率目标
+## 빠른 요약 리스트
 
-| 组件 | 目标覆盖率 |
-|-----------|-----------------|
-| 模型 | 90%+ |
-| 序列化器 | 85%+ |
-| 视图 | 80%+ |
-| 服务 | 90%+ |
-| 工具 | 80%+ |
-| 总体 | 80%+ |
-
-## 快速参考
-
-| 模式 | 用途 |
+| 패턴/도구 | 용도 |
 |---------|-------|
-| `@pytest.mark.django_db` | 启用数据库访问 |
-| `client` | Django 测试客户端 |
-| `api_client` | DRF API 客户端 |
-| `factory.create_batch(n)` | 创建多个对象 |
-| `patch('module.function')` | 模拟外部依赖 |
-| `override_settings` | 临时更改设置 |
-| `force_authenticate()` | 在测试中绕过身份验证 |
-| `assertRedirects` | 检查重定向 |
-| `assertTemplateUsed` | 验证模板使用 |
-| `mail.outbox` | 检查已发送的邮件 |
+| `@pytest.mark.django_db` | 데이터베이스 접근 권한 부여 |
+| `client` | Django 기본 웹 테스트 클라이언트 |
+| `api_client` | DRF 전용 API 테스트 클라이언트 |
+| `factory.create_batch(n)` | 데이터를 n개 일괄 생성 |
+| `patch('module.func')` | 외부 의존성을 모의 객체로 교체 |
+| `override_settings` | 테스트 중에만 일시적으로 settings 변경 |
+| `mail.outbox` | 전송된 이메일 목록 확인 |
 
-记住：测试即文档。好的测试解释了你的代码应如何工作。保持测试简单、可读和可维护。
+**핵심 리마인더**: 테스트는 곧 **문서**입니다. 잘 작성된 테스트는 코드가 어떻게 동작해야 하는지를 가장 정확하게 설명해 줍니다. 테스트를 단순하고 읽기 쉽게 유지하십시오.

@@ -1,16 +1,16 @@
-# Token Optimization Guide
+# 토큰 최적화 가이드 (Token Optimization Guide)
 
-Practical settings and habits to reduce token consumption, extend session quality, and get more work done within daily limits.
+토큰 소비를 줄이고, 세션 품질을 연장하며, 일일 제한 내에서 더 많은 작업을 수행하기 위한 실질적인 설정과 습관을 안내합니다.
 
-> See also: `rules/common/performance.md` for model selection strategy, `skills/strategic-compact/` for automated compaction suggestions.
+> 참고: 모델 선택 전략은 `rules/common/performance.md`를, 자동 압축 제안은 `skills/strategic-compact/`를 참조하십시오.
 
 ---
 
-## Recommended Settings
+## 권장 설정
 
-These are recommended defaults for most users. Power users can tune values further based on their workload — for example, setting `MAX_THINKING_TOKENS` lower for simple tasks or higher for complex architectural work.
+대부분의 사용자에게 권장되는 기본값입니다. 파워 유저는 작업량에 따라 값을 추가로 조정할 수 있습니다. 예를 들어, 단순한 작업에는 `MAX_THINKING_TOKENS`를 낮게 설정하고 복잡한 아키텍처 작업에는 높게 설정할 수 있습니다.
 
-Add to your `~/.claude/settings.json`:
+`~/.claude/settings.json`에 다음을 추가하십시오:
 
 ```json
 {
@@ -23,114 +23,115 @@ Add to your `~/.claude/settings.json`:
 }
 ```
 
-### What each setting does
+### 각 설정의 역할
 
-| Setting | Default | Recommended | Effect |
+| 설정 | 기본값 | 권장값 | 효과 |
 |---------|---------|-------------|--------|
-| `model` | opus | **sonnet** | Sonnet handles ~80% of coding tasks well. Switch to Opus with `/model opus` for complex reasoning. ~60% cost reduction. |
-| `MAX_THINKING_TOKENS` | 31,999 | **10,000** | Extended thinking reserves up to 31,999 output tokens per request for internal reasoning. Reducing this cuts hidden cost by ~70%. Set to `0` to disable for trivial tasks. |
-| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 95 | **50** | Auto-compaction triggers when context reaches this % of capacity. Default 95% is too late — quality degrades before that. Compacting at 50% keeps sessions healthier. |
-| `CLAUDE_CODE_SUBAGENT_MODEL` | _(inherits main)_ | **haiku** | Subagents (Task tool) run on this model. Haiku is ~80% cheaper and sufficient for exploration, file reading, and test running. |
+| `model` | opus | **sonnet** | Sonnet은 코딩 작업의 약 80%를 잘 처리합니다. 복잡한 추론이 필요한 경우에만 `/model opus`로 전환하십시오. 비용이 약 60% 절감됩니다. |
+| `MAX_THINKING_TOKENS` | 31,999 | **10,000** | 확장 추론(Extended thinking)은 내부 추론을 위해 요청당 최대 31,999개의 출력 토큰을 예약합니다. 이 값을 줄이면 숨겨진 비용이 약 70% 절감됩니다. 사소한 작업의 경우 `0`으로 설정하여 비활성화할 수 있습니다. |
+| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 95 | **50** | 컨텍스트가 이 용량(%)에 도달하면 자동 압축이 실행됩니다. 기본값 95%는 너무 늦습니다 — 그전에 품질이 저하될 수 있습니다. 50%에서 압축하면 세션을 더 건강하게 유지할 수 있습니다. |
+| `CLAUDE_CODE_SUBAGENT_MODEL` | _(메인 모델 상속)_ | **haiku** | 서브에이전트(Task 도구)가 이 모델에서 실행됩니다. Haiku는 약 80% 더 저렴하며 탐색, 파일 읽기 및 테스트 실행에 충분합니다. |
 
-### Toggling extended thinking
+### 확장 추론(Extended thinking) 전환
 
-- **Alt+T** (Windows/Linux) or **Option+T** (macOS) — toggle on/off
-- **Ctrl+O** — see thinking output (verbose mode)
+- **Alt+T** (Windows/Linux) 또는 **Option+T** (macOS) — 켜기/끄기 전환
+- **Ctrl+O** — 추론 출력 보기 (상세 모드)
 
 ---
 
-## Model Selection
+## 모델 선택
 
-Use the right model for the task:
+작업에 적합한 모델을 사용하십시오:
 
-| Model | Best for | Cost |
+| 모델 | 용도 | 비용 |
 |-------|----------|------|
-| **Haiku** | Subagent exploration, file reading, simple lookups | Lowest |
-| **Sonnet** | Day-to-day coding, reviews, test writing, implementation | Medium |
-| **Opus** | Complex architecture, multi-step reasoning, debugging subtle issues | Highest |
+| **Haiku** | 서브에이전트 탐색, 파일 읽기, 단순 조회 | 가장 낮음 |
+| **Sonnet** | 일상적인 코딩, 리뷰, 테스트 작성, 구현 | 보통 |
+| **Opus** | 복잡한 아키텍처, 다단계 추론, 미묘한 이슈 디버깅 | 가장 높음 |
 
-Switch models mid-session:
+세션 중간에 모델을 전환할 수 있습니다:
 
 ```
-/model sonnet     # default for most work
-/model opus       # complex reasoning
-/model haiku      # quick lookups
+/model sonnet     # 대부분의 작업용 기본값
+/model opus       # 복잡한 추론용
+/model haiku      # 빠른 조회용
 ```
 
 ---
 
-## Context Management
+## 컨텍스트 관리
 
-### Commands
+### 명령어
 
-| Command | When to use |
+| 명령어 | 사용 시기 |
 |---------|-------------|
-| `/clear` | Between unrelated tasks. Stale context wastes tokens on every subsequent message. |
-| `/compact` | At logical task breakpoints (after planning, after debugging, before switching focus). |
-| `/cost` | Check token spending for the current session. |
+| `/clear` | 관련 없는 작업으로 넘어갈 때. 오래된 컨텍스트는 매 메시지마다 토큰을 낭비합니다. |
+| `/compact` | 논리적인 작업 중단점(계획 수립 후, 디버깅 후, 포커스 전환 전 등)에서 사용합니다. |
+| `/cost` | 현재 세션의 토큰 사용량을 확인합니다. |
 
-### Strategic compaction
+### 전략적 압축 (Strategic compaction)
 
-The `strategic-compact` skill (in `skills/strategic-compact/`) suggests `/compact` at logical intervals rather than relying on auto-compaction, which can trigger mid-task. See the skill's README for hook setup instructions.
+`strategic-compact` 스킬(`skills/strategic-compact/`에 위치)은 작업 중간에 실행될 수 있는 자동 압축에 의존하기보다, 논리적인 간격마다 `/compact`를 제안합니다. 후크 설정 방법은 해당 스킬의 README를 참조하십시오.
 
-**When to compact:**
-- After exploration, before implementation
-- After completing a milestone
-- After debugging, before continuing with new work
-- Before a major context shift
+**압축이 권장되는 시점:**
+- 탐색 완료 후, 구현 시작 전
+- 마일스톤 완료 후
+- 디버깅 완료 후, 새로운 작업 시작 전
+- 주요 컨텍스트 전환 전
 
-**When NOT to compact:**
-- Mid-implementation of related changes
-- While debugging an active issue
-- During multi-file refactoring
+**압축하지 말아야 할 시점:**
+- 관련 변경 사항을 구현하는 도중
+- 활발하게 디버깅 중인 이슈가 있을 때
+- 여러 파일에 걸친 리팩토링 중
 
-### Subagents protect your context
+### 서브에이전트로 컨텍스트 보호
 
-Use subagents (Task tool) for exploration instead of reading many files in your main session. The subagent reads 20 files but only returns a summary — your main context stays clean.
-
----
-
-## MCP Server Management
-
-Each enabled MCP server adds tool definitions to your context window. The README warns: **keep under 10 enabled per project**.
-
-Tips:
-- Run `/mcp` to see active servers and their context cost
-- Prefer CLI tools when available (`gh` instead of GitHub MCP, `aws` instead of AWS MCP)
-- Use `disabledMcpServers` in project config to disable servers per-project
-- The `memory` MCP server is configured by default but not used by any skill, agent, or hook — consider disabling it
+메인 세션에서 직접 많은 파일을 읽는 대신 서브에이전트(Task 도구)를 사용하여 탐색하십시오. 서브에이전트가 20개의 파일을 읽더라도 요약본만 반환하므로 메인 컨텍스트를 깨끗하게 유지할 수 있습니다.
 
 ---
 
-## Agent Teams Cost Warning
+## MCP 서버 관리
 
-[Agent Teams](https://code.claude.com/docs/en/agent-teams) (experimental) spawns multiple independent context windows. Each teammate consumes tokens separately.
+활성화된 각 MCP 서버는 컨텍스트 윈도우에 도구 정의를 추가합니다. README 권고 사항: **프로젝트당 활성화된 서버를 10개 미만으로 유지하십시오.**
 
-- Only use for tasks where parallelism adds clear value (multi-module work, parallel reviews)
-- For simple sequential tasks, subagents (Task tool) are more token-efficient
-- Enable with: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings
-
----
-
-## Future: configure-ecc Integration
-
-The `configure-ecc` install wizard could offer to set these environment variables during setup, with explanations of the cost tradeoffs. This would help new users optimize from day one rather than discovering these settings after hitting limits.
+팁:
+- `/mcp`를 실행하여 활성 서버와 컨텍스트 비용을 확인하십시오.
+- 가능한 경우 CLI 도구를 선호하십시오 (GitHub MCP 대신 `gh`, AWS MCP 대신 `aws` 등).
+- 프로젝트 설정의 `disabledMcpServers`를 사용하여 프로젝트별로 서버를 비활성화하십시오.
+- `memory` MCP 서버는 기본적으로 구성되어 있지만 어떤 스킬, 에이전트, 후크도 사용하지 않으므로 비활성화를 고려하십시오.
 
 ---
 
-## Quick Reference
+## 에이전트 팀(Agent Teams) 비용 경고
+
+[에이전트 팀](https://code.claude.com/docs/en/agent-teams) (실험적 기능)은 독립적인 여러 개의 컨텍스트 윈도우를 생성합니다. 각 팀원은 토큰을 별도로 소비합니다.
+
+- 병렬 처리가 명확한 가치를 제공하는 작업(멀티 모듈 작업, 병렬 리뷰 등)에만 사용하십시오.
+- 단순한 순차적 작업의 경우 서브에이전트(Task 도구)가 더 토큰 효율적입니다.
+- 설정에서 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`로 활성화할 수 있습니다.
+
+---
+
+## 향후 계획: configure-ecc 통합
+
+`configure-ecc` 설치 마법사에서 설치 시 이러한 환경 변수 설정을 제안하고 비용 트레이드오프를 설명할 수 있습니다. 이를 통해 사용자가 제한에 걸린 후에 설정을 발견하는 대신 첫날부터 최적화할 수 있도록 도울 것입니다.
+
+---
+
+## 빠른 참조 (Quick Reference)
 
 ```bash
-# Daily workflow
-/model sonnet              # Start here
-/model opus                # Only for complex reasoning
-/clear                     # Between unrelated tasks
-/compact                   # At logical breakpoints
-/cost                      # Check spending
+# 일상적인 워크플로우
+/model sonnet              # 여기서 시작
+/model opus                # 복잡한 추론에만 사용
+/clear                     # 관련 없는 작업 사이
+/compact                   # 논리적 중단점
+/cost                      # 사용량 확인
 
-# Environment variables (add to ~/.claude/settings.json "env" block)
+# 환경 변수 (~/.claude/settings.json의 "env" 블록에 추가)
 MAX_THINKING_TOKENS=10000
 CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=50
 CLAUDE_CODE_SUBAGENT_MODEL=haiku
 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 ```
+    

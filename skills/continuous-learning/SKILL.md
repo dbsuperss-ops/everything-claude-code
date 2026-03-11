@@ -1,32 +1,32 @@
 ---
 name: continuous-learning
-description: Automatically extract reusable patterns from Claude Code sessions and save them as learned skills for future use.
+description: Claude Code 세션에서 재사용 가능한 패턴을 자동으로 추출하여 미래에 사용할 수 있는 학습된 스킬(Learned skills)로 저장합니다.
 origin: ECC
 ---
 
-# Continuous Learning Skill
+# 지속적 학습 스킬 (Continuous Learning Skill)
 
-Automatically evaluates Claude Code sessions on end to extract reusable patterns that can be saved as learned skills.
+Claude Code 세션이 종료될 때 자동으로 세션을 평가하여, 학습된 스킬로 저장할 수 있는 재사용 가능한 패턴을 추출합니다.
 
-## When to Activate
+## 활성화 시점
 
-- Setting up automatic pattern extraction from Claude Code sessions
-- Configuring the Stop hook for session evaluation
-- Reviewing or curating learned skills in `~/.claude/skills/learned/`
-- Adjusting extraction thresholds or pattern categories
-- Comparing v1 (this) vs v2 (instinct-based) approaches
+- Claude Code 세션에서 자동 패턴 추출 설정을 할 때
+- 세션 평가를 위한 Stop 훅(hook)을 구성할 때
+- `~/.claude/skills/learned/`에 저장된 학습된 스킬을 검토하거나 관리할 때
+- 추출 임계값(Threshold)이나 패턴 카테고리를 조정할 때
+- v1(현재 방식)과 v2(본능 기반 학습) 방식을 비교할 때
 
-## How It Works
+## 작동 방식
 
-This skill runs as a **Stop hook** at the end of each session:
+이 스킬은 각 세션이 끝날 때 **Stop 훅**으로 실행됩니다:
 
-1. **Session Evaluation**: Checks if session has enough messages (default: 10+)
-2. **Pattern Detection**: Identifies extractable patterns from the session
-3. **Skill Extraction**: Saves useful patterns to `~/.claude/skills/learned/`
+1. **세션 평가**: 세션에 충분한 메시지가 있는지 확인합니다 (기본값: 10개 이상).
+2. **패턴 감지**: 세션에서 추출 가능한 패턴을 식별합니다.
+3. **스킬 추출**: 유용한 패턴을 `~/.claude/skills/learned/` 폴더에 저장합니다.
 
-## Configuration
+## 설정
 
-Edit `config.json` to customize:
+`config.json` 파일을 수정하여 설정을 맞춤화하십시오:
 
 ```json
 {
@@ -49,19 +49,19 @@ Edit `config.json` to customize:
 }
 ```
 
-## Pattern Types
+## 패턴 유형
 
-| Pattern | Description |
+| 패턴 | 설명 |
 |---------|-------------|
-| `error_resolution` | How specific errors were resolved |
-| `user_corrections` | Patterns from user corrections |
-| `workarounds` | Solutions to framework/library quirks |
-| `debugging_techniques` | Effective debugging approaches |
-| `project_specific` | Project-specific conventions |
+| `error_resolution` | 특정 에러가 어떻게 해결되었는지 |
+| `user_corrections` | 사용자의 교정 사항에서 파생된 패턴 |
+| `workarounds` | 프레임워크나 라이브러리의 특이점(Quirk)에 대한 해결책 |
+| `debugging_techniques` | 효과적인 디버깅 접근 방식 |
+| `project_specific` | 프로젝트 전용 컨벤션 |
 
-## Hook Setup
+## 훅(Hook) 설정
 
-Add to your `~/.claude/settings.json`:
+`~/.claude/settings.json` 파일에 다음 내용을 추가하십시오:
 
 ```json
 {
@@ -77,43 +77,30 @@ Add to your `~/.claude/settings.json`:
 }
 ```
 
-## Why Stop Hook?
+## 관련 항목
 
-- **Lightweight**: Runs once at session end
-- **Non-blocking**: Doesn't add latency to every message
-- **Complete context**: Has access to full session transcript
-
-## Related
-
-- [The Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352) - Section on continuous learning
-- `/learn` command - Manual pattern extraction mid-session
+- [The Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352) - 지속적 학습 섹션
+- `/learn` 명령어 - 세션 중간에 수동으로 패턴 추출 수행
 
 ---
 
-## Comparison Notes (Research: Jan 2025)
+## 비교 분석 (Research: 2025년 1월)
 
 ### vs Homunculus
 
-Homunculus v2 takes a more sophisticated approach:
+Homunculus v2는 더 정교한 접근 방식을 취합니다:
 
-| Feature | Our Approach | Homunculus v2 |
+| 기능 | 현재 방식 (v1) | Homunculus v2 |
 |---------|--------------|---------------|
-| Observation | Stop hook (end of session) | PreToolUse/PostToolUse hooks (100% reliable) |
-| Analysis | Main context | Background agent (Haiku) |
-| Granularity | Full skills | Atomic "instincts" |
-| Confidence | None | 0.3-0.9 weighted |
-| Evolution | Direct to skill | Instincts → cluster → skill/command/agent |
-| Sharing | None | Export/import instincts |
+| 관찰 시점 | Stop 훅 (세션 종료 시) | Pre/PostToolUse 훅 (100% 신뢰도) |
+| 분석 주체 | 메인 컨텍스트 | 백그라운드 에이전트 (Haiku) |
+| 세밀도 | 전체 스킬 단위 | 원자적 "본능(Instincts)" 단위 |
+| 확신도 점수 | 없음 | 0.3-0.9 가중치 부여 |
+| 진화 경로 | 스킬로 직접 저장 | 본능 → 클러스터링 → 스킬/명령어/에이전트 |
+| 공유 가능성 | 없음 | 본능 내보내기/가져오기 가능 |
 
-**Key insight from homunculus:**
-> "v1 relied on skills to observe. Skills are probabilistic—they fire ~50-80% of the time. v2 uses hooks for observation (100% reliable) and instincts as the atomic unit of learned behavior."
+**Homunculus의 핵심 통찰:**
+> "v1은 관찰을 위해 스킬에 의존했습니다. 스킬은 확률적입니다—약 50-80% 확률로 작동합니다. v2는 관찰을 위해 훅을 사용(100% 신뢰도)하며, 학습된 행동의 원자적 단위로 '본능(Instincts)'을 사용합니다."
 
-### Potential v2 Enhancements
-
-1. **Instinct-based learning** - Smaller, atomic behaviors with confidence scoring
-2. **Background observer** - Haiku agent analyzing in parallel
-3. **Confidence decay** - Instincts lose confidence if contradicted
-4. **Domain tagging** - code-style, testing, git, debugging, etc.
-5. **Evolution path** - Cluster related instincts into skills/commands
-
-See: `docs/continuous-learning-v2-spec.md` for full spec.
+상세 사양은 `docs/continuous-learning-v2-spec.md`를 참조하십시오.
+    

@@ -1,61 +1,61 @@
 # CLAUDE.md
 
-本文件为 Claude Code (claude.ai/code) 处理此仓库代码时提供指导。
+이 파일은 Claude Code (claude.ai/code)가 이 저장소의 코드를 처리할 때 필요한 지침을 제공합니다.
 
-## 项目概述
+## 프로젝트 개요
 
-这是一个 **Claude Code 插件** - 一个包含生产就绪的代理、技能、钩子、命令、规则和 MCP 配置的集合。该项目提供了使用 Claude Code 进行软件开发的经验证的工作流。
+이 프로젝트는 **Claude Code 플러그인**으로, 운영 환경에서 즉시 사용할 수 있는 에이전트, 스킬, 후크, 명령어, 규칙 및 MCP 구성의 모음입니다. 소프트웨어 개발을 위한 검증된 워크플로우를 제공합니다.
 
-## 运行测试
+## 테스트 실행
 
 ```bash
-# Run all tests
+# 전체 테스트 실행
 node tests/run-all.js
 
-# Run individual test files
+# 개별 테스트 파일 실행
 node tests/lib/utils.test.js
 node tests/lib/package-manager.test.js
 node tests/hooks/hooks.test.js
 ```
 
-## 架构
+## 아키텍처
 
-项目组织为以下几个核心组件：
+프로젝트는 다음과 같은 핵심 구성 요소로 조직되어 있습니다:
 
-* **agents/** - 用于委派的专业化子代理（规划器、代码审查员、TDD 指南等）
-* **skills/** - 工作流定义和领域知识（编码标准、模式、测试）
-* **commands/** - 由用户调用的斜杠命令（/tdd, /plan, /e2e 等）
-* **hooks/** - 基于触发的自动化（会话持久化、工具前后钩子）
-* **rules/** - 始终遵循的指南（安全、编码风格、测试要求）
-* **mcp-configs/** - 用于外部集成的 MCP 服务器配置
-* **scripts/** - 用于钩子和设置的跨平台 Node.js 工具
-* **tests/** - 脚本和工具的测试套件
+* **agents/** - 위임 작업을 위한 전문 서브 에이전트 (planner, code-reviewer, tdd-guide 등)
+* **skills/** - 워크플로우 정의 및 도메인 지식 (코딩 표준, 패턴, 테스트)
+* **commands/** - 사용자가 호출하는 슬래시 명령어 (/tdd, /plan, /e2e 등)
+* **hooks/** - 트리거 기반 자동화 (세션 유지, 도구 전후 후크)
+* **rules/** - 항상 준수해야 할 가이드라인 (보안, 코딩 스타일, 테스트 요구 사항)
+* **mcp-configs/** - 외부 통합을 위한 MCP 서버 구성
+* **scripts/** - 후크 및 설정을 위한 크로스 플랫폼 Node.js 도구
+* **tests/** - 스크립트 및 도구용 테스트 슈트
 
-## 关键命令
+## 주요 명령어
 
-* `/tdd` - 测试驱动开发工作流
-* `/plan` - 实施规划
-* `/e2e` - 生成并运行端到端测试
-* `/code-review` - 质量审查
-* `/build-fix` - 修复构建错误
-* `/learn` - 从会话中提取模式
-* `/skill-create` - 从 git 历史记录生成技能
+* `/tdd` - 테스트 주도 개발 워크플로우
+* `/plan` - 구현 계획 수립
+* `/e2e` - 엔드투엔드 테스트 생성 및 실행
+* `/code-review` - 품질 리뷰
+* `/build-fix` - 빌드 오류 수정
+* `/learn` - 세션에서 패턴 추출
+* `/skill-create` - git 이력 기반 스킬 생성
 
-## 开发说明
+## 개발 참고 사항
 
-* 包管理器检测：npm、pnpm、yarn、bun（可通过 `CLAUDE_PACKAGE_MANAGER` 环境变量或项目配置设置）
-* 跨平台：通过 Node.js 脚本支持 Windows、macOS、Linux
-* 代理格式：带有 YAML 前言的 Markdown（名称、描述、工具、模型）
-* 技能格式：带有清晰章节的 Markdown（何时使用、如何工作、示例）
-* 钩子格式：带有匹配器条件和命令/通知钩子的 JSON
+* 패키지 관리자 감지: npm, pnpm, yarn, bun (`CLAUDE_PACKAGE_MANAGER` 환경 변수 또는 프로젝트 설정으로 지정 가능)
+* 크로스 플랫폼: Node.js 스크립트를 통해 Windows, macOS, Linux 지원
+* 에이전트 형식: YAML 프런트매터(이름, 설명, 도구, 모델)가 포함된 마크다운
+* 스킬 형식: 명확한 섹션(사용 시기, 작동 방식, 예시)이 포함된 마크다운
+* 후크 형식: 매처(matcher) 조건과 명령어/알림 후크가 포함된 JSON
 
-## 贡献
+## 기여 가이드
 
-遵循 CONTRIBUTING.md 中的格式：
+CONTRIBUTING.md의 형식을 따르십시오:
 
-* 代理：带有前言的 Markdown（名称、描述、工具、模型）
-* 技能：清晰的章节（何时使用、如何工作、示例）
-* 命令：带有描述前言的 Markdown
-* 钩子：带有匹配器和钩子数组的 JSON
+* 에이전트: 프런트매터가 포함된 마크다운 (이름, 설명, 도구, 모델)
+* 스킬: 명확한 섹션 (사용 시기, 작동 방식, 예시)
+* 명령어: 설명이 포함된 프런트매터 마크다운
+* 후크: 매처와 후크 배열이 포함된 JSON
 
-文件命名：小写字母并用连字符连接（例如 `python-reviewer.md`, `tdd-workflow.md`）
+파일 명명: 소문자 및 하이픈 사용 (예: `python-reviewer.md`, `tdd-workflow.md`)

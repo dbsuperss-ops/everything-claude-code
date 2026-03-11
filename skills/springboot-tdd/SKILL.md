@@ -1,158 +1,49 @@
 ---
 name: springboot-tdd
-description: Test-driven development for Spring Boot using JUnit 5, Mockito, MockMvc, Testcontainers, and JaCoCo. Use when adding features, fixing bugs, or refactoring.
+description: JUnit 5, Mockito, MockMvc, Testcontainers 및 JaCoCo를 사용한 Spring Boot 테스트 주도 개발(TDD) 가이드입니다. 기능 추가, 버그 수정 또는 리팩토링 시 사용하십시오.
 origin: ECC
 ---
 
-# Spring Boot TDD Workflow
+# Spring Boot TDD 워크플로우 (Spring Boot TDD Workflow)
 
-TDD guidance for Spring Boot services with 80%+ coverage (unit + integration).
+단위 테스트와 통합 테스트를 포함하여 80% 이상의 커버리지를 목표로 하는 Spring Boot 서비스를 위한 TDD 가이드입니다.
 
-## When to Use
+## 활성화 시점
 
-- New features or endpoints
-- Bug fixes or refactors
-- Adding data access logic or security rules
+- 새로운 기능 또는 엔드포인트를 개발할 때
+- 버그 수정 또는 리팩토링 시
+- 데이터 접근 로직이나 보안 규칙을 추가할 때
 
-## Workflow
+## 워크플로우 (Workflow)
 
-1) Write tests first (they should fail)
-2) Implement minimal code to pass
-3) Refactor with tests green
-4) Enforce coverage (JaCoCo)
+1. **테스트 먼저 작성**: 의도한 동작에 대해 실패하는 테스트를 작성하십시오.
+2. **최소 구현**: 테스트를 통과시키기 위한 최소한의 코드를 작성하십시오.
+3. **리팩토링**: 테스트가 통과(Green)하는 상태를 유지하며 코드를 개선하십시오.
+4. **커버리지 강제**: JaCoCo 등을 사용하여 필요한 커버리지를 확보하십시오.
 
-## Unit Tests (JUnit 5 + Mockito)
+## 단위 테스트 (JUnit 5 + Mockito)
 
-```java
-@ExtendWith(MockitoExtension.class)
-class MarketServiceTest {
-  @Mock MarketRepository repo;
-  @InjectMocks MarketService service;
+- `@ExtendWith(MockitoExtension.class)`와 `@Mock`, `@InjectMocks`를 사용하십시오.
+- **Arrange-Act-Assert** 패턴을 따르십시오.
+- 부분 모킹(Partial mocks)을 피하고 명시적인 스터빙(Stubbing)을 선호하십시오.
+- 다양한 입력 케이스에는 `@ParameterizedTest`를 활용하십시오.
 
-  @Test
-  void createsMarket() {
-    CreateMarketRequest req = new CreateMarketRequest("name", "desc", Instant.now(), List.of("cat"));
-    when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+## 웹 계층 테스트 (MockMvc)
 
-    Market result = service.create(req);
+- `@WebMvcTest`를 사용하여 특정 컨트롤러와 관련된 빈만 로드하십시오.
+- `MockMvc`를 사용하여 HTTP 요청을 시뮬레이션하고 응답 상태 및 JSON 경로(`jsonPath`)를 검증하십시오.
 
-    assertThat(result.name()).isEqualTo("name");
-    verify(repo).save(any());
-  }
-}
-```
+## 통합 및 영속성 테스트
 
-Patterns:
-- Arrange-Act-Assert
-- Avoid partial mocks; prefer explicit stubbing
-- Use `@ParameterizedTest` for variants
+- **통합 테스트**: `@SpringBootTest`와 `@AutoConfigureMockMvc`를 사용하여 전체 컨텍스트를 테스트하십시오.
+- **영속성 테스트**: `@DataJpaTest`를 사용하여 리포지토리 레이어를 테스트하십시오.
+- **Testcontainers**: 운영 환경과 유사한 DB(Postgres, Redis 등) 환경을 위해 **Testcontainers**를 적극 활용하십시오.
 
-## Web Layer Tests (MockMvc)
+## 주요 도구 및 최선 관행
 
-```java
-@WebMvcTest(MarketController.class)
-class MarketControllerTest {
-  @Autowired MockMvc mockMvc;
-  @MockBean MarketService marketService;
+- **AssertJ**: 가독성을 위해 `assertThat` 기반의 유창한(Fluent) 단언문을 사용하십시오.
+- **테스트 데이터 빌더**: 테스트용 객체 생성을 위해 빌더 패턴을 활용하여 중복을 줄이십시오.
+- **속도와 결정론**: 테스트는 빠르고, 독립적이며, 항상 같은 결과를 내야 합니다. 내부 구현 상세가 아닌 **동작(Behavior)**을 테스트하십시오.
 
-  @Test
-  void returnsMarkets() throws Exception {
-    when(marketService.list(any())).thenReturn(Page.empty());
-
-    mockMvc.perform(get("/api/markets"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content").isArray());
-  }
-}
-```
-
-## Integration Tests (SpringBootTest)
-
-```java
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class MarketIntegrationTest {
-  @Autowired MockMvc mockMvc;
-
-  @Test
-  void createsMarket() throws Exception {
-    mockMvc.perform(post("/api/markets")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("""
-          {"name":"Test","description":"Desc","endDate":"2030-01-01T00:00:00Z","categories":["general"]}
-        """))
-      .andExpect(status().isCreated());
-  }
-}
-```
-
-## Persistence Tests (DataJpaTest)
-
-```java
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(TestContainersConfig.class)
-class MarketRepositoryTest {
-  @Autowired MarketRepository repo;
-
-  @Test
-  void savesAndFinds() {
-    MarketEntity entity = new MarketEntity();
-    entity.setName("Test");
-    repo.save(entity);
-
-    Optional<MarketEntity> found = repo.findByName("Test");
-    assertThat(found).isPresent();
-  }
-}
-```
-
-## Testcontainers
-
-- Use reusable containers for Postgres/Redis to mirror production
-- Wire via `@DynamicPropertySource` to inject JDBC URLs into Spring context
-
-## Coverage (JaCoCo)
-
-Maven snippet:
-```xml
-<plugin>
-  <groupId>org.jacoco</groupId>
-  <artifactId>jacoco-maven-plugin</artifactId>
-  <version>0.8.14</version>
-  <executions>
-    <execution>
-      <goals><goal>prepare-agent</goal></goals>
-    </execution>
-    <execution>
-      <id>report</id>
-      <phase>verify</phase>
-      <goals><goal>report</goal></goals>
-    </execution>
-  </executions>
-</plugin>
-```
-
-## Assertions
-
-- Prefer AssertJ (`assertThat`) for readability
-- For JSON responses, use `jsonPath`
-- For exceptions: `assertThatThrownBy(...)`
-
-## Test Data Builders
-
-```java
-class MarketBuilder {
-  private String name = "Test";
-  MarketBuilder withName(String name) { this.name = name; return this; }
-  Market build() { return new Market(null, name, MarketStatus.ACTIVE); }
-}
-```
-
-## CI Commands
-
-- Maven: `mvn -T 4 test` or `mvn verify`
-- Gradle: `./gradlew test jacocoTestReport`
-
-**Remember**: Keep tests fast, isolated, and deterministic. Test behavior, not implementation details.
+**기억하십시오**: 테스트는 코드의 품질뿐만 아니라 설계의 결함을 조기에 발견할 수 있는 가장 강력한 도구입니다.
+    

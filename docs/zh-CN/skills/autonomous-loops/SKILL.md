@@ -1,621 +1,610 @@
 ---
 name: autonomous-loops
-description: "自主Claude代码循环的模式与架构——从简单的顺序管道到基于RFC的多智能体有向无环图系统。"
+description: "자율적인 Claude 코드 루프의 패턴과 아키텍처 - 단순한 순차 파이프라인부터 RFC 기반의 멀티 에이전트 DAG 시스템까지."
 origin: ECC
 ---
 
-# 自主循环技能
+# 자율 루프(Autonomous Loops) 스킬
 
-> 兼容性说明 (v1.8.0): `autonomous-loops` 保留一个发布周期。
-> 规范的技能名称现在是 `continuous-agent-loop`。新的循环指南应在此处编写，而此技能继续可用以避免破坏现有工作流。
+> 호환성 안내 (v1.8.0): `autonomous-loops` 명칭은 한 번의 릴리스 주기 동안만 유지됩니다.
+> 현재 권장되는 스킬 명칭은 `continuous-agent-loop`입니다. 새로운 루프 관련 가이드는 해당 위치에 작성해야 하며, 이 스킬은 기존 워크플로우를 깨뜨리지 않기 위해 당분간 유지됩니다.
 
-在循环中自主运行 Claude Code 的模式、架构和参考实现。涵盖从简单的 `claude -p` 管道到完整的 RFC 驱动的多智能体 DAG 编排的一切。
+자율적으로 Claude Code를 실행하기 위한 패턴, 아키텍처 및 참조 구현입니다. 단순한 `claude -p` 파이프라인부터 RFC 기반의 복잡한 멀티 에이전트 DAG(Directed Acyclic Graph) 오케스트레이션까지 모든 범위를 다룹니다.
 
-## 何时使用
+## 사용 시점
 
-* 建立无需人工干预即可运行的自主开发工作流
-* 为你的问题选择正确的循环架构（简单与复杂）
-* 构建 CI/CD 风格的持续开发管道
-* 运行具有合并协调的并行智能体
-* 在循环迭代中实现上下文持久化
-* 为自主工作流添加质量门和清理步骤
+* 사람의 개입 없이 실행되는 자율 개발 워크플로우를 구축할 때
+* 문제 해결을 위해 적절한 루프 아키텍처(단순형 vs 복잡형)를 선택할 때
+* CI/CD 스타일의 지속적 개발 파이프라인을 구축할 때
+* 병합 조정(Merge coordination) 기능이 포함된 병렬 에이전트를 실행할 때
+* 루프 반복 간에 컨텍스트를 유지(Persistence)하고 싶을 때
+* 자율 워크플로우에 품질 게이트(Quality gates) 및 정리 단계를 추가할 때
 
-## 循环模式谱系
+## 루프 패턴 스펙트럼
 
-从最简单到最复杂：
+가장 단순한 것부터 가장 복잡한 순서대로:
 
-| 模式 | 复杂度 | 最适合 |
+| 패턴 | 복잡도 | 최적의 사용 사례 |
 |---------|-----------|----------|
-| [顺序管道](#1-顺序管道-claude--p) | 低 | 日常开发步骤，脚本化工作流 |
-| [NanoClaw REPL](#2-nanoclaw-repl) | 低 | 交互式持久会话 |
-| [无限智能体循环](#3-无限智能体循环) | 中 | 并行内容生成，规范驱动的工作 |
-| [持续 Claude PR 循环](#4-持续-claude-pr-循环) | 中 | 具有 CI 门的跨天迭代项目 |
-| [去草率化模式](#5-去草率化模式) | 附加 | 任何实现者步骤后的质量清理 |
-| [Ralphinho / RFC 驱动的 DAG](#6-ralphinho--rfc-驱动的-dag-编排) | 高 | 大型功能，具有合并队列的多单元并行工作 |
+| [순차 파이프라인](#1-순차-파이프라인-claude--p) | 낮음 | 일상적인 개발 단계, 스크립트화된 워크플로우 |
+| [NanoClaw REPL](#2-nanoclaw-repl) | 낮음 | 대화형 영구 세션 |
+| [무한 에이전트 루프](#3-무한-에이전트-루프) | 중간 | 병렬 콘텐츠 생성, 명세 기반 작업 |
+| [지속적 Claude PR 루프](#4-지속적-claude-pr-루프) | 중간 | CI 게이트가 포함된 며칠 단위의 반복 프로젝트 |
+| [탈-엉성함(De-sloppify) 패턴](#5-탈-엉성함-패턴) | 애드온 | 구현 단계 이후의 품질 정제 및 정리 |
+| [Ralphinho / RFC 기반 DAG](#6-ralphinho--rfc-기반-dag-오케스트레이션) | 높음 | 대규모 기능 개발, 병합 큐가 포함된 병렬 작업 |
 
 ***
 
-## 1. 顺序管道 (`claude -p`)
+## 1. 순차 파이프라인 (`claude -p`)
 
-**最简单的循环。** 将日常开发分解为一系列非交互式 `claude -p` 调用。每次调用都是一个具有清晰提示的专注步骤。
+**가장 단순한 루프.** 일상적인 개발 작업을 상호작용이 필요 없는 일련의 `claude -p` 호출로 분해합니다. 각 호출은 명확한 프롬프트를 가진 집중적인 단계가 됩니다.
 
-### 核心见解
+### 핵심 통찰
 
-> 如果你无法想出这样的循环，那意味着你甚至无法在交互模式下驱动 LLM 来修复你的代码。
+> 이런 루프를 구상할 수 없다면, 대화형 모드에서도 LLM을 제대로 활용해 코드를 고칠 수 없다는 뜻입니다.
 
-`claude -p` 标志以非交互方式运行 Claude Code 并附带提示，完成后退出。链式调用来构建管道：
+`claude -p` 플래그는 프롬프트와 함께 Claude Code를 비대화형으로 실행하고 작업 완료 후 종료됩니다. 이를 연쇄적으로 호출하여 파이프라인을 구축합니다:
 
 ```bash
 #!/bin/bash
-# daily-dev.sh — Sequential pipeline for a feature branch
+# daily-dev.sh — 특정 기능 브랜치를 위한 순차 파이프라인
 
 set -e
 
-# Step 1: Implement the feature
-claude -p "Read the spec in docs/auth-spec.md. Implement OAuth2 login in src/auth/. Write tests first (TDD). Do NOT create any new documentation files."
+# 1단계: 기능 구현
+claude -p "docs/auth-spec.md의 명세를 읽고 src/auth/에 OAuth2 로그인을 구현해. 테스트를 먼저 작성해(TDD). 새로운 문서 파일은 생성하지 마."
 
-# Step 2: De-sloppify (cleanup pass)
-claude -p "Review all files changed by the previous commit. Remove any unnecessary type tests, overly defensive checks, or testing of language features (e.g., testing that TypeScript generics work). Keep real business logic tests. Run the test suite after cleanup."
+# 2단계: 탈-엉성함 (정리 단계)
+claude -p "이전 커밋에서 변경된 모든 파일을 검토해. 불필요한 타입 테스트, 과도한 방어적 체크, 또는 언어 자체 기능(예: TS 제네릭 작동 여부) 테스트는 제거해. 실제 비즈니스 로직 테스트는 유지해. 정리 후 테스트 슈트를 실행해."
 
-# Step 3: Verify
-claude -p "Run the full build, lint, type check, and test suite. Fix any failures. Do not add new features."
+# 3단계: 검증
+claude -p "전체 빌드, 린트, 타입 체크, 테스트 슈트를 실행하고 실패하는 부분을 수정해. 새로운 기능은 추가하지 마."
 
-# Step 4: Commit
-claude -p "Create a conventional commit for all staged changes. Use 'feat: add OAuth2 login flow' as the message."
+# 4단계: 커밋
+claude -p "모든 스테이징된 변경 사항에 대해 관례적 커밋(Conventional commit)을 생성해. 메시지는 'feat: add OAuth2 login flow'로 해."
 ```
 
-### 关键设计原则
+### 주요 설계 원칙
 
-1. **每个步骤都是隔离的** — 每次 `claude -p` 调用都是一个新的上下文窗口，意味着步骤之间没有上下文泄露。
-2. **顺序很重要** — 步骤按顺序执行。每个步骤都建立在前一个步骤留下的文件系统状态之上。
-3. **否定指令是危险的** — 不要说“不要测试类型系统。”相反，添加一个单独的清理步骤（参见[去草率化模式](#5-去草率化模式)）。
-4. **退出代码会传播** — `set -e` 在失败时停止管道。
+1. **각 단계의 격리** — 각 `claude -p` 호출은 새로운 컨텍스트 윈도우를 가지므로 단계 간 컨텍스트 누출이 없습니다.
+2. **순서의 중요성** — 단계는 순차적으로 실행됩니다. 각 단계는 이전 단계가 남긴 파일 시스템 상태 위에서 시작됩니다.
+3. **부정 지시의 위험성** — "타입 시스템을 테스트하지 마"라고 말하지 마십시오. 대신 별도의 정리 단계를 추가하십시오 ([탈-엉성함 패턴](#5-탈-엉성함-패턴) 참조).
+4. **종료 코드 전파** — `set -e`를 사용하여 실패 시 파이프라인이 즉시 중단되도록 합니다.
 
-### 变体
+### 변체
 
-**使用模型路由：**
+**모델 라우팅 활용:**
 
 ```bash
-# Research with Opus (deep reasoning)
-claude -p --model opus "Analyze the codebase architecture and write a plan for adding caching..."
+# Opus를 사용한 연구 (깊은 추론)
+claude -p --model opus "코드베이스 아키텍처를 분석하고 캐싱 추가를 위한 계획을 작성해..."
 
-# Implement with Sonnet (fast, capable)
-claude -p "Implement the caching layer according to the plan in docs/caching-plan.md..."
+# Sonnet을 사용한 구현 (빠르고 유능함)
+claude -p "docs/caching-plan.md의 계획에 따라 캐싱 레이어를 구현해..."
 
-# Review with Opus (thorough)
-claude -p --model opus "Review all changes for security issues, race conditions, and edge cases..."
+# Opus를 사용한 검토 (철저함)
+claude -p --model opus "모든 변경 사항에 대해 보안 이슈, 경쟁 상태, 엣지 케이스를 검토해..."
 ```
 
-**使用环境上下文：**
+**환경 컨텍스트 활용:**
 
 ```bash
-# Pass context via files, not prompt length
-echo "Focus areas: auth module, API rate limiting" > .claude-context.md
-claude -p "Read .claude-context.md for priorities. Work through them in order."
+# 프롬프트 길이 대신 파일을 통해 컨텍스트 전달
+echo "집중 영역: 인증 모듈, API 속도 제한" > .claude-context.md
+claude -p ".claude-context.md를 읽고 우선순위에 따라 작업을 진행해."
 rm .claude-context.md
 ```
 
-**使用 `--allowedTools` 限制：**
+**`--allowedTools` 제한 활용:**
 
 ```bash
-# Read-only analysis pass
-claude -p --allowedTools "Read,Grep,Glob" "Audit this codebase for security vulnerabilities..."
+# 읽기 전용 분석 단계
+claude -p --allowedTools "Read,Grep,Glob" "이 코드베이스의 보안 취약점을 감사해..."
 
-# Write-only implementation pass
-claude -p --allowedTools "Read,Write,Edit,Bash" "Implement the fixes from security-audit.md..."
+# 쓰기 전용 구현 단계
+claude -p --allowedTools "Read,Write,Edit,Bash" "security-audit.md의 수정 사항을 구현해..."
 ```
 
 ***
 
 ## 2. NanoClaw REPL
 
-**ECC 内置的持久循环。** 一个具有会话感知的 REPL，它使用完整的对话历史同步调用 `claude -p`。
+**ECC에 내장된 영구 루프.** 전체 대화 기록을 유지하며 `claude -p`를 동기적으로 호출하는 세션 인식형 REPL입니다.
 
 ```bash
-# Start the default session
+# 기본 세션 시작
 node scripts/claw.js
 
-# Named session with skill context
+# 스킬 컨텍스트가 포함된 이름 있는 세션
 CLAW_SESSION=my-project CLAW_SKILLS=tdd-workflow,security-review node scripts/claw.js
 ```
 
-### 工作原理
+### 작동 원리
 
-1. 从 `~/.claude/claw/{session}.md` 加载对话历史
-2. 每个用户消息都连同完整历史记录作为上下文发送给 `claude -p`
-3. 响应被追加到会话文件中（Markdown 作为数据库）
-4. 会话在重启后持久存在
+1. `~/.claude/claw/{session}.md`에서 대화 기록을 로드합니다.
+2. 각 사용자의 메시지는 전체 기록과 함께 `claude -p`의 컨텍스트로 전송됩니다.
+3. 응답은 세션 파일에 추가됩니다 (마크다운을 데이터베이스처럼 활용).
+4. 세션은 재시작 후에도 유지됩니다.
 
-### NanoClaw 与顺序管道的选择
+### NanoClaw vs 순차 파이프라인 선택 기준
 
-| 用例 | NanoClaw | 顺序管道 |
+| 사용 사례 | NanoClaw | 순차 파이프라인 |
 |----------|----------|-------------------|
-| 交互式探索 | 是 | 否 |
-| 脚本化自动化 | 否 | 是 |
-| 会话持久性 | 内置 | 手动 |
-| 上下文累积 | 每轮增长 | 每个步骤都是新的 |
-| CI/CD 集成 | 差 | 优秀 |
+| 대화형 탐색 | 예 | 아니요 |
+| 스크립트 기반 자동화 | 아니요 | 예 |
+| 세션 유지 | 내장 기능 | 수동 구현 |
+| 컨텍스트 누적 | 매 차례 증가 | 각 단계마다 초기화 |
+| CI/CD 통합 | 부적합 | 우수 |
 
-有关完整详情，请参阅 `/claw` 命令文档。
+상세 내용은 `/claw` 명령 문서를 참조하십시오.
 
 ***
 
-## 3. 无限智能体循环
+## 3. 무한 에이전트 루프 (Infinite Agentic Loop)
 
-**一个双提示系统**，用于编排并行子智能体以进行规范驱动的生成。由 disler 开发（致谢：@disler）。
+**듀얼 프롬프트 시스템**을 사용하여 명세 기반 생성을 위한 병렬 서브 에이전트들을 오케스트레이션합니다. disler 개발 (감수: @disler).
 
-### 架构：双提示系统
+### 아키텍처: 듀얼 프롬프트 시스템
 
 ```
-PROMPT 1 (Orchestrator)              PROMPT 2 (Sub-Agents)
+프롬프트 1 (오케스트레이터)                프롬프트 2 (서브 에이전트)
 ┌─────────────────────┐             ┌──────────────────────┐
-│ Parse spec file      │             │ Receive full context  │
-│ Scan output dir      │  deploys   │ Read assigned number  │
-│ Plan iteration       │────────────│ Follow spec exactly   │
-│ Assign creative dirs │  N agents  │ Generate unique output │
-│ Manage waves         │             │ Save to output dir    │
+│ 명세 파일 파싱        │              │ 전체 컨텍스트 수신    │
+│ 출력 디렉토리 스캔     │    배포      │ 할당된 번호 확인      │
+│ 반복 계획 수립        │────────────│ 명세를 정확히 준수    │
+│ 창의적 방향성 할당    │    N 에이전트 │ 고유한 결과물 생성    │
+│ 웨이브(Wave) 관리    │              │ 출력 디렉토리에 저장   │
 └─────────────────────┘             └──────────────────────┘
 ```
 
-### 模式
+### 루프 단계
 
-1. **规范分析** — 编排器读取一个定义要生成内容的规范文件（Markdown）
-2. **目录侦察** — 扫描现有输出以找到最高的迭代编号
-3. **并行部署** — 启动 N 个子智能体，每个都有：
-   * 完整的规范
-   * 独特的创意方向
-   * 特定的迭代编号（无冲突）
-   * 现有迭代的快照（用于确保唯一性）
-4. **波次管理** — 对于无限模式，部署 3-5 个智能体的波次，直到上下文耗尽
+1. **명세 분석** — 오케스트레이터가 생성할 콘텐츠를 정의한 마크다운 명세 파일을 읽습니다.
+2. **디렉토리 정찰** — 기존 출력물을 스캔하여 가장 높은 반복 번호를 찾습니다.
+3. **병렬 배포** — 다음 정보를 가진 N개의 서브 에이전트를 시작합니다:
+   * 전체 명세 내용
+   * 고유한 창의적 방향성 (Creative direction)
+   * 할당된 특정 반복 번호 (충돌 방지)
+   * 기존 결과물 스냅샷 (중복 방지용)
+4. **웨이브 관리** — 무한 모드의 경우, 컨텍스트가 소진될 때까지 3~5개 에이전트씩 웨이브 단위로 배포합니다.
 
-### 通过 Claude Code 命令实现
+### Claude Code 명령어로 구현
 
-创建 `.claude/commands/infinite.md`：
+`.claude/commands/infinite.md` 생성:
 
 ```markdown
-从 $ARGUMENTS 中解析以下参数：
-1. spec_file — 规范 Markdown 文件的路径
-2. output_dir — 保存迭代结果的目录
-3. count — 整数 1-N 或 "infinite"
+$ARGUMENTS에서 다음 인자들을 파싱해:
+1. spec_file — 마크다운 명세 파일 경로
+2. output_dir — 결과물을 저장할 디렉토리
+3. count — 정수 1-N 또는 "infinite"
 
-阶段 1： 读取并深入理解规范。
-阶段 2： 列出 output_dir，找到最高的迭代编号。从 N+1 开始。
-阶段 3： 规划创意方向 — 每个代理获得一个**不同的**主题/方法。
-阶段 4： 并行部署子代理（使用 Task 工具）。每个代理接收：
-  - 完整的规范文本
-  - 当前目录快照
-  - 它们被分配的迭代编号
-  - 它们独特的创意方向
-阶段 5（无限模式）： 以 3-5 个为一波进行循环，直到上下文不足为止。
+1단계: 명세를 읽고 깊이 있게 이해한다.
+2단계: output_dir를 나열하여 가장 높은 반복 번호를 찾는다. N+1부터 시작한다.
+3단계: 창의적 방향을 계획한다. 각 에이전트에게 **서로 다른** 테마나 접근 방식을 할당한다.
+4단계: 서브 에이전트를 병렬로 배포한다(Task 도구 사용). 각 에이전트는 다음을 전달받는다:
+  - 전체 명세 텍스트
+  - 현재 디렉토리 스냅샷
+  - 자신에게 할당된 반복 번호
+  - 자신만의 독특한 창의적 방향성
+5단계(무한 모드): 컨텍스트가 부족해질 때까지 3~5개 단위로 웨이브 루프를 실행한다.
 ```
 
-**调用：**
+**호출 방법:**
 
 ```bash
 /project:infinite specs/component-spec.md src/ 5
 /project:infinite specs/component-spec.md src/ infinite
 ```
 
-### 批处理策略
+### 배치(Batch) 전략
 
-| 数量 | 策略 |
+| 수량 | 전략 |
 |-------|----------|
-| 1-5 | 所有智能体同时运行 |
-| 6-20 | 每批 5 个 |
-| 无限 | 3-5 个一波，逐步复杂化 |
+| 1-5 | 모든 에이전트 동시 실행 |
+| 6-20 | 5개 단위 배치 실행 |
+| 무한 | 3-5개 단위 웨이브 실행, 점진적으로 복잡도 증가 |
 
-### 关键见解：通过分配实现唯一性
+### 핵심 통찰: 할당을 통한 고유성 확보
 
-不要依赖智能体自我区分。编排器**分配**给每个智能体一个特定的创意方向和迭代编号。这可以防止并行智能体之间的概念重复。
+에이전트가 스스로 차별화하기를 기대하지 마십시오. 오케스트레이터가 각 에이전트에게 **구체적인** 창의적 방향과 번호를 **할당**해야 합니다. 이를 통해 병렬 에이전트 간의 개념적 중복을 방지할 수 있습니다.
 
 ***
 
-## 4. 持续 Claude PR 循环
+## 4. 지속적 Claude PR 루프 (Continuous Claude PR Loop)
 
-**一个生产级的 shell 脚本**，在持续循环中运行 Claude Code，创建 PR，等待 CI，并自动合并。由 AnandChowdhary 创建（致谢：@AnandChowdhary）。
+지속적인 루프에서 Claude Code를 실행하고, PR을 생성하며, CI를 기다리고, 자동으로 병합하는 **프로덕션 급 쉘 스크립트**입니다. AnandChowdhary 개발 (감수: @AnandChowdhary).
 
-### 核心循环
+### 핵심 루프
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │  CONTINUOUS CLAUDE ITERATION                        │
 │                                                     │
-│  1. Create branch (continuous-claude/iteration-N)   │
-│  2. Run claude -p with enhanced prompt              │
-│  3. (Optional) Reviewer pass — separate claude -p   │
-│  4. Commit changes (claude generates message)       │
-│  5. Push + create PR (gh pr create)                 │
-│  6. Wait for CI checks (poll gh pr checks)          │
-│  7. CI failure? → Auto-fix pass (claude -p)         │
-│  8. Merge PR (squash/merge/rebase)                  │
-│  9. Return to main → repeat                         │
+│  1. 브랜치 생성 (continuous-claude/iteration-N)      │
+│  2. 강화된 프롬프트로 claude -p 실행                 │
+│  3. (옵션) 리뷰어 단계 — 별도의 claude -p 실행        │
+│  4. 변경 사항 커밋 (Claude가 메시지 생성)            │
+│  5. 푸시 및 PR 생성 (gh pr create)                   │
+│  6. CI 체크 대기 (gh pr checks 폴링)                 │
+│  7. CI 실패? → 자동 수정 단계 (claude -p)            │
+│  8. PR 병합 (squash/merge/rebase)                    │
+│  9. 메인 브랜치로 복귀 → 반복                         │
 │                                                     │
-│  Limit by: --max-runs N | --max-cost $X             │
-│            --max-duration 2h | completion signal     │
+│  제한 기준: --max-runs N | --max-cost $X            │
+│            --max-duration 2h | 완료 신호              │
 └─────────────────────────────────────────────────────┘
 ```
 
-### 安装
+### 설치 방법
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/AnandChowdhary/continuous-claude/HEAD/install.sh | bash
 ```
 
-### 用法
+### 사용법
 
 ```bash
-# Basic: 10 iterations
-continuous-claude --prompt "Add unit tests for all untested functions" --max-runs 10
+# 기본: 10회 반복
+continuous-claude --prompt "테스트되지 않은 모든 함수에 단위 테스트 추가" --max-runs 10
 
-# Cost-limited
-continuous-claude --prompt "Fix all linter errors" --max-cost 5.00
+# 비용 제한
+continuous-claude --prompt "모든 린트 에러 수정" --max-cost 5.00
 
-# Time-boxed
-continuous-claude --prompt "Improve test coverage" --max-duration 8h
+# 시간 제한
+continuous-claude --prompt "테스트 커버리지 개선" --max-duration 8h
 
-# With code review pass
+# 코드 리뷰 단계 포함
 continuous-claude \
-  --prompt "Add authentication feature" \
+  --prompt "인증 기능 추가" \
   --max-runs 10 \
-  --review-prompt "Run npm test && npm run lint, fix any failures"
+  --review-prompt "npm test && npm run lint 실행 후 실패 지점 수정"
 
-# Parallel via worktrees
-continuous-claude --prompt "Add tests" --max-runs 5 --worktree tests-worker &
-continuous-claude --prompt "Refactor code" --max-runs 5 --worktree refactor-worker &
+# 워크트리를 통한 병렬 실행
+continuous-claude --prompt "테스트 추가" --max-runs 5 --worktree tests-worker &
+continuous-claude --prompt "코드 리팩토링" --max-runs 5 --worktree refactor-worker &
 wait
 ```
 
-### 跨迭代上下文：SHARED\_TASK\_NOTES.md
+### 루프 간 컨텍스트 유지: SHARED\_TASK\_NOTES.md
 
-关键创新：一个 `SHARED_TASK_NOTES.md` 文件在迭代间持久存在：
+핵심 혁신: 루프 반복 간에 유지되는 `SHARED_TASK_NOTES.md` 파일 활용:
 
 ```markdown
-## 进展
-- [x] 已添加认证模块测试（第1轮）
-- [x] 已修复令牌刷新中的边界情况（第2轮）
-- [ ] 仍需完成：速率限制测试、错误边界测试
+## 진행 상황
+- [x] 인증 모듈 테스트 추가 완료 (1회차)
+- [x] 토큰 갱신 로직 엣지 케이스 수정 완료 (2회차)
+- [ ] 남은 작업: 속도 제한 테스트, 에러 경계 테스트
 
-## 后续步骤
-- 接下来专注于速率限制模块
-- 测试中位于 `tests/helpers.ts` 的模拟设置可以复用
+## 다음 단계
+- 다음 회차에는 속도 제한 모듈에 집중할 것
+- `tests/helpers.ts`에 있는 모의 설정(Mock setup)을 재사용할 수 있음
 ```
 
-Claude 在迭代开始时读取此文件，并在迭代结束时更新它。这弥合了独立 `claude -p` 调用之间的上下文差距。
+Claude는 반복 시작 시 이 파일을 읽고, 종료 시 내용을 업데이트합니다. 이를 통해 독립적인 `claude -p` 호출 사이의 컨텍스트 격차를 메울 수 있습니다.
 
-### CI 失败恢复
+### CI 실패 복구
 
-当 PR 检查失败时，持续 Claude 会自动：
+PR 체크가 실패하면 지속적 Claude는 자동으로 다음을 수행합니다:
 
-1. 通过 `gh run list` 获取失败的运行 ID
-2. 生成一个新的带有 CI 修复上下文的 `claude -p`
-3. Claude 通过 `gh run view` 检查日志，修复代码，提交，推送
-4. 重新等待检查（最多 `--ci-retry-max` 次尝试）
+1. `gh run list`로 실패한 실행 ID를 가져옵니다.
+2. CI 수정 컨텍스트가 포함된 새로운 `claude -p` 세션을 생성합니다.
+3. Claude는 `gh run view`로 로그를 확인하고, 코드를 고치고, 커밋 후 푸시합니다.
+4. 다시 체크 결과를 기다립니다 (최대 `--ci-retry-max` 회 시도).
 
-### 完成信号
+### 완료 신호 (Completion Signal)
 
-Claude 可以通过输出一个魔法短语来发出“我完成了”的信号：
+Claude가 마법의 구문을 출력하여 "작업 완료" 신호를 보낼 수 있게 설정할 수 있습니다:
 
 ```bash
 continuous-claude \
-  --prompt "Fix all bugs in the issue tracker" \
+  --prompt "이슈 트래커의 모든 버그 수정" \
   --completion-signal "CONTINUOUS_CLAUDE_PROJECT_COMPLETE" \
-  --completion-threshold 3  # Stops after 3 consecutive signals
+  --completion-threshold 3  # 3회 연속 신호 발생 시 중단
 ```
 
-连续三次迭代发出完成信号会停止循环，防止在已完成的工作上浪费运行。
+3회 연속으로 완료 신호가 발생하면 루프가 중단되어, 이미 완료된 작업에 리소스를 낭비하는 것을 방지합니다.
 
-### 关键配置
+### 주요 설정 옵션
 
-| 标志 | 目的 |
+| 플래그 | 목적 |
 |------|---------|
-| `--max-runs N` | 在 N 次成功迭代后停止 |
-| `--max-cost $X` | 在花费 $X 后停止 |
-| `--max-duration 2h` | 在时间过去后停止 |
-| `--merge-strategy squash` | squash、merge 或 rebase |
-| `--worktree <name>` | 通过 git worktrees 并行执行 |
-| `--disable-commits` | 试运行模式（无 git 操作） |
-| `--review-prompt "..."` | 每次迭代添加审阅者审核 |
-| `--ci-retry-max N` | 自动修复 CI 失败（默认：1） |
+| `--max-runs N` | N회 성공적인 반복 후 중단 |
+| `--max-cost $X` | 총 비용 $X 소모 후 중단 |
+| `--max-duration 2h` | 지정된 시간 경과 후 중단 |
+| `--merge-strategy squash` | squash, merge, rebase 중 선택 |
+| `--worktree <name>` | git 워크트리를 통한 병렬 실행 |
+| `--disable-commits` | 드라이 런(Dry run) 모드 (git 작업 안함) |
+| `--review-prompt "..."` | 반복마다 리뷰어 검토 단계 추가 |
+| `--ci-retry-max N` | CI 실패 자동 수정 최대 시도 횟수 (기본: 1) |
 
 ***
 
-## 5. 去草率化模式
+## 5. 탈-엉성함(De-sloppify) 패턴
 
-**任何循环的附加模式。** 在每个实现者步骤之后添加一个专门的清理/重构步骤。
+**모든 루프에 적용 가능한 애드온 패턴.** 구현 단계마다 전용 정리/리팩토링 단계를 추가합니다.
 
-### 问题
+### 발생 문제
 
-当你要求 LLM 使用 TDD 实现时，它对“编写测试”的理解过于字面：
+LLM에게 TDD 구현을 요청하면 "테스트 작성"이라는 지시를 너무 문자 그대로 해석하는 경향이 있습니다:
 
-* 测试验证 TypeScript 的类型系统是否有效（测试 `typeof x === 'string'`）
-* 对类型系统已经保证的东西进行过度防御的运行时检查
-* 测试框架行为而非业务逻辑
-* 过多的错误处理掩盖了实际代码
+* TS 타입 시스템이 정상인지 확인하는 테스트 작성 (`typeof x === 'string'` 등)
+* 타입 시스템이 이미 보장하는 항목에 대한 과도한 방어적 런타임 체크
+* 비즈니스 로직이 아닌 프레임워크 자체 동작을 테스트
+* 실제 코드를 가릴 정도로 과도한 에러 처리 로직
 
-### 为什么不使用否定指令？
+### 왜 부정 지시문을 쓰지 않나요?
 
-在实现者提示中添加“不要测试类型系统”或“不要添加不必要的检查”会产生下游影响：
+프롬프트에 "타입 시스템은 테스트하지 마" 또는 "불필요한 체크는 넣지 마"라고 추가하면 부작용이 생깁니다:
 
-* 模型对所有测试都变得犹豫不决
-* 它会跳过合法的边缘情况测试
-* 质量不可预测地下降
+* 모델이 모든 테스트 작성에 소극적으로 변합니다.
+* 유효한 엣지 케이스 테스트까지 건너뜁니다.
+* 품질이 예측 불가능하게 저하됩니다.
 
-### 解决方案：单独的步骤
+### 해결책: 별도 단계 구성
 
-与其限制实现者，不如让它彻底。然后添加一个专注的清理智能体：
+구현 에이전트를 제한하지 말고 마음껏 작성하게 하십시오. 그 다음, 정리에만 집중하는 에이전트를 투입합니다:
 
 ```bash
-# Step 1: Implement (let it be thorough)
-claude -p "Implement the feature with full TDD. Be thorough with tests."
+# 1단계: 구현 (철저하게 작성하게 둠)
+claude -p "TDD로 기능을 구현해. 테스트를 아주 철저하게 작성해."
 
-# Step 2: De-sloppify (separate context, focused cleanup)
-claude -p "Review all changes in the working tree. Remove:
-- Tests that verify language/framework behavior rather than business logic
-- Redundant type checks that the type system already enforces
-- Over-defensive error handling for impossible states
-- Console.log statements
-- Commented-out code
+# 2단계: 탈-엉성함 (격리된 컨텍스트에서 정리에 집중)
+claude -p "작업 트리의 모든 변경 사항을 검토해. 다음 항목은 제거해:
+- 비즈니스 로직이 아닌 언어/프레임워크 동작을 검증하는 테스트
+- 타입 시스템이 보장하는 불필요한 타입 체크
+- 불가능한 상태에 대한 과도한 방어적 에러 처리
+- Console.log 문
+- 주석 처리된 코드
 
-Keep all business logic tests. Run the test suite after cleanup to ensure nothing breaks."
+모든 비즈니스 로직 테스트는 유지해. 정리 후 테스트 슈트를 실행해 문제가 없는지 확인해."
 ```
 
-### 在循环上下文中
+### 루프 워크플로우 예시
 
 ```bash
 for feature in "${features[@]}"; do
-  # Implement
-  claude -p "Implement $feature with TDD."
+  # 구현
+  claude -p "$feature를 TDD로 구현해."
 
-  # De-sloppify
-  claude -p "Cleanup pass: review changes, remove test/code slop, run tests."
+  # 탈-엉성함
+  claude -p "정리 단계: 변경 사항 검토, 코드/테스트 엉성함 제거, 테스트 실행."
 
-  # Verify
-  claude -p "Run build + lint + tests. Fix any failures."
+  # 검증
+  claude -p "빌드 + 린트 + 테스트 실행. 실패 지점 수정."
 
-  # Commit
-  claude -p "Commit with message: feat: add $feature"
+  # 커밋
+  claude -p "커밋 메시지 생성: feat: add $feature"
 done
 ```
 
-### 关键见解
+### 핵심 통찰
 
-> 与其添加具有下游质量影响的否定指令，不如添加一个单独的去草率化步骤。两个专注的智能体胜过一个有约束的智能体。
+> 품질 저하 리스크가 있는 부정 지시문을 넣기보다, 별도의 탈-엉성함 단계를 추가하십시오. 한 명의 제약받는 에이전트보다 두 명의 집중하는 에이전트가 훨씬 낫습니다.
 
 ***
 
-## 6. Ralphinho / RFC 驱动的 DAG 编排
+## 6. Ralphinho / RFC 기반 DAG 오케스트레이션
 
-**最复杂的模式。** 一个 RFC 驱动的多智能体管道，将规范分解为依赖关系 DAG，通过分层质量管道运行每个单元，并通过智能体驱动的合并队列落地。由 enitrat 创建（致谢：@enitrat）。
+**가장 복잡한 패턴.** RFC 명세를 종속성 DAG로 분해하고, 각 단위를 계층화된 품질 파이프라인으로 실행하며, 에이전트 기반 병합 큐를 통해 반영하는 시스템입니다. enitrat 개발 (감수: @enitrat).
 
-### 架构概述
+### 아키텍처 개요
 
 ```
-RFC/PRD Document
+RFC/PRD 문서
        │
        ▼
-  DECOMPOSITION (AI)
-  Break RFC into work units with dependency DAG
+  분해(Decomposition) (AI)
+  RFC를 종속성 DAG를 가진 작업 단위들로 분해
        │
        ▼
 ┌──────────────────────────────────────────────────────┐
-│  RALPH LOOP (up to 3 passes)                         │
+│  RALPH 루프 (최대 3회전)                              │
 │                                                      │
-│  For each DAG layer (sequential, by dependency):     │
+│  각 DAG 레이어별로 (종속성에 따라 순차 실행):            │
 │                                                      │
-│  ┌── Quality Pipelines (parallel per unit) ───────┐  │
-│  │  Each unit in its own worktree:                │  │
-│  │  Research → Plan → Implement → Test → Review   │  │
-│  │  (depth varies by complexity tier)             │  │
+│  ┌── 품질 파이프라인 (단위별 병렬 실행) ────────────┐  │
+│  │  각 작업 단위별 전용 워크트리에서 실행:              │  │
+│  │  연구 → 계획 → 구현 → 테스트 → 리뷰                │  │
+│  │  (복잡도 등급에 따라 단계 깊이 조절)                │  │
 │  └────────────────────────────────────────────────┘  │
 │                                                      │
-│  ┌── Merge Queue ─────────────────────────────────┐  │
-│  │  Rebase onto main → Run tests → Land or evict │  │
-│  │  Evicted units re-enter with conflict context  │  │
+│  ┌── 병합 큐 (Merge Queue) ───────────────────────┐  │
+│  │  메인 브랜치 리베이스 → 테스트 실행 → 반영 또는 퇴출 │  │
+│  │  퇴출된 단위는 충돌 컨텍스트와 함께 재진입          │  │
 │  └────────────────────────────────────────────────┘  │
 │                                                      │
 └──────────────────────────────────────────────────────┘
 ```
 
-### RFC 分解
+### RFC 분해
 
-AI 读取 RFC 并生成工作单元：
+AI가 RFC를 읽고 작업 단위(WorkUnit)를 생성합니다:
 
 ```typescript
 interface WorkUnit {
-  id: string;              // kebab-case identifier
-  name: string;            // Human-readable name
-  rfcSections: string[];   // Which RFC sections this addresses
-  description: string;     // Detailed description
-  deps: string[];          // Dependencies (other unit IDs)
-  acceptance: string[];    // Concrete acceptance criteria
-  tier: "trivial" | "small" | "medium" | "large";
+  id: string;              // kebab-case 식별자
+  name: string;            // 사람이 읽기 좋은 이름
+  rfcSections: string[];   // 대응하는 RFC 섹션들
+  description: string;     // 상세 설명
+  deps: string[];          // 의존 관계 (다른 단위의 ID)
+  acceptance: string[];    // 구체적인 인수 조건
+  tier: "trivial" | "small" | "medium" | "large"; // 복잡도 등급
 }
 ```
 
-**分解规则：**
+**분해 규칙:**
+* 가급적 작으면서도 응집력 있는 단위로 나눕니다 (병합 리스크 최소화).
+* 작업 단위 간 파일 중복을 최소화합니다 (충돌 방지).
+* 테스트와 구현은 항상 같이 둡니다 ("X 구현"과 "X 테스트"를 나누지 않음).
+* 실제 코드상 의존성이 있는 경우에만 의존성(deps)을 설정합니다.
 
-* 倾向于更少、内聚的单元（最小化合并风险）
-* 最小化跨单元文件重叠（避免冲突）
-* 保持测试与实现在一起（永远不要分开“实现 X” + “测试 X”）
-* 仅在实际存在代码依赖关系的地方设置依赖关系
-
-依赖关系 DAG 决定了执行顺序：
-
+종속성 DAG가 실행 순서를 결정합니다:
 ```
-Layer 0: [unit-a, unit-b]     ← no deps, run in parallel
-Layer 1: [unit-c]             ← depends on unit-a
-Layer 2: [unit-d, unit-e]     ← depend on unit-c
+레이어 0: [unit-a, unit-b]     ← 의존성 없음, 병렬 실행
+레이어 1: [unit-c]             ← unit-a에 의존
+레이어 2: [unit-d, unit-e]     ← unit-c에 의존
 ```
 
-### 复杂度层级
+### 복잡도 등급 (Complexity Tiers)
 
-不同的层级获得不同深度的管道：
+결과물의 중요도에 따라 파이프라인의 깊이를 다르게 적용합니다:
 
-| 层级 | 管道阶段 |
+| 등급 | 파이프라인 단계 |
 |------|----------------|
-| **trivial** | implement → test |
-| **small** | implement → test → code-review |
-| **medium** | research → plan → implement → test → PRD-review + code-review → review-fix |
-| **large** | research → plan → implement → test → PRD-review + code-review → review-fix → final-review |
+| **trivial** | 구현 → 테스트 |
+| **small** | 구현 → 테스트 → 코드 리뷰 |
+| **medium** | 연구 → 계획 → 구현 → 테스트 → PRD 리뷰 + 코드 리뷰 → 리뷰 수정 |
+| **large** | 연구 → 계획 → 구현 → 테스트 → PRD 리뷰 + 코드 리뷰 → 리뷰 수정 → 최종 리뷰 |
 
-这可以防止对简单更改进行昂贵的操作，同时确保架构更改得到彻底审查。
+이를 통해 단순한 변경에는 비용을 아끼고, 아키텍처 변경에는 철저한 검증을 보장합니다.
 
-### 独立的上下文窗口（消除作者偏见）
+### 독립된 컨텍스트 윈도우 (저자 편향 제거)
 
-每个阶段在其自己的智能体进程中运行，拥有自己的上下文窗口：
+각 단계는 독립된 에이전트 프로세스와 컨텍스트 윈도우에서 실행됩니다:
 
-| 阶段 | 模型 | 目的 |
+| 단계 | 모델 | 목적 |
 |-------|-------|---------|
-| Research | Sonnet | 读取代码库 + RFC，生成上下文文档 |
-| Plan | Opus | 设计实现步骤 |
-| Implement | Codex | 按照计划编写代码 |
-| Test | Sonnet | 运行构建 + 测试套件 |
-| PRD Review | Sonnet | 规范合规性检查 |
-| Code Review | Opus | 质量 + 安全检查 |
-| Review Fix | Codex | 处理审阅问题 |
-| Final Review | Opus | 质量门（仅限大型层级） |
+| 연구 (Research) | Sonnet | 코드베이스 + RFC 분석 후 컨텍스트 문서 생성 |
+| 계획 (Plan) | Opus | 구현 단계 설계 |
+| 구현 (Implement) | Codex | 계획에 따라 코드 작성 |
+| 테스트 (Test) | Sonnet | 빌드 및 테스트 슈트 실행 |
+| PRD 리뷰 | Sonnet | 명세 준수 여부 체크 |
+| 코드 리뷰 | Opus | 품질 및 보안 체크 |
+| 리뷰 수정 | Codex | 리뷰 피드백 반영 |
+| 최종 리뷰 | Opus | 품질 게이트 (대규모 작업 전용) |
 
-**关键设计：** 审阅者从未编写过它要审阅的代码。这消除了作者偏见——这是自我审阅中遗漏问题的最常见原因。
+**핵심 디자인:** 리뷰어는 자신이 리뷰할 코드를 작성한 적이 없어야 합니다. 이를 통해 셀프 리뷰 시 흔히 발생하는 '저자 편향(Author bias)'을 제거할 수 있습니다.
 
-### 具有驱逐功能的合并队列
+### 퇴출 기능이 포함된 병합 큐
 
-质量管道完成后，单元进入合并队列：
+품질 파이프라인을 통과한 단위는 병합 큐에 진입합니다:
 
 ```
-Unit branch
+작업 브랜치
     │
-    ├─ Rebase onto main
-    │   └─ Conflict? → EVICT (capture conflict context)
+    ├─ 메인 브랜치로 리베이스
+    │   └─ 충돌 발생? → 퇴출 (충돌 컨텍스트 캡처)
     │
-    ├─ Run build + tests
-    │   └─ Fail? → EVICT (capture test output)
+    ├─ 빌드 및 테스트 실행
+    │   └─ 실패? → 퇴출 (테스트 결과 캡처)
     │
-    └─ Pass → Fast-forward main, push, delete branch
+    └─ 통과 → 메인 브랜치 패스트 포워드, 푸시, 브랜치 삭제
 ```
 
-**文件重叠智能：**
+**파일 중복 감지 지능:**
+* 중복되지 않는 단위는 병렬로 반영 시도
+* 중복되는 단위는 하나씩 순차적으로 반영하며 매번 리베이스 수행
 
-* 非重叠单元并行推测性地落地
-* 重叠单元逐个落地，每次重新变基
-
-**驱逐恢复：**
-被驱逐时，会捕获完整上下文（冲突文件、差异、测试输出）并反馈给下一个 Ralph 轮次的实现者：
+**퇴출 후 복구:**
+반영이 거부(퇴출)되면 충돌 파일, 차이점, 테스트 결과 등의 전체 컨텍스트를 캡처하여 다음 Ralph 회차의 구현 에이전트에게 전달합니다:
 
 ```markdown
-## 合并冲突 — 在下一次推送前解决
+## 병합 충돌 발생 — 푸시 전 해결 필요
 
-您之前的实现与另一个已先推送的单元发生了冲突。
-请重构您的更改以避免以下冲突的文件/行。
+이전 구현이 먼저 반영된 다른 작업 단위와 충돌했습니다. 
+다음 충돌 파일/라인을 참고하여 코드를 리팩토링하십시오.
 
-{完整的排除上下文及差异}
+{상세 충돌 컨텍스트 및 Diff}
 ```
 
-### 阶段间的数据流
+### 단계별 데이터 흐름
 
 ```
 research.contextFilePath ──────────────────→ plan
 plan.implementationSteps ──────────────────→ implement
-implement.{filesCreated, whatWasDone} ─────→ test, reviews
-test.failingSummary ───────────────────────→ reviews, implement (next pass)
-reviews.{feedback, issues} ────────────────→ review-fix → implement (next pass)
-final-review.reasoning ────────────────────→ implement (next pass)
-evictionContext ───────────────────────────→ implement (after merge conflict)
+implement.{생성된 파일, 작업 내용} ────────→ test, reviews
+test.실패 요약 ─────────────────────────────→ reviews, implement (다음 회차)
+reviews.{피드백, 이슈} ───────────────────→ review-fix → implement (다음 회차)
+final-review.추론 근거 ────────────────────→ implement (다음 회차)
+evictionContext (퇴출 컨텍스트) ─────────────→ implement (병합 충돌 시)
 ```
 
-### 工作树隔离
+### 워크트리 격리
 
-每个单元在隔离的工作树中运行（使用 jj/Jujutsu，而不是 git）：
+각 작업 단위는 독립된 워크트리에서 실행됩니다 (git 대신 jj/Jujutsu 활용 권장):
 
 ```
 /tmp/workflow-wt-{unit-id}/
 ```
 
-同一单元的管道阶段**共享**一个工作树，在 research → plan → implement → test → review 之间保留状态（上下文文件、计划文件、代码更改）。
+동일한 작업 단위의 파이프라인 단계들은 이 워크트리를 **공유**하여 연구 → 계획 → 구현 → 테스트 → 리뷰 과정을 거치며 상태(컨텍스트 파일, 계획 파일, 코드 변경점)를 유지합니다.
 
-### 关键设计原则
+### 주요 설계 원칙
 
-1. **确定性执行** — 预先分解锁定并行性和顺序
-2. **在杠杆点进行人工审阅** — 工作计划是单一最高杠杆干预点
-3. **关注点分离** — 每个阶段在独立的上下文窗口中，由独立的智能体负责
-4. **带上下文的冲突恢复** — 完整的驱逐上下文支持智能重试，而非盲目重试
-5. **层级驱动的深度** — 琐碎更改跳过研究/审阅；大型更改获得最大审查
-6. **可恢复的工作流** — 完整状态持久化到 SQLite；可从任何点恢复
+1. **결정론적 실행** — 사전 분해를 통해 병렬성 및 순서를 미리 고정합니다.
+2. **레버리지 포인트에서의 인간 개입** — '구현 계획'은 인간이 개입하여 품질을 높일 수 있는 가장 중요한 지점입니다.
+3. **관심사의 분리** — 각 단계는 독립된 에이전트와 컨텍스트를 갖습니다.
+4. **컨텍스트 기반 충돌 복구** — 맹목적인 재시도가 아닌, 상세한 퇴출 정보를 바탕으로 지능적으로 재시도합니다.
+5. **등급별 깊이 조절** — 사소한 작업은 단계를 생략하고, 큰 작업은 검증을 극대화합니다.
+6. **복구 가능한 워크플로우** — 모든 상태는 SQLite에 기록되어 언제든 중단 지점에서 재개 가능합니다.
 
-### 何时使用 Ralphinho 与更简单的模式
+### Ralphinho vs 단순 패턴 선택 기준
 
-| 信号 | 使用 Ralphinho | 使用更简单的模式 |
+| 상황 | Ralphinho 사용 | 단순 패턴 사용 |
 |--------|--------------|-------------------|
-| 多个相互依赖的工作单元 | 是 | 否 |
-| 需要并行实现 | 是 | 否 |
-| 可能出现合并冲突 | 是 | 否（顺序即可） |
-| 单文件更改 | 否 | 是（顺序管道） |
-| 跨天项目 | 是 | 可能（持续-claude） |
-| 规范/RFC 已编写 | 是 | 可能 |
-| 对单个事物的快速迭代 | 否 | 是（NanoClaw 或管道） |
+| 상호 의존적인 여러 작업 단위 존재 | 예 | 아니요 |
+| 병렬 구현이 필요함 | 예 | 아니요 |
+| 병합 충돌 가능성이 높음 | 예 | 아니요 (순차 처리가 나음) |
+| 단일 파일 변경 | 아니요 | 예 (순차 파이프라인) |
+| 며칠씩 걸리는 대형 프로젝트 | 예 | 가능 (Continuous Claude) |
+| 명세/RFC가 이미 작성됨 | 예 | 가능 |
+| 단일 항목에 대한 빠른 반복 | 아니요 | 예 (NanoClaw 또는 파이프라인) |
 
 ***
 
-## 选择正确的模式
+## 적절한 패턴 선택하기
 
-### 决策矩阵
+### 의사결정 매트릭스
 
 ```
-Is the task a single focused change?
-├─ Yes → Sequential Pipeline or NanoClaw
-└─ No → Is there a written spec/RFC?
-         ├─ Yes → Do you need parallel implementation?
-         │        ├─ Yes → Ralphinho (DAG orchestration)
-         │        └─ No → Continuous Claude (iterative PR loop)
-         └─ No → Do you need many variations of the same thing?
-                  ├─ Yes → Infinite Agentic Loop (spec-driven generation)
-                  └─ No → Sequential Pipeline with de-sloppify
+작업이 하나의 명확한 변경인가?
+├─ 예 → 순차 파이프라인 또는 NanoClaw
+└─ 아니요 → 작성된 명세/RFC가 있는가?
+          ├─ 예 → 병렬 구현이 필요한가?
+          │        ├─ 예 → Ralphinho (DAG 오케스트레이션)
+          │        └─ 아니요 → 지속적 Claude (반복 PR 루프)
+          └─ 아니요 → 동일한 작업의 다양한 변체가 필요한가?
+                   ├─ 예 → 무한 에이전트 루프 (명세 기반 생성)
+                   └─ 아니요 → 탈-엉성함 단계가 포함된 순차 파이프라인
 ```
 
-### 模式组合
+### 패턴 조합 사례
 
-这些模式可以很好地组合：
+이 패턴들은 서로 조합하여 시너지를 낼 수 있습니다:
 
-1. **顺序流水线 + 去草率化** — 最常见的组合。每个实现步骤都进行一次清理。
-
-2. **连续 Claude + 去草率化** — 为每次迭代添加带有去草率化指令的 `--review-prompt`。
-
-3. **任何循环 + 验证** — 在提交前，使用 ECC 的 `/verify` 命令或 `verification-loop` 技能作为关卡。
-
-4. **Ralphinho 在简单循环中的分层方法** — 即使在顺序流水线中，你也可以将简单任务路由到 Haiku，复杂任务路由到 Opus：
+1. **순차 파이프라인 + 탈-엉성함** — 가장 일반적인 조합입니다. 구현 단계마다 정리를 수행합니다.
+2. **지속적 Claude + 탈-엉성함** — 매 반복마다 정리를 지시하는 `--review-prompt`를 추가합니다.
+3. **모든 루프 + 검증** — 커밋 전 ECC의 `/verify` 명령이나 `verification-loop` 스킬을 품질 게이트로 사용합니다.
+4. **Ralphinho 스타일의 계층적 접근** — 순차 파이프라인에서도 가벼운 작업은 Haiku에, 무거운 작업은 Opus에 할당할 수 있습니다:
    ```bash
-   # 简单的格式修复
-   claude -p --model haiku "Fix the import ordering in src/utils.ts"
+   # 단순 포맷 수정
+   claude -p --model haiku "src/utils.ts의 임포트 순서를 고쳐줘"
 
-   # 复杂的架构变更
-   claude -p --model opus "Refactor the auth module to use the strategy pattern"
+   # 복잡한 아키텍처 변경
+   claude -p --model opus "인증 모듈을 전략 패턴(Strategy pattern)을 쓰게 리팩토링해줘"
    ```
 
 ***
 
-## 反模式
+## 안티 패턴 (Anti-patterns)
 
-### 常见错误
+### 흔히 저지르는 실수
 
-1. **没有退出条件的无限循环** — 始终设置最大运行次数、最大成本、最大持续时间或完成信号。
-
-2. **迭代之间没有上下文桥接** — 每次 `claude -p` 调用都从头开始。使用 `SHARED_TASK_NOTES.md` 或文件系统状态来桥接上下文。
-
-3. **重试相同的失败** — 如果一次迭代失败，不要只是重试。捕获错误上下文并将其提供给下一次尝试。
-
-4. **使用负面指令而非清理过程** — 不要说“不要做 X”。添加一个单独的步骤来移除 X。
-
-5. **所有智能体都在一个上下文窗口中** — 对于复杂的工作流，将关注点分离到不同的智能体进程中。审查者永远不应该是作者。
-
-6. **在并行工作中忽略文件重叠** — 如果两个并行智能体可能编辑同一个文件，你需要一个合并策略（顺序落地、变基或冲突解决）。
+1. **종료 조건 없는 무한 루프** — 항상 최대 실행 횟수, 비용, 시간 또는 완료 신호를 설정하십시오.
+2. **반복 간 컨텍스트 단절** — 각 `claude -p` 호출을 매번 처음부터 시작하지 마십시오. `SHARED_TASK_NOTES.md`나 파일 시스템 상태를 활용해 컨텍스트를 연결하십시오.
+3. **동일한 실패 반복** — 한 번 실패했다면 그냥 재시도하지 마십시오. 에러 내용을 캡처하여 다음 시도의 힌트로 제공해야 합니다.
+4. **정리 과정 없이 부정 지시문만 사용** — "X는 하지 마"라고 하지 말고, X를 제거하는 별도의 단계를 두십시오.
+5. **모든 에이전트를 하나의 컨텍스트에 통합** — 복잡한 워크플로우에서는 에이전트 프로세스를 분리하십시오. 리뷰어는 저자와 같아서는 안 됩니다.
+6. **병렬 작업 시 파일 충돌 무시** — 두 에이전트가 동시에 같은 파일을 고칠 수 있다면 병합 전략(순차 처리, 리베이스, 충돌 해결 등)을 반드시 세워야 합니다.
 
 ***
 
-## 参考资料
+## 참조 자료
 
-| 项目 | 作者 | 链接 |
+| 프로젝트 | 제작자 | 링크 |
 |---------|--------|------|
 | Ralphinho | enitrat | credit: @enitrat |
 | Infinite Agentic Loop | disler | credit: @disler |
 | Continuous Claude | AnandChowdhary | credit: @AnandChowdhary |
-| NanoClaw | ECC | 此仓库中的 `/claw` 命令 |
-| Verification Loop | ECC | 此仓库中的 `skills/verification-loop/` |
+| NanoClaw | ECC | 이 저장소의 `/claw` 명령 |
+| Verification Loop | ECC | 이 저장소의 `skills/verification-loop/` |

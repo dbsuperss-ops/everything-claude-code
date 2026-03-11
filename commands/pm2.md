@@ -1,63 +1,63 @@
-# PM2 Init
+# PM2 초기화 (PM2 Init)
 
-Auto-analyze project and generate PM2 service commands.
+프로젝트를 자동 분석하고 PM2 서비스 명령어를 생성합니다.
 
-**Command**: `$ARGUMENTS`
-
----
-
-## Workflow
-
-1. Check PM2 (install via `npm install -g pm2` if missing)
-2. Scan project to identify services (frontend/backend/database)
-3. Generate config files and individual command files
+**명령어**: `$인자 ($ARGUMENTS)`
 
 ---
 
-## Service Detection
+## 워크플로우
 
-| Type | Detection | Default Port |
+1. PM2 설치 여부 확인 (미설치 시 `npm install -g pm2`로 설치)
+2. 프로젝트를 스캔하여 서비스(프론트엔드/백엔드/데이터베이스) 식별
+3. 설정 파일 및 개별 명령어 파일 생성
+
+---
+
+## 서비스 감지 (Service Detection)
+
+| 유형 | 감지 기준 | 기본 포트 |
 |------|-----------|--------------|
 | Vite | vite.config.* | 5173 |
 | Next.js | next.config.* | 3000 |
 | Nuxt | nuxt.config.* | 3000 |
-| CRA | react-scripts in package.json | 3000 |
-| Express/Node | server/backend/api directory + package.json | 3000 |
+| CRA | package.json의 react-scripts | 3000 |
+| Express/Node | server/backend/api 디렉토리 + package.json | 3000 |
 | FastAPI/Flask | requirements.txt / pyproject.toml | 8000 |
 | Go | go.mod / main.go | 8080 |
 
-**Port Detection Priority**: User specified > .env > config file > scripts args > default port
+**포트 감지 우선순위**: 사용자 지정 > .env > 설정 파일 > 스크립트 인자 > 기본 포트
 
 ---
 
-## Generated Files
+## 생성되는 파일 구조
 
 ```
 project/
-├── ecosystem.config.cjs              # PM2 config
-├── {backend}/start.cjs               # Python wrapper (if applicable)
+├── ecosystem.config.cjs              # PM2 설정 파일
+├── {backend}/start.cjs               # Python 래퍼 (해당하는 경우)
 └── .claude/
     ├── commands/
-    │   ├── pm2-all.md                # Start all + monit
-    │   ├── pm2-all-stop.md           # Stop all
-    │   ├── pm2-all-restart.md        # Restart all
-    │   ├── pm2-{port}.md             # Start single + logs
-    │   ├── pm2-{port}-stop.md        # Stop single
-    │   ├── pm2-{port}-restart.md     # Restart single
-    │   ├── pm2-logs.md               # View all logs
-    │   └── pm2-status.md             # View status
+    │   ├── pm2-all.md                # 전체 시작 + 모니터링
+    │   ├── pm2-all-stop.md           # 전체 중지
+    │   ├── pm2-all-restart.md        # 전체 재시작
+    │   ├── pm2-{port}.md             # 단일 시작 + 로그
+    │   ├── pm2-{port}-stop.md        # 단일 중지
+    │   ├── pm2-{port}-restart.md     # 단일 재시작
+    │   ├── pm2-logs.md               # 모든 로그 보기
+    │   └── pm2-status.md             # 상태 보기
     └── scripts/
-        ├── pm2-logs-{port}.ps1       # Single service logs
-        └── pm2-monit.ps1             # PM2 monitor
+        ├── pm2-logs-{port}.ps1       # 단일 서비스 로그
+        └── pm2-monit.ps1             # PM2 모니터링 스크립트
 ```
 
 ---
 
-## Windows Configuration (IMPORTANT)
+## Windows 설정 (중요)
 
 ### ecosystem.config.cjs
 
-**Must use `.cjs` extension**
+**반드시 `.cjs` 확장자를 사용해야 합니다.**
 
 ```javascript
 module.exports = {
@@ -83,16 +83,16 @@ module.exports = {
 }
 ```
 
-**Framework script paths:**
+**프레임워크별 스크립트 경로:**
 
-| Framework | script | args |
+| 프레임워크 | 스크립트(script) | 인자(args) |
 |-----------|--------|------|
 | Vite | `node_modules/vite/bin/vite.js` | `--port {port}` |
 | Next.js | `node_modules/next/dist/bin/next` | `dev -p {port}` |
 | Nuxt | `node_modules/nuxt/bin/nuxt.mjs` | `dev --port {port}` |
-| Express | `src/index.js` or `server.js` | - |
+| Express | `src/index.js` 또는 `server.js` | - |
 
-### Python Wrapper Script (start.cjs)
+### Python 래퍼 스크립트 (start.cjs)
 
 ```javascript
 const { spawn } = require('child_process');
@@ -104,11 +104,11 @@ proc.on('close', (code) => process.exit(code));
 
 ---
 
-## Command File Templates (Minimal Content)
+## 명령어 파일 템플릿 (최소 내용)
 
-### pm2-all.md (Start all + monit)
+### pm2-all.md (전체 시작 + 모니터링)
 ````markdown
-Start all services and open PM2 monitor.
+모든 서비스를 시작하고 PM2 모니터를 엽니다.
 ```bash
 cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs && start wt.exe -d "{PROJECT_ROOT}" pwsh -NoExit -c "pm2 monit"
 ```
@@ -116,7 +116,7 @@ cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs && start wt.exe -d "{PROJE
 
 ### pm2-all-stop.md
 ````markdown
-Stop all services.
+모든 서비스를 중지합니다.
 ```bash
 cd "{PROJECT_ROOT}" && pm2 stop all
 ```
@@ -124,15 +124,15 @@ cd "{PROJECT_ROOT}" && pm2 stop all
 
 ### pm2-all-restart.md
 ````markdown
-Restart all services.
+모든 서비스를 재시작합니다.
 ```bash
 cd "{PROJECT_ROOT}" && pm2 restart all
 ```
 ````
 
-### pm2-{port}.md (Start single + logs)
+### pm2-{port}.md (단일 시작 + 로그)
 ````markdown
-Start {name} ({port}) and open logs.
+{name} ({port}) 서비스를 시작하고 로그를 엽니다.
 ```bash
 cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs --only {name} && start wt.exe -d "{PROJECT_ROOT}" pwsh -NoExit -c "pm2 logs {name}"
 ```
@@ -140,7 +140,7 @@ cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs --only {name} && start wt.
 
 ### pm2-{port}-stop.md
 ````markdown
-Stop {name} ({port}).
+{name} ({port}) 서비스를 중지합니다.
 ```bash
 cd "{PROJECT_ROOT}" && pm2 stop {name}
 ```
@@ -148,7 +148,7 @@ cd "{PROJECT_ROOT}" && pm2 stop {name}
 
 ### pm2-{port}-restart.md
 ````markdown
-Restart {name} ({port}).
+{name} ({port}) 서비스를 재시작합니다.
 ```bash
 cd "{PROJECT_ROOT}" && pm2 restart {name}
 ```
@@ -156,7 +156,7 @@ cd "{PROJECT_ROOT}" && pm2 restart {name}
 
 ### pm2-logs.md
 ````markdown
-View all PM2 logs.
+모든 PM2 로그를 확인합니다.
 ```bash
 cd "{PROJECT_ROOT}" && pm2 logs
 ```
@@ -164,19 +164,19 @@ cd "{PROJECT_ROOT}" && pm2 logs
 
 ### pm2-status.md
 ````markdown
-View PM2 status.
+PM2 상태를 확인합니다.
 ```bash
 cd "{PROJECT_ROOT}" && pm2 status
 ```
 ````
 
-### PowerShell Scripts (pm2-logs-{port}.ps1)
+### PowerShell 스크립트 (pm2-logs-{port}.ps1)
 ```powershell
 Set-Location "{PROJECT_ROOT}"
 pm2 logs {name}
 ```
 
-### PowerShell Scripts (pm2-monit.ps1)
+### PowerShell 스크립트 (pm2-monit.ps1)
 ```powershell
 Set-Location "{PROJECT_ROOT}"
 pm2 monit
@@ -184,89 +184,89 @@ pm2 monit
 
 ---
 
-## Key Rules
+## 주요 규칙
 
-1. **Config file**: `ecosystem.config.cjs` (not .js)
-2. **Node.js**: Specify bin path directly + interpreter
-3. **Python**: Node.js wrapper script + `windowsHide: true`
-4. **Open new window**: `start wt.exe -d "{path}" pwsh -NoExit -c "command"`
-5. **Minimal content**: Each command file has only 1-2 lines description + bash block
-6. **Direct execution**: No AI parsing needed, just run the bash command
-
----
-
-## Execute
-
-Based on `$ARGUMENTS`, execute init:
-
-1. Scan project for services
-2. Generate `ecosystem.config.cjs`
-3. Generate `{backend}/start.cjs` for Python services (if applicable)
-4. Generate command files in `.claude/commands/`
-5. Generate script files in `.claude/scripts/`
-6. **Update project CLAUDE.md** with PM2 info (see below)
-7. **Display completion summary** with terminal commands
+1. **설정 파일**: `ecosystem.config.cjs`를 사용합니다 (.js가 아님).
+2. **Node.js**: bin 파일의 직접적인 경로와 인터프리터를 지정합니다.
+3. **Python**: Node.js 래퍼 스크립트를 사용하고 `windowsHide: true` 설정을 적용합니다.
+4. **새 창 열기**: `start wt.exe -d "{path}" pwsh -NoExit -c "명령어"` 형식을 사용합니다.
+5. **최소 내용**: 각 명령어 파일은 1~2줄의 설명과 bash 블록만 포함합니다.
+6. **직접 실행**: AI 분석 없이 bash 명령어를 즉시 실행할 수 있게 합니다.
 
 ---
 
-## Post-Init: Update CLAUDE.md
+## 실행 (Execute)
 
-After generating files, append PM2 section to project's `CLAUDE.md` (create if not exists):
+`$인자`에 기반하여 초기화를 실행합니다:
+
+1. 프로젝트 내 서비스 스캔
+2. `ecosystem.config.cjs` 생성
+3. Python 서비스용 `{backend}/start.cjs` 생성 (필요한 경우)
+4. `.claude/commands/`에 명령어 파일 생성
+5. `.claude/scripts/`에 스크립트 파일 생성
+6. **프로젝트 CLAUDE.md 업데이트** (아래 PM2 정보 포함)
+7. 터미널 명령어를 포함한 **완료 요약 표시**
+
+---
+
+## 초기화 후: CLAUDE.md 업데이트
+
+파일 생성 후, 프로젝트의 `CLAUDE.md`에 PM2 섹션을 추가합니다 (파일이 없으면 생성):
 
 ````markdown
-## PM2 Services
+## PM2 서비스
 
-| Port | Name | Type |
+| 포트 | 이름 | 유형 |
 |------|------|------|
 | {port} | {name} | {type} |
 
-**Terminal Commands:**
+**터미널 명령어:**
 ```bash
-pm2 start ecosystem.config.cjs   # First time
-pm2 start all                    # After first time
+pm2 start ecosystem.config.cjs   # 최초 실행 시
+pm2 start all                    # 최초 실행 이후
 pm2 stop all / pm2 restart all
 pm2 start {name} / pm2 stop {name}
 pm2 logs / pm2 status / pm2 monit
-pm2 save                         # Save process list
-pm2 resurrect                    # Restore saved list
+pm2 save                         # 프로세스 목록 저장
+pm2 resurrect                    # 저장된 목록 복구
 ```
 ````
 
-**Rules for CLAUDE.md update:**
-- If PM2 section exists, replace it
-- If not exists, append to end
-- Keep content minimal and essential
+**CLAUDE.md 업데이트 규칙:**
+- PM2 섹션이 이미 있으면 교체합니다.
+- 없으면 파일 끝에 추가합니다.
+- 내용은 최소한의 필수 정보로 유지합니다.
 
 ---
 
-## Post-Init: Display Summary
+## 초기화 후: 요약 표시
 
-After all files generated, output:
+모든 파일 생성이 완료되면 다음을 출력합니다:
 
 ```
-## PM2 Init Complete
+## PM2 초기화 완료
 
-**Services:**
+**감지된 서비스:**
 
-| Port | Name | Type |
+| 포트 | 이름 | 유형 |
 |------|------|------|
 | {port} | {name} | {type} |
 
-**Claude Commands:** /pm2-all, /pm2-all-stop, /pm2-{port}, /pm2-{port}-stop, /pm2-logs, /pm2-status
+**Claude 명령어:** /pm2-all, /pm2-all-stop, /pm2-{port}, /pm2-{port}-stop, /pm2-logs, /pm2-status
 
-**Terminal Commands:**
-## First time (with config file)
+**터미널 명령어:**
+## 최초 실행 (설정 파일 사용)
 pm2 start ecosystem.config.cjs && pm2 save
 
-## After first time (simplified)
-pm2 start all          # Start all
-pm2 stop all           # Stop all
-pm2 restart all        # Restart all
-pm2 start {name}       # Start single
-pm2 stop {name}        # Stop single
-pm2 logs               # View logs
-pm2 monit              # Monitor panel
-pm2 resurrect          # Restore saved processes
+## 최초 실행 이후 (간소화된 방식)
+pm2 start all          # 전체 시작
+pm2 stop all           # 전체 중지
+pm2 restart all        # 전체 재시작
+pm2 start {name}       # 단일 시작
+pm2 stop {name}        # 단일 중지
+pm2 logs               # 로그 확인
+pm2 monit              # 모니터링 패널
+pm2 resurrect          # 저장된 프로세스 복구
 
-**Tip:** Run `pm2 save` after first start to enable simplified commands.
+**팁:** 최초 시작 후 `pm2 save`를 실행하면 명령어를 간소화할 수 있습니다.
 ```

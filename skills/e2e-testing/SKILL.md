@@ -1,326 +1,74 @@
 ---
 name: e2e-testing
-description: Playwright E2E testing patterns, Page Object Model, configuration, CI/CD integration, artifact management, and flaky test strategies.
+description: Playwright E2E 테스트 패턴, 페이지 오브젝트 모델(POM), 설정, CI/CD 통합, 산출물(Artifact) 관리 및 불안정한(Flaky) 테스트 대응 전략 가이드입니다.
 origin: ECC
 ---
 
-# E2E Testing Patterns
+# E2E 테스트 패턴 (E2E Testing Patterns)
 
-Comprehensive Playwright patterns for building stable, fast, and maintainable E2E test suites.
+안정적이고 빠르며 유지보수가 용이한 E2E(End-to-End) 테스트 스위트 구축을 위한 Playwright 활용 패턴입니다.
 
-## Test File Organization
+## 테스트 파일 구성
 
-```
-tests/
-├── e2e/
-│   ├── auth/
-│   │   ├── login.spec.ts
-│   │   ├── logout.spec.ts
-│   │   └── register.spec.ts
-│   ├── features/
-│   │   ├── browse.spec.ts
-│   │   ├── search.spec.ts
-│   │   └── create.spec.ts
-│   └── api/
-│       └── endpoints.spec.ts
-├── fixtures/
-│   ├── auth.ts
-│   └── data.ts
-└── playwright.config.ts
-```
+- **tests/e2e/**: 기능별 테스트 파일 (.spec.ts)
+- **fixtures/**: 인증 정보나 공통 테스트 데이터
+- **playwright.config.ts**: 전체 테스트 환경 설정
 
-## Page Object Model (POM)
+## 페이지 오브젝트 모델 (Page Object Model, POM)
+
+UI 요소를 캡슐화하여 테스트 코드의 가독성을 높이고 중복을 줄입니다.
 
 ```typescript
-import { Page, Locator } from '@playwright/test'
-
+// pages/ItemsPage.ts 예시
 export class ItemsPage {
   readonly page: Page
   readonly searchInput: Locator
-  readonly itemCards: Locator
-  readonly createButton: Locator
 
   constructor(page: Page) {
     this.page = page
     this.searchInput = page.locator('[data-testid="search-input"]')
-    this.itemCards = page.locator('[data-testid="item-card"]')
-    this.createButton = page.locator('[data-testid="create-btn"]')
-  }
-
-  async goto() {
-    await this.page.goto('/items')
-    await this.page.waitForLoadState('networkidle')
   }
 
   async search(query: string) {
     await this.searchInput.fill(query)
+    // 네트워크 응답 대기 및 로드 상태 확인
     await this.page.waitForResponse(resp => resp.url().includes('/api/search'))
     await this.page.waitForLoadState('networkidle')
   }
-
-  async getItemCount() {
-    return await this.itemCards.count()
-  }
 }
 ```
 
-## Test Structure
+## Playwright 설정 (Configuration)
 
-```typescript
-import { test, expect } from '@playwright/test'
-import { ItemsPage } from '../../pages/ItemsPage'
+- **fullyParallel**: 테스트를 병렬로 실행하여 속도 향상
+- **retries**: CI 환경에서 실패 시 재시도 횟수 설정
+- **reporter**: HTML, JUnit, JSON 등 다양한 보고서 형식 지정
+- **use**: 기본 URL, 트레이스(Trace) 저장 조건, 스크린샷 및 비디오 녹화 조건 설정
 
-test.describe('Item Search', () => {
-  let itemsPage: ItemsPage
+## 불안정한 테스트(Flaky Test) 대응
 
-  test.beforeEach(async ({ page }) => {
-    itemsPage = new ItemsPage(page)
-    await itemsPage.goto()
-  })
+### 격리 및 스킵
+- `test.fixme()`: 이슈 해결 전까지 잠정 중단
+- `test.skip()`: 특정 조건(예: CI 환경 전용)에서 테스트 건너뛰기
 
-  test('should search by keyword', async ({ page }) => {
-    await itemsPage.search('test')
+### 원인 파악 및 해결
+- **경합 상태(Race condition)**: 단순 `click()` 대신 자동 대기 기능이 있는 로케이터(`locator().click()`)를 사용하십시오.
+- **네트워크 타이밍**: `waitForTimeout(5000)`과 같은 고정 대기 대신 특정 API 응답(`waitForResponse`)을 기다리십시오.
+- **애니메이션 타이밍**: 요소가 완전히 나타나거나 안정화될 때까지 `waitFor({ state: 'visible' })` 등으로 대기하십시오.
 
-    const count = await itemsPage.getItemCount()
-    expect(count).toBeGreaterThan(0)
+## 산출물 관리 (Artifact Management)
 
-    await expect(itemsPage.itemCards.first()).toContainText(/test/i)
-    await page.screenshot({ path: 'artifacts/search-results.png' })
-  })
+- **스크린샷**: 특정 시점이나 실패 시 자동 저장
+- **트레이스(Trace)**: 테스트 실행 과정을 타임라인별로 기록하여 사후 디버깅에 활용
+- **비디오**: 실패한 테스트의 실행 과정을 녹화(webm 형식)
 
-  test('should handle no results', async ({ page }) => {
-    await itemsPage.search('xyznonexistent123')
+## CI/CD 통합 (GitHub Actions)
 
-    await expect(page.locator('[data-testid="no-results"]')).toBeVisible()
-    expect(await itemsPage.getItemCount()).toBe(0)
-  })
-})
-```
+가상 환경(Ubuntu 등)에서 Playwright 브라우저를 설치하고 테스트를 실행한 후, 결과 보고서를 업로드하도록 파이프라인을 구성합니다.
 
-## Playwright Configuration
+## 지갑 / Web3 테스트
 
-```typescript
-import { defineConfig, devices } from '@playwright/test'
+지갑 프로바이더(`window.ethereum`)를 모킹하여 실제 지갑 설치 없이 서명이나 계정 연결 과정을 테스트할 수 있습니다.
 
-export default defineConfig({
-  testDir: './tests/e2e',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['junit', { outputFile: 'playwright-results.xml' }],
-    ['json', { outputFile: 'playwright-results.json' }]
-  ],
-  use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-    actionTimeout: 10000,
-    navigationTimeout: 30000,
-  },
-  projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
-    { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
-  ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
-})
-```
-
-## Flaky Test Patterns
-
-### Quarantine
-
-```typescript
-test('flaky: complex search', async ({ page }) => {
-  test.fixme(true, 'Flaky - Issue #123')
-  // test code...
-})
-
-test('conditional skip', async ({ page }) => {
-  test.skip(process.env.CI, 'Flaky in CI - Issue #123')
-  // test code...
-})
-```
-
-### Identify Flakiness
-
-```bash
-npx playwright test tests/search.spec.ts --repeat-each=10
-npx playwright test tests/search.spec.ts --retries=3
-```
-
-### Common Causes & Fixes
-
-**Race conditions:**
-```typescript
-// Bad: assumes element is ready
-await page.click('[data-testid="button"]')
-
-// Good: auto-wait locator
-await page.locator('[data-testid="button"]').click()
-```
-
-**Network timing:**
-```typescript
-// Bad: arbitrary timeout
-await page.waitForTimeout(5000)
-
-// Good: wait for specific condition
-await page.waitForResponse(resp => resp.url().includes('/api/data'))
-```
-
-**Animation timing:**
-```typescript
-// Bad: click during animation
-await page.click('[data-testid="menu-item"]')
-
-// Good: wait for stability
-await page.locator('[data-testid="menu-item"]').waitFor({ state: 'visible' })
-await page.waitForLoadState('networkidle')
-await page.locator('[data-testid="menu-item"]').click()
-```
-
-## Artifact Management
-
-### Screenshots
-
-```typescript
-await page.screenshot({ path: 'artifacts/after-login.png' })
-await page.screenshot({ path: 'artifacts/full-page.png', fullPage: true })
-await page.locator('[data-testid="chart"]').screenshot({ path: 'artifacts/chart.png' })
-```
-
-### Traces
-
-```typescript
-await browser.startTracing(page, {
-  path: 'artifacts/trace.json',
-  screenshots: true,
-  snapshots: true,
-})
-// ... test actions ...
-await browser.stopTracing()
-```
-
-### Video
-
-```typescript
-// In playwright.config.ts
-use: {
-  video: 'retain-on-failure',
-  videosPath: 'artifacts/videos/'
-}
-```
-
-## CI/CD Integration
-
-```yaml
-# .github/workflows/e2e.yml
-name: E2E Tests
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-      - run: npx playwright install --with-deps
-      - run: npx playwright test
-        env:
-          BASE_URL: ${{ vars.STAGING_URL }}
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
-```
-
-## Test Report Template
-
-```markdown
-# E2E Test Report
-
-**Date:** YYYY-MM-DD HH:MM
-**Duration:** Xm Ys
-**Status:** PASSING / FAILING
-
-## Summary
-- Total: X | Passed: Y (Z%) | Failed: A | Flaky: B | Skipped: C
-
-## Failed Tests
-
-### test-name
-**File:** `tests/e2e/feature.spec.ts:45`
-**Error:** Expected element to be visible
-**Screenshot:** artifacts/failed.png
-**Recommended Fix:** [description]
-
-## Artifacts
-- HTML Report: playwright-report/index.html
-- Screenshots: artifacts/*.png
-- Videos: artifacts/videos/*.webm
-- Traces: artifacts/*.zip
-```
-
-## Wallet / Web3 Testing
-
-```typescript
-test('wallet connection', async ({ page, context }) => {
-  // Mock wallet provider
-  await context.addInitScript(() => {
-    window.ethereum = {
-      isMetaMask: true,
-      request: async ({ method }) => {
-        if (method === 'eth_requestAccounts')
-          return ['0x1234567890123456789012345678901234567890']
-        if (method === 'eth_chainId') return '0x1'
-      }
-    }
-  })
-
-  await page.goto('/')
-  await page.locator('[data-testid="connect-wallet"]').click()
-  await expect(page.locator('[data-testid="wallet-address"]')).toContainText('0x1234')
-})
-```
-
-## Financial / Critical Flow Testing
-
-```typescript
-test('trade execution', async ({ page }) => {
-  // Skip on production — real money
-  test.skip(process.env.NODE_ENV === 'production', 'Skip on production')
-
-  await page.goto('/markets/test-market')
-  await page.locator('[data-testid="position-yes"]').click()
-  await page.locator('[data-testid="trade-amount"]').fill('1.0')
-
-  // Verify preview
-  const preview = page.locator('[data-testid="trade-preview"]')
-  await expect(preview).toContainText('1.0')
-
-  // Confirm and wait for blockchain
-  await page.locator('[data-testid="confirm-trade"]').click()
-  await page.waitForResponse(
-    resp => resp.url().includes('/api/trade') && resp.status() === 200,
-    { timeout: 30000 }
-  )
-
-  await expect(page.locator('[data-testid="trade-success"]')).toBeVisible()
-})
-```
+**기억하십시오**: E2E 테스트는 실제 사용자 경험과 가장 가깝지만 비용이 많이 듭니다. 핵심 사용자 흐름(Happy path)과 크리티컬한 에러 케이스 위주로 구성하고, 모든 것을 E2E로 테스트하려 하지 마십시오.
+    

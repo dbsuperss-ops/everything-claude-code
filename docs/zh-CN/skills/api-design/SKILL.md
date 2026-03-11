@@ -1,28 +1,28 @@
 ---
 name: api-design
-description: REST API设计模式，包括资源命名、状态码、分页、过滤、错误响应、版本控制和生产API的速率限制。
+description: 자원 명명, 상태 코드, 페이지네이션, 필터링, 에러 응답, 버전 관리 및 운영 API의 속도 제한을 포함한 REST API 디자인 패턴입니다.
 origin: ECC
 ---
 
-# API 设计模式
+# API 디자인 패턴
 
-用于设计一致、对开发者友好的 REST API 的约定和最佳实践。
+일관성 있고 개발자 친화적인 REST API 설계를 위한 규약과 베스트 프랙티스입니다.
 
-## 何时启用
+## 적용 시점
 
-* 设计新的 API 端点时
-* 审查现有的 API 契约时
-* 添加分页、过滤或排序功能时
-* 为 API 实现错误处理时
-* 规划 API 版本策略时
-* 构建面向公众或合作伙伴的 API 时
+* 새로운 API 엔드포인트를 설계할 때
+* 기존 API 규약을 검토할 때
+* 페이지네이션, 필터링 또는 정렬 기능을 추가할 때
+* API의 에러 처리 로직을 구현할 때
+* API 버전 관리 전략을 계획할 때
+* 외부 공개용 또는 파트너용 API를 구축할 때
 
-## 资源设计
+## 리소스 설계
 
-### URL 结构
+### URL 구조
 
 ```
-# Resources are nouns, plural, lowercase, kebab-case
+# 리소스는 명사, 복수형, 소문자, 케밥 케이스(kebab-case)를 사용합니다.
 GET    /api/v1/users
 GET    /api/v1/users/:id
 POST   /api/v1/users
@@ -30,90 +30,90 @@ PUT    /api/v1/users/:id
 PATCH  /api/v1/users/:id
 DELETE /api/v1/users/:id
 
-# Sub-resources for relationships
+# 관계를 나타내는 서브 리소스
 GET    /api/v1/users/:id/orders
 POST   /api/v1/users/:id/orders
 
-# Actions that don't map to CRUD (use verbs sparingly)
+# CRUD와 매칭되지 않는 작업 (동사는 가급적 제한적으로 사용)
 POST   /api/v1/orders/:id/cancel
 POST   /api/v1/auth/login
 POST   /api/v1/auth/refresh
 ```
 
-### 命名规则
+### 명명 규칙
 
 ```
-# GOOD
-/api/v1/team-members          # kebab-case for multi-word resources
-/api/v1/orders?status=active  # query params for filtering
-/api/v1/users/123/orders      # nested resources for ownership
+# 좋은 예
+/api/v1/team-members          # 여러 단어로 된 리소스에는 케밥 케이스 사용
+/api/v1/orders?status=active  # 필터링에는 쿼리 파라미터 사용
+/api/v1/users/123/orders      # 소유 관계를 나타내는 중첩 리소스
 
-# BAD
-/api/v1/getUsers              # verb in URL
-/api/v1/user                  # singular (use plural)
-/api/v1/team_members          # snake_case in URLs
-/api/v1/users/123/getOrders   # verb in nested resource
+# 나쁜 예
+/api/v1/getUsers              # URL에 동사 포함
+/api/v1/user                  # 단수형 사용 (복수형 권장)
+/api/v1/team_members          # URL에 스네이크 케이스(snake_case) 사용
+/api/v1/users/123/getOrders   # 중첩 리소스에 동사 포함
 ```
 
-## HTTP 方法和状态码
+## HTTP 메서드 및 상태 코드
 
-### 方法语义
+### 메서드 의미론
 
-| 方法 | 幂等性 | 安全性 | 用途 |
+| 메서드 | 멱등성 (Idempotent) | 안전성 (Safe) | 용도 |
 |--------|-----------|------|---------|
-| GET | 是 | 是 | 检索资源 |
-| POST | 否 | 否 | 创建资源，触发操作 |
-| PUT | 是 | 否 | 完全替换资源 |
-| PATCH | 否\* | 否 | 部分更新资源 |
-| DELETE | 是 | 否 | 删除资源 |
+| GET | 예 | 예 | 리소스 조회 |
+| POST | 아니요 | 아니요 | 리소스 생성, 특정 작업 트리거 |
+| PUT | 예 | 아니요 | 리소스 전체 교체 |
+| PATCH | 아니요* | 아니요 | 리소스 일부 업데이트 |
+| DELETE | 예 | 아니요 | 리소스 삭제 |
 
-\*通过适当的实现，PATCH 可以实现幂等
+*적절한 구현을 통해 PATCH도 멱등성을 가질 수 있습니다.
 
-### 状态码参考
-
-```
-# Success
-200 OK                    — GET, PUT, PATCH (with response body)
-201 Created               — POST (include Location header)
-204 No Content            — DELETE, PUT (no response body)
-
-# Client Errors
-400 Bad Request           — Validation failure, malformed JSON
-401 Unauthorized          — Missing or invalid authentication
-403 Forbidden             — Authenticated but not authorized
-404 Not Found             — Resource doesn't exist
-409 Conflict              — Duplicate entry, state conflict
-422 Unprocessable Entity  — Semantically invalid (valid JSON, bad data)
-429 Too Many Requests     — Rate limit exceeded
-
-# Server Errors
-500 Internal Server Error — Unexpected failure (never expose details)
-502 Bad Gateway           — Upstream service failed
-503 Service Unavailable   — Temporary overload, include Retry-After
-```
-
-### 常见错误
+### 상태 코드 참조
 
 ```
-# BAD: 200 for everything
+# 성공 (Success)
+200 OK                    — GET, PUT, PATCH (응답 바디 포함 시)
+201 Created               — POST (Location 헤더 포함 권장)
+204 No Content            — DELETE, PUT (응답 바디 없을 시)
+
+# 클라이언트 에러 (Client Errors)
+400 Bad Request           — 검증 실패, 잘못된 형식의 JSON
+401 Unauthorized          — 인증 정보 누락 또는 유효하지 않음
+403 Forbidden             — 인증은 되었으나 해당 권한 없음
+404 Not Found             — 리소스가 존재하지 않음
+409 Conflict              — 중복 항목 발견, 상태 충돌
+422 Unprocessable Entity  — 의미론적 오류 (JSON 형식은 맞으나 데이터가 부적절함)
+429 Too Many Requests     — 속도 제한(Rate limit) 초과
+
+# 서버 에러 (Server Errors)
+500 Internal Server Error — 예기치 않은 오류 (민감한 상세 정보 노출 금지)
+502 Bad Gateway           — 상위(Upstream) 서비스 오류
+503 Service Unavailable   — 일시적인 과부하, Retry-After 헤더 포함 권장
+```
+
+### 자주 발생하는 실수
+
+```
+# 나쁜 예: 모든 경우에 200 반환
 { "status": 200, "success": false, "error": "Not found" }
 
-# GOOD: Use HTTP status codes semantically
+# 좋은 예: HTTP 상태 코드를 의미에 맞게 사용
 HTTP/1.1 404 Not Found
-{ "error": { "code": "not_found", "message": "User not found" } }
+{ "error": { "code": "not_found", "message": "사용자를 찾을 수 없습니다" } }
 
-# BAD: 500 for validation errors
-# GOOD: 400 or 422 with field-level details
+# 나쁜 예: 검증 에러에 500 사용
+# 좋은 예: 필드별 상세 정보와 함께 400 또는 422 사용
 
-# BAD: 200 for created resources
-# GOOD: 201 with Location header
+# 나쁜 예: 리소스 생성 시 200 사용
+# 좋은 예: Location 헤더와 함께 201 사용
 HTTP/1.1 201 Created
 Location: /api/v1/users/abc-123
 ```
 
-## 响应格式
+## 응답 형식
 
-### 成功响应
+### 성공 응답
 
 ```json
 {
@@ -126,7 +126,7 @@ Location: /api/v1/users/abc-123
 }
 ```
 
-### 集合响应（带分页）
+### 컬렉션 응답 (페이지네이션 포함)
 
 ```json
 {
@@ -148,22 +148,22 @@ Location: /api/v1/users/abc-123
 }
 ```
 
-### 错误响应
+### 에러 응답
 
 ```json
 {
   "error": {
     "code": "validation_error",
-    "message": "Request validation failed",
+    "message": "요청 검증 실패",
     "details": [
       {
         "field": "email",
-        "message": "Must be a valid email address",
+        "message": "유효한 이메일 주소여야 합니다",
         "code": "invalid_format"
       },
       {
         "field": "age",
-        "message": "Must be between 0 and 150",
+        "message": "0에서 150 사이의 숫자여야 합니다",
         "code": "out_of_range"
       }
     ]
@@ -171,10 +171,10 @@ Location: /api/v1/users/abc-123
 }
 ```
 
-### 响应包装器变体
+### 응답 래퍼 변체
 
 ```typescript
-// Option A: Envelope with data wrapper (recommended for public APIs)
+// 방법 A: 데이터 래퍼를 포함한 봉투(Envelope) (공개 API에 권장)
 interface ApiResponse<T> {
   data: T;
   meta?: PaginationMeta;
@@ -189,38 +189,38 @@ interface ApiError {
   };
 }
 
-// Option B: Flat response (simpler, common for internal APIs)
-// Success: just return the resource directly
-// Error: return error object
-// Distinguish by HTTP status code
+// 방법 B: 평면적인(Flat) 응답 (간결하며, 내부 API에서 흔히 사용)
+// 성공 시: 리소스를 직접 반환
+// 실패 시: 에러 객체 반환
+// HTTP 상태 코드로 구분
 ```
 
-## 分页
+## 페이지네이션 (Pagination)
 
-### 基于偏移量（简单）
+### 오프셋 기반 (Offset-based) - 단순함
 
 ```
 GET /api/v1/users?page=2&per_page=20
 
-# Implementation
+# 구현 예시
 SELECT * FROM users
 ORDER BY created_at DESC
 LIMIT 20 OFFSET 20;
 ```
 
-**优点：** 易于实现，支持“跳转到第 N 页”
-**缺点：** 在大偏移量时速度慢（例如 OFFSET 100000），并发插入时结果不一致
+**장점:** 구현이 쉽고, "n번째 페이지로 이동" 기능을 지원함.
+**단점:** 오프셋이 클수록 느려짐 (예: OFFSET 100000), 데이터 추가 시 결과 불일치 발생 가능.
 
-### 基于游标（可扩展）
+### 커서 기반 (Cursor-based) - 확장성
 
 ```
 GET /api/v1/users?cursor=eyJpZCI6MTIzfQ&limit=20
 
-# Implementation
+# 구현 예시
 SELECT * FROM users
 WHERE id > :cursor_id
 ORDER BY id ASC
-LIMIT 21;  -- fetch one extra to determine has_next
+LIMIT 21;  -- 다음 페이지 유무를 판단하기 위해 1개 더 가져옴
 ```
 
 ```json
@@ -233,83 +233,83 @@ LIMIT 21;  -- fetch one extra to determine has_next
 }
 ```
 
-**优点：** 无论位置如何，性能一致；在并发插入时结果稳定
-**缺点：** 无法跳转到任意页面；游标是不透明的
+**장점:** 위치에 관계없이 일정한 성능 유지, 데이터 추가 시에도 결과가 안정적임.
+**단점:** 임의의 페이지로 바로 이동할 수 없음, 커서가 불투명함(Opaque).
 
-### 何时使用哪种
+### 어떤 것을 선택해야 할까요?
 
-| 用例 | 分页类型 |
+| 사용 사례 | 페이지네이션 유형 |
 |----------|----------------|
-| 管理仪表板，小数据集 (<10K) | 偏移量 |
-| 无限滚动，信息流，大数据集 | 游标 |
-| 公共 API | 游标（默认）配合偏移量（可选） |
-| 搜索结果 | 偏移量（用户期望有页码） |
+| 관리자 대시보드, 작은 데이터셋 (<10K) | 오프셋 |
+| 무한 스크롤, 피드형 서비스, 대규모 데이터셋 | 커서 |
+| 공개용 API | 커서(기본) + 오프셋(옵션) |
+| 검색 결과 | 오프셋 (페이지 번호에 대한 사용자 기대) |
 
-## 过滤、排序和搜索
+## 필터링, 정렬 및 검색
 
-### 过滤
+### 필터링
 
 ```
-# Simple equality
+# 단순 일치
 GET /api/v1/orders?status=active&customer_id=abc-123
 
-# Comparison operators (use bracket notation)
+# 비교 연산자 (대괄호 표기법 사용)
 GET /api/v1/products?price[gte]=10&price[lte]=100
 GET /api/v1/orders?created_at[after]=2025-01-01
 
-# Multiple values (comma-separated)
+# 여러 값 (쉼표로 구분)
 GET /api/v1/products?category=electronics,clothing
 
-# Nested fields (dot notation)
+# 중첩 필드 (점 표기법 사용)
 GET /api/v1/orders?customer.country=US
 ```
 
-### 排序
+### 정렬
 
 ```
-# Single field (prefix - for descending)
+# 단일 필드 (내림차순은 - 접두사 사용)
 GET /api/v1/products?sort=-created_at
 
-# Multiple fields (comma-separated)
+# 여러 필드 (쉼표로 구분)
 GET /api/v1/products?sort=-featured,price,-created_at
 ```
 
-### 全文搜索
+### 전체 텍스트 검색
 
 ```
-# Search query parameter
+# 검색 쿼리 파라미터
 GET /api/v1/products?q=wireless+headphones
 
-# Field-specific search
+# 특정 필드 검색
 GET /api/v1/users?email=alice
 ```
 
-### 稀疏字段集
+### 희소 필드 세트 (Sparse Fieldsets)
 
 ```
-# Return only specified fields (reduces payload)
+# 필요한 필드만 지정하여 응답 크기 최적화
 GET /api/v1/users?fields=id,name,email
 GET /api/v1/orders?fields=id,total,status&include=customer.name
 ```
 
-## 认证和授权
+## 인증 및 권한 부여
 
-### 基于令牌的认证
+### 토큰 기반 인증
 
 ```
-# Bearer token in Authorization header
+# Authorization 헤더에 Bearer 토큰 포함
 GET /api/v1/users
 Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 
-# API key (for server-to-server)
+# API 키 (서버 간 통신 시 사용)
 GET /api/v1/data
 X-API-Key: sk_live_abc123
 ```
 
-### 授权模式
+### 권한 부여 패턴
 
 ```typescript
-// Resource-level: check ownership
+// 리소스 레벨: 소유권 확인
 app.get("/api/v1/orders/:id", async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ error: { code: "not_found" } });
@@ -317,16 +317,16 @@ app.get("/api/v1/orders/:id", async (req, res) => {
   return res.json({ data: order });
 });
 
-// Role-based: check permissions
+// 역할 기반: 권한 확인
 app.delete("/api/v1/users/:id", requireRole("admin"), async (req, res) => {
   await User.delete(req.params.id);
   return res.status(204).send();
 });
 ```
 
-## 速率限制
+## 속도 제한 (Rate Limiting)
 
-### 响应头
+### 응답 헤더
 
 ```
 HTTP/1.1 200 OK
@@ -334,71 +334,71 @@ X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
 X-RateLimit-Reset: 1640000000
 
-# When exceeded
+# 한도 초과 시
 HTTP/1.1 429 Too Many Requests
 Retry-After: 60
 {
   "error": {
     "code": "rate_limit_exceeded",
-    "message": "Rate limit exceeded. Try again in 60 seconds."
+    "message": "속도 제한을 초과했습니다. 60초 후에 다시 시도하세요."
   }
 }
 ```
 
-### 速率限制层级
+### 속도 제한 계층
 
-| 层级 | 限制 | 时间窗口 | 用例 |
+| 계층 | 한도 | 시간 윈도우 | 사용 사례 |
 |------|-------|--------|----------|
-| 匿名用户 | 30/分钟 | 每个 IP | 公共端点 |
-| 认证用户 | 100/分钟 | 每个用户 | 标准 API 访问 |
-| 高级用户 | 1000/分钟 | 每个 API 密钥 | 付费 API 套餐 |
-| 内部服务 | 10000/分钟 | 每个服务 | 服务间调用 |
+| 익명 사용자 | 30/분 | IP당 | 공개 엔드포인트 |
+| 인증된 사용자 | 100/분 | 사용자당 | 표준 API 접근 |
+| 프리미엄 사용자 | 1000/분 | API 키당 | 유료 API 플랜 |
+| 내부 서비스 | 10000/분 | 서비스당 | 서비스 간 통신 |
 
-## 版本控制
+## 버전 관리
 
-### URL 路径版本控制（推荐）
+### URL 경로 버전 관리 (권장)
 
 ```
 /api/v1/users
 /api/v2/users
 ```
 
-**优点：** 明确，易于路由，可缓存
-**缺点：** 版本间 URL 会变化
+**장점:** 명확하고 라우팅이 쉬우며 캐싱이 가능함.
+**단점:** 버전 변경 시 URL이 바뀜.
 
-### 请求头版本控制
+### 헤더 버전 관리
 
 ```
 GET /api/users
 Accept: application/vnd.myapp.v2+json
 ```
 
-**优点：** URL 简洁
-**缺点：** 测试更困难，容易忘记
+**장점:** 깔끔한 URL 유지 가능.
+**단점:** 테스트가 어렵고 누락하기 쉬움.
 
-### 版本控制策略
+### 버전 관리 전략
 
 ```
-1. Start with /api/v1/ — don't version until you need to
-2. Maintain at most 2 active versions (current + previous)
-3. Deprecation timeline:
-   - Announce deprecation (6 months notice for public APIs)
-   - Add Sunset header: Sunset: Sat, 01 Jan 2026 00:00:00 GMT
-   - Return 410 Gone after sunset date
-4. Non-breaking changes don't need a new version:
-   - Adding new fields to responses
-   - Adding new optional query parameters
-   - Adding new endpoints
-5. Breaking changes require a new version:
-   - Removing or renaming fields
-   - Changing field types
-   - Changing URL structure
-   - Changing authentication method
+1. /api/v1/으로 시작하십시오. 꼭 필요한 상황이 되기 전까지는 버전을 올리지 마세요.
+2. 최대 2개의 버전(현재 버전 + 직전 버전)만 활성 상태로 유지하십시오.
+3. 서비스 종료(Deprecation) 타임라인:
+   - 종료 예고 (공개 API의 경우 최소 6개월 전 공지)
+   - Sunset 헤더 추가: Sunset: Sat, 01 Jan 2026 00:00:00 GMT
+   - 일몰 기한 이후에는 410 Gone 반환
+4. 하위 호환성을 깨지 않는 변경은 새로운 버전이 필요하지 않습니다:
+   - 응답에 새로운 필드 추가
+   - 새로운 선택적 쿼리 파라미터 추가
+   - 새로운 엔드포인트 추가
+5. 하위 호환성을 깨는 변경은 새로운 버전이 필요합니다:
+   - 기존 필드 삭제 또는 이름 변경
+   - 필드 타입 변경
+   - URL 구조 변경
+   - 인증 방식 변경
 ```
 
-## 实现模式
+## 구현 패턴
 
-### TypeScript (Next.js API 路由)
+### TypeScript (Next.js API Routes 예시)
 
 ```typescript
 import { z } from "zod";
@@ -417,7 +417,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       error: {
         code: "validation_error",
-        message: "Request validation failed",
+        message: "요청 검증 실패",
         details: parsed.error.issues.map(i => ({
           field: i.path.join("."),
           message: i.message,
@@ -439,7 +439,7 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-### Python (Django REST Framework)
+### Python (Django REST Framework 예시)
 
 ```python
 from rest_framework import serializers, viewsets, status
@@ -474,13 +474,13 @@ class UserViewSet(viewsets.ModelViewSet):
         )
 ```
 
-### Go (net/http)
+### Go (net/http 예시)
 
 ```go
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
     var req CreateUserRequest
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-        writeError(w, http.StatusBadRequest, "invalid_json", "Invalid request body")
+        writeError(w, http.StatusBadRequest, "invalid_json", "잘못된 요청 바디")
         return
     }
 
@@ -493,9 +493,9 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         switch {
         case errors.Is(err, domain.ErrEmailTaken):
-            writeError(w, http.StatusConflict, "email_taken", "Email already registered")
+            writeError(w, http.StatusConflict, "email_taken", "이미 등록된 이메일입니다")
         default:
-            writeError(w, http.StatusInternalServerError, "internal_error", "Internal error")
+            writeError(w, http.StatusInternalServerError, "internal_error", "내부 서버 오류")
         }
         return
     }
@@ -505,19 +505,19 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-## API 设计清单
+## API 디자인 체크리스트
 
-发布新端点前请检查：
+새로운 엔드포인트를 공개하기 전에 다음 항목을 확인하십시오:
 
-* \[ ] 资源 URL 遵循命名约定（复数、短横线连接、不含动词）
-* \[ ] 使用了正确的 HTTP 方法（GET 用于读取，POST 用于创建等）
-* \[ ] 返回了适当的状态码（不要所有情况都返回 200）
-* \[ ] 使用模式（Zod, Pydantic, Bean Validation）验证了输入
-* \[ ] 错误响应遵循带代码和消息的标准格式
-* \[ ] 列表端点实现了分页（游标或偏移量）
-* \[ ] 需要认证（或明确标记为公开）
-* \[ ] 检查了授权（用户只能访问自己的资源）
-* \[ ] 配置了速率限制
-* \[ ] 响应未泄露内部细节（堆栈跟踪、SQL 错误）
-* \[ ] 与现有端点命名一致（camelCase 对比 snake\_case）
-* \[ ] 已记录（更新了 OpenAPI/Swagger 规范）
+* [ ] 리소스 URL이 명명 규칙을 따르는가 (복수형, 하이픈 사용, 동사 지양)
+* [ ] 올바른 HTTP 메서드를 사용했는가 (조회는 GET, 생성은 POST 등)
+* [ ] 상황에 맞는 적절한 상태 코드를 반환하는가 (모든 경우에 200 반환 금지)
+* [ ] 스키마(Zod, Pydantic 등)를 사용하여 입력값을 검증했는가
+* [ ] 에러 응답이 코드와 메시지를 포함한 표준 형식을 따르는가
+* [ ] 목록 엔드포인드에 페이지네이션(커서 또는 오프셋)이 구현되었는가
+* [ ] 인증이 필요한가 (또는 공개용으로 명확히 표시되었는가)
+* [ ] 권한 부여를 확인했는가 (사용자가 자신의 리소스에만 접근 가능한지)
+* [ ] 속도 제한이 구성되었는가
+* [ ] 응답에 내부 구현 세부 정보(Stack trace, SQL 에러 등)가 노출되지 않는가
+* [ ] 기존 엔드포인트와 명명 방식(camelCase vs snake_case)이 일관적인가
+* [ ] 문서화가 완료되었는가 (OpenAPI/Swagger 명세 업데이트)

@@ -1,88 +1,89 @@
 ---
 name: content-engine
-description: Create platform-native content systems for X, LinkedIn, TikTok, YouTube, newsletters, and repurposed multi-platform campaigns. Use when the user wants social posts, threads, scripts, content calendars, or one source asset adapted cleanly across platforms.
+description: X, LinkedIn, TikTok, YouTube, 뉴스레터 및 다중 플랫폼 캠페인을 위한 플랫폼 최적화 콘텐츠 시스템을 구축합니다. 사용자가 소셜 포스트, 스레드, 스크립트, 콘텐츠 캘린더를 원하거나 하나의 소스 자산을 여러 플랫폼에 맞게 변환하고 싶을 때 사용하십시오.
 origin: ECC
 ---
 
-# Content Engine
+# 콘텐츠 엔진 (Content Engine)
 
-Turn one idea into strong, platform-native content instead of posting the same thing everywhere.
+하나의 아이디어를 모든 곳에 똑같이 올리는 대신, 각 플랫폼에 최적화된 강력한 콘텐츠로 변환합니다.
 
-## When to Activate
+## 활성화 시점
 
-- writing X posts or threads
-- drafting LinkedIn posts or launch updates
-- scripting short-form video or YouTube explainers
-- repurposing articles, podcasts, demos, or docs into social content
-- building a lightweight content plan around a launch, milestone, or theme
+- X 포스트나 스레드 작성 시
+- LinkedIn 포스트나 출시 업데이트 초안 작성 시
+- 숏폼 영상이나 YouTube 설명 영상 스크립트 작성 시
+- 기사, 팟캐스트, 데모 또는 문서를 소셜 콘텐츠로 재가공(Repurposing)할 때
+- 출시, 마일스톤 또는 특정 주제를 중심으로 가벼운 콘텐츠 계획을 세울 때
 
-## First Questions
+## 초기 확인 사항
 
-Clarify:
-- source asset: what are we adapting from
-- audience: builders, investors, customers, operators, or general audience
-- platform: X, LinkedIn, TikTok, YouTube, newsletter, or multi-platform
-- goal: awareness, conversion, recruiting, authority, launch support, or engagement
+다음을 명확히 하십시오:
+- 소스 자산: 무엇을 기반으로 가공하는가
+- 대상 독자: 개발자, 투자자, 고객, 운영자 또는 일반 대중
+- 플랫폼: X, LinkedIn, TikTok, YouTube, 뉴스레터 또는 다중 플랫폼
+- 목표: 인지도 제고, 전환, 채용, 권위 확보, 출시 지원 또는 참여 유도
 
-## Core Rules
+## 핵심 규칙
 
-1. Adapt for the platform. Do not cross-post the same copy.
-2. Hooks matter more than summaries.
-3. Every post should carry one clear idea.
-4. Use specifics over slogans.
-5. Keep the ask small and clear.
+1. 플랫폼에 맞게 조정하십시오. 동일한 문구를 여러 곳에 그대로 올리지 마십시오.
+2. 요약보다 후킹(Hook)이 더 중요합니다.
+3. 각 포스트는 하나의 명확한 아이디어를 담아야 합니다.
+4. 슬로건보다는 구체적인 내용을 사용하십시오.
+5. 요청 사항(CTA)은 작고 명확하게 유지하십시오.
 
-## Platform Guidance
+## 플랫폼별 가이드
 
-### X
-- open fast
-- one idea per post or per tweet in a thread
-- keep links out of the main body unless necessary
-- avoid hashtag spam
+### X (트위터)
+- 빠르게 시작하십시오.
+- 포스트당 또는 스레드의 트윗당 하나의 아이디어를 담으십시오.
+- 꼭 필요한 경우가 아니면 본문에 링크를 넣지 마십시오.
+- 해시태그 남발을 피하십시오.
 
 ### LinkedIn
-- strong first line
-- short paragraphs
-- more explicit framing around lessons, results, and takeaways
+- 강렬한 첫 줄을 사용하십시오.
+- 문단을 짧게 유지하십시오.
+- 교훈, 결과 및 시사점(takeaways)을 더 명확하게 드러내십시오.
 
-### TikTok / Short Video
-- first 3 seconds must interrupt attention
-- script around visuals, not just narration
-- one demo, one claim, one CTA
+### TikTok / 숏폼 영상
+- 처음 3초 안에 시선을 사로잡아야 합니다.
+- 단순 나레이션이 아닌 시각적 요소 중심으로 스크립트를 짜십시오.
+- 하나의 데모, 하나의 주장, 하나의 CTA 구조를 유지하십시오.
 
 ### YouTube
-- show the result early
-- structure by chapter
-- refresh the visual every 20-30 seconds
+- 결과를 초반에 보여주십시오.
+- 챕터별로 구조화하십시오.
+- 20~30초마다 시각적인 변화를 주십시오.
 
-### Newsletter
-- deliver one clear lens, not a bundle of unrelated items
-- make section titles skimmable
-- keep the opening paragraph doing real work
+### 뉴스레터
+- 관련 없는 항목들의 묶음이 아닌, 하나의 명확한 관점을 전달하십시오.
+- 섹션 제목을 훑어보기 쉽게 만드십시오.
+- 도입부 문단이 실질적인 역할을 하도록 구성하십시오.
 
-## Repurposing Flow
+## 재가공(Repurposing) 흐름
 
-Default cascade:
-1. anchor asset: article, video, demo, memo, or launch doc
-2. extract 3-7 atomic ideas
-3. write platform-native variants
-4. trim repetition across outputs
-5. align CTAs with platform intent
+기본 단계:
+1. 앵커 자산(Anchor asset) 선정: 기사, 영상, 데모, 메모 또는 출시 문서
+2. 3~7개의 핵심 아이디어 추출
+3. 플랫폼별 최적화된 변형 문구 작성
+4. 출력물 간의 중복 내용 제거
+5. 플랫폼의 성격에 맞게 CTA 조정
 
-## Deliverables
+## 최종 결과물
 
-When asked for a campaign, return:
-- the core angle
-- platform-specific drafts
-- optional posting order
-- optional CTA variants
-- any missing inputs needed before publishing
+캠페인 요청 시 다음을 반환하십시오:
+- 핵심 관점 (Core angle)
+- 플랫폼별 초안
+- (선택 사항) 게시 순서
+- (선택 사항) CTA 변형안
+- 발행 전 필요한 추가 정보 목록
 
-## Quality Gate
+## 품질 게이트 (Quality Gate)
 
-Before delivering:
-- each draft reads natively for its platform
-- hooks are strong and specific
-- no generic hype language
-- no duplicated copy across platforms unless requested
-- the CTA matches the content and audience
+최종 결과물 전달 전 확인 사항:
+- 각 초안이 해당 플랫폼의 분위기에 어울리는가
+- 후킹(Hook) 문구가 강렬하고 구체적인가
+- 일반적인 과장된 표현이 없는가
+- 요청하지 않은 한 플랫폼 간 문구가 중복되지 않는가
+- CTA가 콘텐츠 및 독자와 일치하는가
+    

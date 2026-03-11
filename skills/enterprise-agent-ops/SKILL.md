@@ -1,50 +1,51 @@
 ---
 name: enterprise-agent-ops
-description: Operate long-lived agent workloads with observability, security boundaries, and lifecycle management.
+description: 관찰 가능성, 보안 경계 및 생애주기 관리를 갖춘 장기 실행 에이전트 워크로드를 운영합니다.
 origin: ECC
 ---
 
-# Enterprise Agent Ops
+# 엔터프라이즈 에이전트 운영 (Enterprise Agent Ops)
 
-Use this skill for cloud-hosted or continuously running agent systems that need operational controls beyond single CLI sessions.
+단일 CLI 세션을 넘어 운영 제어가 필요한 클라우드 호스팅 또는 지속적으로 실행되는 에이전트 시스템을 위한 스킬입니다.
 
-## Operational Domains
+## 운영 영역
 
-1. runtime lifecycle (start, pause, stop, restart)
-2. observability (logs, metrics, traces)
-3. safety controls (scopes, permissions, kill switches)
-4. change management (rollout, rollback, audit)
+1. 런타임 생애주기 (시작, 일시 정지, 정지, 재시작)
+2. 관찰 가능성 (로그, 지표, 트레이스)
+3. 안전 제어 (범위, 권한, 킬 스위치)
+4. 변경 관리 (배포, 롤백, 감사)
 
-## Baseline Controls
+## 기본 제어 항목
 
-- immutable deployment artifacts
-- least-privilege credentials
-- environment-level secret injection
-- hard timeout and retry budgets
-- audit log for high-risk actions
+- 불변 배포 산출물 (Immutable deployment artifacts)
+- 최소 권한 기반 자격 증명 (Least-privilege credentials)
+- 환경 수준의 비밀 정보 주입 (Secret injection)
+- 하드 타임아웃 및 재시도 예산 설정
+- 위험도가 높은 작업에 대한 감사 로그(Audit log) 작성
 
-## Metrics to Track
+## 추적 지표 (Metrics)
 
-- success rate
-- mean retries per task
-- time to recovery
-- cost per successful task
-- failure class distribution
+- 성공률 (Success rate)
+- 작업당 평균 재시도 횟수
+- 복구 소요 시간 (Time to recovery)
+- 성공한 작업당 비용
+- 실패 유형별 분포
 
-## Incident Pattern
+## 장애 대응 패턴
 
-When failure spikes:
-1. freeze new rollout
-2. capture representative traces
-3. isolate failing route
-4. patch with smallest safe change
-5. run regression + security checks
-6. resume gradually
+실패가 급증할 경우:
+1. 신규 배포 동결 (Freeze rollout)
+2. 대표적인 트레이스(Trace) 캡처
+3. 실패 경로 격리
+4. 안전하고 최소한의 변경으로 패치 적용
+5. 회귀 테스트 및 보안 점검 실행
+6. 점진적으로 운영 재개
 
-## Deployment Integrations
+## 배포 통합
 
-This skill pairs with:
-- PM2 workflows
-- systemd services
-- container orchestrators
-- CI/CD gates
+이 스킬은 다음 항목들과 함께 사용됩니다:
+- PM2 워크플로우
+- systemd 서비스
+- 컨테이너 오케스트레이터 (K8s 등)
+- CI/CD 게이트
+    

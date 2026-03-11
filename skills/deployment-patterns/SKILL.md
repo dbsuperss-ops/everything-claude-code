@@ -1,427 +1,76 @@
 ---
 name: deployment-patterns
-description: Deployment workflows, CI/CD pipeline patterns, Docker containerization, health checks, rollback strategies, and production readiness checklists for web applications.
+description: 배포 워크플로우, CI/CD 파이프라인 패턴, Docker 컨테이너화, 헬스 체크(Health checks), 롤백 전략 및 웹 애플리케이션의 운영 환경 배포 전 체크리스트 가이드입니다.
 origin: ECC
 ---
 
-# Deployment Patterns
+# 배포 패턴 (Deployment Patterns)
 
-Production deployment workflows and CI/CD best practices.
+운영 환경 배포 워크플로우 및 CI/CD 최선 관행(Best practices)을 안내합니다.
 
-## When to Activate
+## 활성화 시점
 
-- Setting up CI/CD pipelines
-- Dockerizing an application
-- Planning deployment strategy (blue-green, canary, rolling)
-- Implementing health checks and readiness probes
-- Preparing for a production release
-- Configuring environment-specific settings
+- CI/CD 파이프라인 설정 시
+- 애플리케이션을 Docker 컨테이너화할 때
+- 배포 전략(Rolling, Blue-Green, Canary)을 수립할 때
+- 헬스 체크(Health checks) 및 래디니스 프로브(Readiness probes) 구현 시
+- 운영 서버 릴리스를 준비할 때
+- 환경별(Environment-specific) 설정 구성 시
 
-## Deployment Strategies
+## 배포 전략 (Deployment Strategies)
 
-### Rolling Deployment (Default)
+### 롤링 배포 (Rolling Deployment) - 기본값
+인스턴스를 점진적으로 교체합니다. 배포 중에는 구버전과 신버전이 동시에 실행됩니다.
+- **장점**: 무중단 배포, 점진적 업데이트
+- **단점**: 구버전/신버전 공존 기간에 하위 호환성 유지가 필수적임
 
-Replace instances gradually — old and new versions run simultaneously during rollout.
+### 블루-그린 배포 (Blue-Green Deployment)
+두 개의 동일한 환경을 구성합니다. 트래픽을 한 번에 원자적으로 전환합니다.
+- **장점**: 즉각적인 롤백 가능 (다시 블루로 전환), 깨끗한 절체(Cutover)
+- **단점**: 배포 중 2배의 인프라 자원이 필요함
 
-```
-Instance 1: v1 → v2  (update first)
-Instance 2: v1        (still running v1)
-Instance 3: v1        (still running v1)
+### 카나리 배포 (Canary Deployment)
+소량의 트래픽을 신버전에 먼저 흘려보내 지표를 확인한 후 전체로 확대합니다.
+- **장점**: 전체 배포 전 실제 트래픽으로 문제 조기 발견 가능
+- **단점**: 트래픽 분할 인프라 및 모니터링 시스템 필요
 
-Instance 1: v2
-Instance 2: v1 → v2  (update second)
-Instance 3: v1
+## Docker 최선 관행
 
-Instance 1: v2
-Instance 2: v2
-Instance 3: v1 → v2  (update last)
-```
+- **멀티 스테이지 빌드(Multi-stage build)**: 이미지 크기를 최소화하고 보안을 강화합니다.
+- **사용자 권한**: root 유저가 아닌 `appuser`와 같은 일반 유저로 실행하십시오.
+- **태그 사용**: `latest` 보다는 특정 버전 태그(예: `node:22-alpine`)를 사용하십시오.
+- **헬스 체크**: `HEALTHCHECK` 명령어를 Dockerfile에 포함하여 컨테이너 상태를 감시하십시오.
 
-**Pros:** Zero downtime, gradual rollout
-**Cons:** Two versions run simultaneously — requires backward-compatible changes
-**Use when:** Standard deployments, backward-compatible changes
+## CI/CD 파이프라인 (GitHub Actions 예시)
 
-### Blue-Green Deployment
+1. **테스트 단계**: 린트, 타입 체크, 단위 테스트 및 통합 테스트 수행
+2. **빌드 단계**: 테스트 통과 시 Docker 이미지 빌드 및 레지스트리 푸시
+3. **배포 단계**: 환경별(Staging/Production) 배포 수행
 
-Run two identical environments. Switch traffic atomically.
+## 헬스 체크 (Health Checks)
 
-```
-Blue  (v1) ← traffic
-Green (v2)   idle, running new version
+- **단순 체크**: 애플리케이션 생존 여부 확인
+- **상세 체크**: 데이터베이스, Redis, 외부 API 등 의존 서비스들의 연결 상태까지 확인
+- **Kubernetes 프로브**: Liveness(생존), Readiness(준비), Startup(시작) 프로브를 용도에 맞게 설정하십시오.
 
-# After verification:
-Blue  (v1)   idle (becomes standby)
-Green (v2) ← traffic
-```
+## 환경 설정 (Twelve-Factor App)
 
-**Pros:** Instant rollback (switch back to blue), clean cutover
-**Cons:** Requires 2x infrastructure during deployment
-**Use when:** Critical services, zero-tolerance for issues
+- 모든 설정은 소스 코드가 아닌 **환경 변수**를 통해 주입받아야 합니다.
+- 애플리케이션 시작 시 `Zod`와 같은 라이브러리로 환경 변수의 유효성을 즉시 검증(Fail-Fast)하십시오.
 
-### Canary Deployment
+## 롤백 전략 (Rollback Strategy)
 
-Route a small percentage of traffic to the new version first.
+- 쿠버네티스의 경우 `kubectl rollout undo` 등을 사용하여 이전 이미지로 즉시 되돌립니다.
+- 배포 전 롤백 계획을 문서화하고 스테이징 환경에서 반드시 테스트해 보십시오.
 
-```
-v1: 95% of traffic
-v2:  5% of traffic  (canary)
+## 운영 환경 배포 전 체크리스트 (Production Readiness)
 
-# If metrics look good:
-v1: 50% of traffic
-v2: 50% of traffic
+- [ ] 모든 테스트 통과 및 보안 취약점 스캔 완료
+- [ ] 코드나 설정에 하드코딩된 비밀 키가 없는가?
+- [ ] 정형화된(JSON) 로깅 설정 및 개인정보(PII) 제거 확인
+- [ ] 리소스 제한(CPU, Memory) 및 오토스케일링 설정
+- [ ] 모든 엔드포인트에 SSL/TLS 적용
+- [ ] 에러율 임계치 기반 알림(Alerting) 설정
 
-# Final:
-v2: 100% of traffic
-```
-
-**Pros:** Catches issues with real traffic before full rollout
-**Cons:** Requires traffic splitting infrastructure, monitoring
-**Use when:** High-traffic services, risky changes, feature flags
-
-## Docker
-
-### Multi-Stage Dockerfile (Node.js)
-
-```dockerfile
-# Stage 1: Install dependencies
-FROM node:22-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --production=false
-
-# Stage 2: Build
-FROM node:22-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npm run build
-RUN npm prune --production
-
-# Stage 3: Production image
-FROM node:22-alpine AS runner
-WORKDIR /app
-
-RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001
-USER appuser
-
-COPY --from=builder --chown=appuser:appgroup /app/node_modules ./node_modules
-COPY --from=builder --chown=appuser:appgroup /app/dist ./dist
-COPY --from=builder --chown=appuser:appgroup /app/package.json ./
-
-ENV NODE_ENV=production
-EXPOSE 3000
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
-
-CMD ["node", "dist/server.js"]
-```
-
-### Multi-Stage Dockerfile (Go)
-
-```dockerfile
-FROM golang:1.22-alpine AS builder
-WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /server ./cmd/server
-
-FROM alpine:3.19 AS runner
-RUN apk --no-cache add ca-certificates
-RUN adduser -D -u 1001 appuser
-USER appuser
-
-COPY --from=builder /server /server
-
-EXPOSE 8080
-HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:8080/health || exit 1
-CMD ["/server"]
-```
-
-### Multi-Stage Dockerfile (Python/Django)
-
-```dockerfile
-FROM python:3.12-slim AS builder
-WORKDIR /app
-RUN pip install --no-cache-dir uv
-COPY requirements.txt .
-RUN uv pip install --system --no-cache -r requirements.txt
-
-FROM python:3.12-slim AS runner
-WORKDIR /app
-
-RUN useradd -r -u 1001 appuser
-USER appuser
-
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
-COPY . .
-
-ENV PYTHONUNBUFFERED=1
-EXPOSE 8000
-
-HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/')" || exit 1
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
-```
-
-### Docker Best Practices
-
-```
-# GOOD practices
-- Use specific version tags (node:22-alpine, not node:latest)
-- Multi-stage builds to minimize image size
-- Run as non-root user
-- Copy dependency files first (layer caching)
-- Use .dockerignore to exclude node_modules, .git, tests
-- Add HEALTHCHECK instruction
-- Set resource limits in docker-compose or k8s
-
-# BAD practices
-- Running as root
-- Using :latest tags
-- Copying entire repo in one COPY layer
-- Installing dev dependencies in production image
-- Storing secrets in image (use env vars or secrets manager)
-```
-
-## CI/CD Pipeline
-
-### GitHub Actions (Standard Pipeline)
-
-```yaml
-name: CI/CD
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm test -- --coverage
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage
-          path: coverage/
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    environment: production
-    steps:
-      - name: Deploy to production
-        run: |
-          # Platform-specific deployment command
-          # Railway: railway up
-          # Vercel: vercel --prod
-          # K8s: kubectl set image deployment/app app=ghcr.io/${{ github.repository }}:${{ github.sha }}
-          echo "Deploying ${{ github.sha }}"
-```
-
-### Pipeline Stages
-
-```
-PR opened:
-  lint → typecheck → unit tests → integration tests → preview deploy
-
-Merged to main:
-  lint → typecheck → unit tests → integration tests → build image → deploy staging → smoke tests → deploy production
-```
-
-## Health Checks
-
-### Health Check Endpoint
-
-```typescript
-// Simple health check
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
-
-// Detailed health check (for internal monitoring)
-app.get("/health/detailed", async (req, res) => {
-  const checks = {
-    database: await checkDatabase(),
-    redis: await checkRedis(),
-    externalApi: await checkExternalApi(),
-  };
-
-  const allHealthy = Object.values(checks).every(c => c.status === "ok");
-
-  res.status(allHealthy ? 200 : 503).json({
-    status: allHealthy ? "ok" : "degraded",
-    timestamp: new Date().toISOString(),
-    version: process.env.APP_VERSION || "unknown",
-    uptime: process.uptime(),
-    checks,
-  });
-});
-
-async function checkDatabase(): Promise<HealthCheck> {
-  try {
-    await db.query("SELECT 1");
-    return { status: "ok", latency_ms: 2 };
-  } catch (err) {
-    return { status: "error", message: "Database unreachable" };
-  }
-}
-```
-
-### Kubernetes Probes
-
-```yaml
-livenessProbe:
-  httpGet:
-    path: /health
-    port: 3000
-  initialDelaySeconds: 10
-  periodSeconds: 30
-  failureThreshold: 3
-
-readinessProbe:
-  httpGet:
-    path: /health
-    port: 3000
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  failureThreshold: 2
-
-startupProbe:
-  httpGet:
-    path: /health
-    port: 3000
-  initialDelaySeconds: 0
-  periodSeconds: 5
-  failureThreshold: 30    # 30 * 5s = 150s max startup time
-```
-
-## Environment Configuration
-
-### Twelve-Factor App Pattern
-
-```bash
-# All config via environment variables — never in code
-DATABASE_URL=postgres://user:pass@host:5432/db
-REDIS_URL=redis://host:6379/0
-API_KEY=${API_KEY}           # injected by secrets manager
-LOG_LEVEL=info
-PORT=3000
-
-# Environment-specific behavior
-NODE_ENV=production          # or staging, development
-APP_ENV=production           # explicit app environment
-```
-
-### Configuration Validation
-
-```typescript
-import { z } from "zod";
-
-const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "staging", "production"]),
-  PORT: z.coerce.number().default(3000),
-  DATABASE_URL: z.string().url(),
-  REDIS_URL: z.string().url(),
-  JWT_SECRET: z.string().min(32),
-  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
-});
-
-// Validate at startup — fail fast if config is wrong
-export const env = envSchema.parse(process.env);
-```
-
-## Rollback Strategy
-
-### Instant Rollback
-
-```bash
-# Docker/Kubernetes: point to previous image
-kubectl rollout undo deployment/app
-
-# Vercel: promote previous deployment
-vercel rollback
-
-# Railway: redeploy previous commit
-railway up --commit <previous-sha>
-
-# Database: rollback migration (if reversible)
-npx prisma migrate resolve --rolled-back <migration-name>
-```
-
-### Rollback Checklist
-
-- [ ] Previous image/artifact is available and tagged
-- [ ] Database migrations are backward-compatible (no destructive changes)
-- [ ] Feature flags can disable new features without deploy
-- [ ] Monitoring alerts configured for error rate spikes
-- [ ] Rollback tested in staging before production release
-
-## Production Readiness Checklist
-
-Before any production deployment:
-
-### Application
-- [ ] All tests pass (unit, integration, E2E)
-- [ ] No hardcoded secrets in code or config files
-- [ ] Error handling covers all edge cases
-- [ ] Logging is structured (JSON) and does not contain PII
-- [ ] Health check endpoint returns meaningful status
-
-### Infrastructure
-- [ ] Docker image builds reproducibly (pinned versions)
-- [ ] Environment variables documented and validated at startup
-- [ ] Resource limits set (CPU, memory)
-- [ ] Horizontal scaling configured (min/max instances)
-- [ ] SSL/TLS enabled on all endpoints
-
-### Monitoring
-- [ ] Application metrics exported (request rate, latency, errors)
-- [ ] Alerts configured for error rate > threshold
-- [ ] Log aggregation set up (structured logs, searchable)
-- [ ] Uptime monitoring on health endpoint
-
-### Security
-- [ ] Dependencies scanned for CVEs
-- [ ] CORS configured for allowed origins only
-- [ ] Rate limiting enabled on public endpoints
-- [ ] Authentication and authorization verified
-- [ ] Security headers set (CSP, HSTS, X-Frame-Options)
-
-### Operations
-- [ ] Rollback plan documented and tested
-- [ ] Database migration tested against production-sized data
-- [ ] Runbook for common failure scenarios
-- [ ] On-call rotation and escalation path defined
+**기억하십시오**: 안정적인 배포는 단순히 코드를 서버에 올리는 것이 아니라, 장애 상황에서 빠르게 복구할 수 있는 체계를 갖추는 것입니다.
+    

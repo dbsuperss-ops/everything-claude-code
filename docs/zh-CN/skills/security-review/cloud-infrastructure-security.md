@@ -1,361 +1,110 @@
-| name | description |
-|------|-------------|
-| cloud-infrastructure-security | 在部署到云平台、配置基础设施、管理IAM策略、设置日志记录/监控或实现CI/CD流水线时使用此技能。提供符合最佳实践的云安全检查清单。 |
+---
+name: cloud-infrastructure-security
+description: 클라우드 플랫폼 배포, 인프라 구성, IAM 정책 관리, 로깅/모니터링 설정 또는 CI/CD 파이프라인 구현 시 이 스킬을 사용하십시오. 베스트 프랙티스에 기반한 클라우드 보안 체크리스트를 제공합니다.
+origin: ECC
+---
 
-# 云与基础设施安全技能
+# 클라우드 및 인프라 보안 스킬
 
-此技能确保云基础设施、CI/CD流水线和部署配置遵循安全最佳实践并符合行业标准。
+이 스킬은 클라우드 인프라, CI/CD 파이프라인 및 배포 설정이 보안 베스트 프랙티스와 업계 표준을 준수하도록 보장합니다.
 
-## 何时激活
+## 적용 시점
 
-* 将应用程序部署到云平台（AWS、Vercel、Railway、Cloudflare）
-* 配置IAM角色和权限
-* 设置CI/CD流水线
-* 实施基础设施即代码（Terraform、CloudFormation）
-* 配置日志记录和监控
-* 在云环境中管理密钥
-* 设置CDN和边缘安全
-* 实施灾难恢复和备份策略
+* 애플리케이션을 클라우드 플랫폼(AWS, Vercel, Railway, Cloudflare 등)에 배포할 때
+* IAM 역할(Role) 및 권한을 설정할 때
+* CI/CD 파이프라인을 구축할 때
+* 코드형 인프라(IaC - Terraform, CloudFormation 등)를 구현할 때
+* 로깅 및 모니터링 시스템을 구성할 때
+* 클라우드 환경에서 비밀 정보(Secrets)를 관리할 때
+* CDN 및 에지(Edge) 보안을 설정할 때
+* 재해 복구(DR) 및 백업 전략을 수립할 때
 
-## 云安全检查清单
+## 클라우드 보안 체크리스트
 
-### 1. IAM 与访问控制
+### 1. IAM 및 접근 제어
 
-#### 最小权限原则
-
+#### 최소 권한 원칙 (Least Privilege)
 ```yaml
-# ✅ CORRECT: Minimal permissions
+# ✅ 권장: 최소 권한 부여
 iam_role:
   permissions:
-    - s3:GetObject  # Only read access
+    - s3:GetObject  # 읽기 전용 권한만 부여
     - s3:ListBucket
   resources:
-    - arn:aws:s3:::my-bucket/*  # Specific bucket only
+    - arn:aws:s3:::my-bucket/*  # 특정 버킷으로만 범위 제한
 
-# ❌ WRONG: Overly broad permissions
+# ❌ 위험: 과도한 권한 부여
 iam_role:
   permissions:
-    - s3:*  # All S3 actions
+    - s3:*  # 모든 S3 작업 허용
   resources:
-    - "*"  # All resources
+    - "*"  # 모든 리소스에 접근 가능
 ```
 
-#### 多因素认证 (MFA)
+#### 다요소 인증 (MFA)
+* 루트(Root) 및 관리자(Admin) 계정에는 반드시 MFA를 활성화하십시오.
 
-```bash
-# ALWAYS enable MFA for root/admin accounts
-aws iam enable-mfa-device \
-  --user-name admin \
-  --serial-number arn:aws:iam::123456789:mfa/admin \
-  --authentication-code1 123456 \
-  --authentication-code2 789012
-```
+**검증 단계:**
+* [ ] 운영 환경에서 루트 계정을 사용하지 않는가?
+* [ ] 모든 권한 있는 계정에 MFA가 설정되었는가?
+* [ ] 서비스 계정은 고정된 자격 증명 대신 IAM 역할을 사용하는가?
+* [ ] IAM 정책이 최소 권한 원칙을 따르는가?
+* [ ] 사용하지 않는 자격 증명은 정기적으로 삭제/교체되는가?
 
-#### 验证步骤
+### 2. 비밀 정보 관리 (Secrets Management)
 
-* \[ ] 生产环境中未使用根账户
-* \[ ] 所有特权账户已启用MFA
-* \[ ] 服务账户使用角色，而非长期凭证
-* \[ ] IAM策略遵循最小权限原则
-* \[ ] 定期进行访问审查
-* \[ ] 未使用的凭证已轮换或移除
-
-### 2. 密钥管理
-
-#### 云密钥管理器
-
+#### 클라우드 비밀 관리 도구 활용
 ```typescript
-// ✅ CORRECT: Use cloud secrets manager
+// ✅ 권장: 클라우드 전용 비밀 관리 서비스 사용 (예: AWS Secrets Manager)
 import { SecretsManager } from '@aws-sdk/client-secrets-manager';
 
 const client = new SecretsManager({ region: 'us-east-1' });
 const secret = await client.getSecretValue({ SecretId: 'prod/api-key' });
-const apiKey = JSON.parse(secret.SecretString).key;
-
-// ❌ WRONG: Hardcoded or in environment variables only
-const apiKey = process.env.API_KEY; // Not rotated, not audited
 ```
 
-#### 密钥轮换
+#### 자동 교체 (Rotation)
+* 데이터베이스 비밀번호나 API 키는 30일~90일 주기로 자동 교체되도록 설정하십시오.
 
-```bash
-# Set up automatic rotation for database credentials
-aws secretsmanager rotate-secret \
-  --secret-id prod/db-password \
-  --rotation-lambda-arn arn:aws:lambda:region:account:function:rotate \
-  --rotation-rules AutomaticallyAfterDays=30
-```
+### 3. 네트워크 보안 (Network Security)
 
-#### 验证步骤
+* **VPC 및 보안 그룹**: 데이터베이스는 공용 인터넷에 노출하지 마십시오. SSH/RDP 포트는 VPN 또는 배스천 호스트(Bastion host)를 통해서만 접근 가능하도록 제한하십시오.
+* **보안 그룹 설정**: 화이트리스트 기반으로 필요한 포트(예: 443)와 IP 범위만 허용하십시오.
 
-* \[ ] 所有密钥存储在云密钥管理器（AWS Secrets Manager、Vercel Secrets）中
-* \[ ] 数据库凭证已启用自动轮换
-* \[ ] API密钥至少每季度轮换一次
-* \[ ] 代码、日志或错误消息中没有密钥
-* \[ ] 密钥访问已启用审计日志记录
+### 4. 로깅 및 모니터링
 
-### 3. 网络安全
+* 모든 서비스에 로깅을 활성화하십시오.
+* 인증 실패 시도, 관리자 작업(Admin actions) 등의 이벤트는 반드시 로그로 기록하십시오.
+* 로그 보존 기간은 규제 준수 요건(보통 90일 이상)에 맞춰 설정하십시오.
+* 의심스러운 활동 발견 시 즉시 알림(Alerting)이 가도록 구성하십시오.
 
-#### VPC 和防火墙配置
+### 5. CI/CD 파이프라인 보안
 
-```terraform
-# ✅ CORRECT: Restricted security group
-resource "aws_security_group" "app" {
-  name = "app-sg"
-  
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]  # Internal VPC only
-  }
-  
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Only HTTPS outbound
-  }
-}
+* **OIDC 사용**: 정적이고 수명이 긴 토큰 대신 OIDC(OpenID Connect)를 사용하여 클라우드에 인증하십시오.
+* **비밀 정보 스캔**: 파이프라인 단계에서 코드 내 비밀 정보(Secrets) 노출 여부를 자동 스캔하십시오.
+* **의존성 감사**: 배포 전 `npm audit` 등으로 서드파티 라이브러리 취약점을 점검하십시오.
 
-# ❌ WRONG: Open to the internet
-resource "aws_security_group" "bad" {
-  ingress {
-    from_port   = 0
-    to_port     = 65535
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # All ports, all IPs!
-  }
-}
-```
+### 6. 에지(Edge) 및 CDN 보안 (Cloudflare 등)
 
-#### 验证步骤
+* WAF(Web Application Firewall)를 활성화하고 OWASP 규칙을 적용하십시오.
+* 속도 제한(Rate Limiting) 및 봇 차단 설정을 적용하십시오.
+* 보안 헤더(X-Frame-Options, HSTS 등)를 추가하십시오.
 
-* \[ ] 数据库未公开访问
-* \[ ] SSH/RDP端口仅限VPN/堡垒机访问
-* \[ ] 安全组遵循最小权限原则
-* \[ ] 网络ACL已配置
-* \[ ] VPC流日志已启用
+### 7. 백업 및 재해 복구 (Backup & DR)
 
-### 4. 日志记录与监控
+* 매일 자동 백업을 수행하고, 백업본의 보존 기간이 요건을 충족하는지 확인하십시오.
+* 정기적으로(예: 매 분기) 백업 복구 테스트를 실시하십시오.
+* RPO(복구 지점 목표)와 RTO(복구 시간 목표)가 정의되고 테스트되었는지 확인하십시오.
 
-#### CloudWatch/日志记录配置
+---
 
-```typescript
-// ✅ CORRECT: Comprehensive logging
-import { CloudWatchLogsClient, CreateLogStreamCommand } from '@aws-sdk/client-cloudwatch-logs';
+## 클라우드 배포 전 보안 체크리스트
 
-const logSecurityEvent = async (event: SecurityEvent) => {
-  await cloudwatch.putLogEvents({
-    logGroupName: '/aws/security/events',
-    logStreamName: 'authentication',
-    logEvents: [{
-      timestamp: Date.now(),
-      message: JSON.stringify({
-        type: event.type,
-        userId: event.userId,
-        ip: event.ip,
-        result: event.result,
-        // Never log sensitive data
-      })
-    }]
-  });
-};
-```
+* [ ] **IAM**: 루트 계정 미사용, MFA 활성화, 최소 권한 정책 적용 완료
+* [ ] **비밀 정보**: 클라우드 비밀 관리자 사용 및 자동 교체 설정 완료
+* [ ] **네트워크**: 보안 그룹 차단 완료, 공용 DB 노출 없음
+* [ ] **로깅/모니터링**: 핵심 이벤트 로깅 및 이상 징후 알림 설정 완료
+* [ ] **CI/CD**: OIDC 사용, 코드 내 비밀 정보 노출 스캔 통과
+* [ ] **보안 헤더**: CSP, HSTS, X-Frame-Options 등 설정 완료
+* [ ] **백업**: 자동 백업 및 복구 테스트 완료
 
-#### 验证步骤
-
-* \[ ] 所有服务已启用CloudWatch/日志记录
-* \[ ] 失败的身份验证尝试已记录
-* \[ ] 管理员操作已审计
-* \[ ] 日志保留期已配置（合规要求90天以上）
-* \[ ] 为可疑活动配置了警报
-* \[ ] 日志已集中存储且防篡改
-
-### 5. CI/CD 流水线安全
-
-#### 安全流水线配置
-
-```yaml
-# ✅ CORRECT: Secure GitHub Actions workflow
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read  # Minimal permissions
-      
-    steps:
-      - uses: actions/checkout@v4
-      
-      # Scan for secrets
-      - name: Secret scanning
-        uses: trufflesecurity/trufflehog@main
-        
-      # Dependency audit
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
-        
-      # Use OIDC, not long-lived tokens
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::123456789:role/GitHubActionsRole
-          aws-region: us-east-1
-```
-
-#### 供应链安全
-
-```json
-// package.json - Use lock files and integrity checks
-{
-  "scripts": {
-    "install": "npm ci",  // Use ci for reproducible builds
-    "audit": "npm audit --audit-level=moderate",
-    "check": "npm outdated"
-  }
-}
-```
-
-#### 验证步骤
-
-* \[ ] 使用OIDC而非长期凭证
-* \[ ] 流水线中进行密钥扫描
-* \[ ] 依赖项漏洞扫描
-* \[ ] 容器镜像扫描（如适用）
-* \[ ] 分支保护规则已强制执行
-* \[ ] 合并前需要代码审查
-* \[ ] 已强制执行签名提交
-
-### 6. Cloudflare 与 CDN 安全
-
-#### Cloudflare 安全配置
-
-```typescript
-// ✅ CORRECT: Cloudflare Workers with security headers
-export default {
-  async fetch(request: Request): Promise<Response> {
-    const response = await fetch(request);
-    
-    // Add security headers
-    const headers = new Headers(response.headers);
-    headers.set('X-Frame-Options', 'DENY');
-    headers.set('X-Content-Type-Options', 'nosniff');
-    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    headers.set('Permissions-Policy', 'geolocation=(), microphone=()');
-    
-    return new Response(response.body, {
-      status: response.status,
-      headers
-    });
-  }
-};
-```
-
-#### WAF 规则
-
-```bash
-# Enable Cloudflare WAF managed rules
-# - OWASP Core Ruleset
-# - Cloudflare Managed Ruleset
-# - Rate limiting rules
-# - Bot protection
-```
-
-#### 验证步骤
-
-* \[ ] WAF已启用并配置OWASP规则
-* \[ ] 已配置速率限制
-* \[ ] 机器人防护已激活
-* \[ ] DDoS防护已启用
-* \[ ] 安全标头已配置
-* \[ ] SSL/TLS严格模式已启用
-
-### 7. 备份与灾难恢复
-
-#### 自动化备份
-
-```terraform
-# ✅ CORRECT: Automated RDS backups
-resource "aws_db_instance" "main" {
-  allocated_storage     = 20
-  engine               = "postgres"
-  
-  backup_retention_period = 30  # 30 days retention
-  backup_window          = "03:00-04:00"
-  maintenance_window     = "mon:04:00-mon:05:00"
-  
-  enabled_cloudwatch_logs_exports = ["postgresql"]
-  
-  deletion_protection = true  # Prevent accidental deletion
-}
-```
-
-#### 验证步骤
-
-* \[ ] 已配置自动化每日备份
-* \[ ] 备份保留期符合合规要求
-* \[ ] 已启用时间点恢复
-* \[ ] 每季度执行备份测试
-* \[ ] 灾难恢复计划已记录
-* \[ ] RPO和RTO已定义并经过测试
-
-## 部署前云安全检查清单
-
-在任何生产云部署之前：
-
-* \[ ] **IAM**：未使用根账户，已启用MFA，最小权限策略
-* \[ ] **密钥**：所有密钥都在云密钥管理器中并已配置轮换
-* \[ ] **网络**：安全组受限，无公开数据库
-* \[ ] **日志记录**：已启用CloudWatch/日志记录并配置保留期
-* \[ ] **监控**：为异常情况配置了警报
-* \[ ] **CI/CD**：OIDC身份验证，密钥扫描，依赖项审计
-* \[ ] **CDN/WAF**：Cloudflare WAF已启用并配置OWASP规则
-* \[ ] **加密**：静态和传输中的数据均已加密
-* \[ ] **备份**：自动化备份并已测试恢复
-* \[ ] **合规性**：满足GDPR/HIPAA要求（如适用）
-* \[ ] **文档**：基础设施已记录，已创建操作手册
-* \[ ] **事件响应**：已制定安全事件计划
-
-## 常见云安全配置错误
-
-### S3 存储桶暴露
-
-```bash
-# ❌ WRONG: Public bucket
-aws s3api put-bucket-acl --bucket my-bucket --acl public-read
-
-# ✅ CORRECT: Private bucket with specific access
-aws s3api put-bucket-acl --bucket my-bucket --acl private
-aws s3api put-bucket-policy --bucket my-bucket --policy file://policy.json
-```
-
-### RDS 公开访问
-
-```terraform
-# ❌ WRONG
-resource "aws_db_instance" "bad" {
-  publicly_accessible = true  # NEVER do this!
-}
-
-# ✅ CORRECT
-resource "aws_db_instance" "good" {
-  publicly_accessible = false
-  vpc_security_group_ids = [aws_security_group.db.id]
-}
-```
-
-## 资源
-
-* [AWS 安全最佳实践](https://aws.amazon.com/security/best-practices/)
-* [CIS AWS 基础基准](https://www.cisecurity.org/benchmark/amazon_web_services)
-* [Cloudflare 安全文档](https://developers.cloudflare.com/security/)
-* [OWASP 云安全](https://owasp.org/www-project-cloud-security/)
-* [Terraform 安全最佳实践](https://www.terraform.io/docs/cloud/guides/recommended-practices/)
-
-**请记住**：云配置错误是数据泄露的主要原因。一个暴露的S3存储桶或一个权限过大的IAM策略就可能危及整个基础设施。始终遵循最小权限原则和深度防御策略。
+**핵심**: 클라우드 설정 오류는 데이터 유출의 가장 큰 원인입니다. 노출된 S3 버킷이나 과도한 권한의 IAM 정책 하나가 전체 인프라를 위험에 빠뜨릴 수 있습니다. 항상 최소 권한 원칙과 다층 방어(Defense in Depth) 전략을 고수하십시오.

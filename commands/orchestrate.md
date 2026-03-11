@@ -1,172 +1,172 @@
-# Orchestrate Command
+# 오케스트레이션 명령어 (Orchestrate Command)
 
-Sequential agent workflow for complex tasks.
+복잡한 작업을 처리하기 위한 순차적 에이전트 워크플로우입니다.
 
-## Usage
+## 사용법
 
-`/orchestrate [workflow-type] [task-description]`
+`/orchestrate [워크플로우-유형] [작업-설명]`
 
-## Workflow Types
+## 워크플로우 유형
 
-### feature
-Full feature implementation workflow:
+### 기능 개발 (feature)
+전체 기능 구현 워크플로우:
 ```
-planner -> tdd-guide -> code-reviewer -> security-reviewer
+planner (계획가) -> tdd-guide (TDD 가이드) -> code-reviewer (코드 리뷰어) -> security-reviewer (보안 리뷰어)
 ```
 
-### bugfix
-Bug investigation and fix workflow:
+### 버그 수정 (bugfix)
+버그 조사 및 수정 워크플로우:
 ```
 planner -> tdd-guide -> code-reviewer
 ```
 
-### refactor
-Safe refactoring workflow:
+### 리팩토링 (refactor)
+안전한 리팩토링 워크플로우:
 ```
-architect -> code-reviewer -> tdd-guide
+architect (아키텍트) -> code-reviewer -> tdd-guide
 ```
 
-### security
-Security-focused review:
+### 보안 (security)
+보안 중심 리뷰 워크플로우:
 ```
 security-reviewer -> code-reviewer -> architect
 ```
 
-## Execution Pattern
+## 실행 패턴
 
-For each agent in the workflow:
+워크플로우의 각 에이전트에 대해:
 
-1. **Invoke agent** with context from previous agent
-2. **Collect output** as structured handoff document
-3. **Pass to next agent** in chain
-4. **Aggregate results** into final report
+1. 이전 에이전트의 컨텍스트를 담아 **에이전트를 호출**합니다.
+2. 결과물을 구조화된 인수인계(handoff) 문서로 **수집**합니다.
+3. 체인의 **다음 에이전트에게 전달**합니다.
+4. 최종 보고서로 **결과를 취합**합니다.
 
-## Handoff Document Format
+## 인수인계 문서 형식 (Handoff Document Format)
 
-Between agents, create handoff document:
+에이전트 간에 인수인계 문서를 작성합니다:
 
 ```markdown
-## HANDOFF: [previous-agent] -> [next-agent]
+## 인수인계(HANDOFF): [이전-에이전트] -> [다음-에이전트]
 
-### Context
-[Summary of what was done]
+### 컨텍스트 (Context)
+[수행된 작업 요약]
 
-### Findings
-[Key discoveries or decisions]
+### 발견 사항 (Findings)
+[주요 발견 사항 또는 결정 사항]
 
-### Files Modified
-[List of files touched]
+### 수정된 파일
+[수정된 파일 목록]
 
-### Open Questions
-[Unresolved items for next agent]
+### 미해결 질문
+[다음 에이전트가 해결해야 할 항목]
 
-### Recommendations
-[Suggested next steps]
+### 권고 사항
+[제안된 다음 단계]
 ```
 
-## Example: Feature Workflow
+## 예시: 기능 개발 워크플로우 (Feature Workflow)
 
 ```
-/orchestrate feature "Add user authentication"
+/orchestrate feature "사용자 인증 기능 추가"
 ```
 
-Executes:
+다음과 같이 실행됩니다:
 
-1. **Planner Agent**
-   - Analyzes requirements
-   - Creates implementation plan
-   - Identifies dependencies
-   - Output: `HANDOFF: planner -> tdd-guide`
+1. **플래너 에이전트 (Planner Agent)**
+   - 요구사항 분석
+   - 구현 계획 생성
+   - 의존성 식별
+   - 출력: `HANDOFF: planner -> tdd-guide`
 
-2. **TDD Guide Agent**
-   - Reads planner handoff
-   - Writes tests first
-   - Implements to pass tests
-   - Output: `HANDOFF: tdd-guide -> code-reviewer`
+2. **TDD 가이드 에이전트 (TDD Guide Agent)**
+   - 플래너의 인수인계 내용 확인
+   - 테스트 코드 우선 작성
+   - 테스트 통과를 위한 실제 구현
+   - 출력: `HANDOFF: tdd-guide -> code-reviewer`
 
-3. **Code Reviewer Agent**
-   - Reviews implementation
-   - Checks for issues
-   - Suggests improvements
-   - Output: `HANDOFF: code-reviewer -> security-reviewer`
+3. **코드 리뷰어 에이전트 (Code Reviewer Agent)**
+   - 구현 내용 리뷰
+   - 이슈 점검
+   - 개선 사항 제안
+   - 출력: `HANDOFF: code-reviewer -> security-reviewer`
 
-4. **Security Reviewer Agent**
-   - Security audit
-   - Vulnerability check
-   - Final approval
-   - Output: Final Report
+4. **보안 리뷰어 에이전트 (Security Reviewer Agent)**
+   - 보안 감사
+   - 취약점 점검
+   - 최종 승인
+   - 출력: 최종 보고서 (Final Report)
 
-## Final Report Format
+## 최종 보고서 형식 (Final Report Format)
 
 ```
-ORCHESTRATION REPORT
+오케스트레이션 보고서 (ORCHESTRATION REPORT)
 ====================
-Workflow: feature
-Task: Add user authentication
-Agents: planner -> tdd-guide -> code-reviewer -> security-reviewer
+워크플로우: feature
+작업: 사용자 인증 기능 추가
+에이전트: planner -> tdd-guide -> code-reviewer -> security-reviewer
 
-SUMMARY
+요약 (SUMMARY)
 -------
-[One paragraph summary]
+[한 단락 요약]
 
-AGENT OUTPUTS
+에이전트별 출력 (AGENT OUTPUTS)
 -------------
-Planner: [summary]
-TDD Guide: [summary]
-Code Reviewer: [summary]
-Security Reviewer: [summary]
+Planner: [요약]
+TDD Guide: [요약]
+Code Reviewer: [요약]
+Security Reviewer: [요약]
 
-FILES CHANGED
+변경 파일 (FILES CHANGED)
 -------------
-[List all files modified]
+[수정된 모든 파일 목록]
 
-TEST RESULTS
+테스트 결과 (TEST RESULTS)
 ------------
-[Test pass/fail summary]
+[테스트 통과/실패 요약]
 
-SECURITY STATUS
+보안 상태 (SECURITY STATUS)
 ---------------
-[Security findings]
+[보안 관련 발견 사항]
 
-RECOMMENDATION
+최종 권고 (RECOMMENDATION)
 --------------
-[SHIP / NEEDS WORK / BLOCKED]
+[출시 가능(SHIP) / 추가 작업 필요(NEEDS WORK) / 차단됨(BLOCKED)]
 ```
 
-## Parallel Execution
+## 병렬 실행 (Parallel Execution)
 
-For independent checks, run agents in parallel:
+독립적인 점검이 필요한 경우 에이전트를 병렬로 실행합니다:
 
 ```markdown
-### Parallel Phase
-Run simultaneously:
-- code-reviewer (quality)
-- security-reviewer (security)
-- architect (design)
+### 병렬 단계 (Parallel Phase)
+동시 실행:
+- code-reviewer (품질 점검)
+- security-reviewer (보안 점검)
+- architect (디자인 점검)
 
-### Merge Results
-Combine outputs into single report
+### 결과 병합 (Merge Results)
+출력 내용을 하나의 보고서로 통합
 ```
 
-## Arguments
+## 인자 (Arguments)
 
-$ARGUMENTS:
-- `feature <description>` - Full feature workflow
-- `bugfix <description>` - Bug fix workflow
-- `refactor <description>` - Refactoring workflow
-- `security <description>` - Security review workflow
-- `custom <agents> <description>` - Custom agent sequence
+$인자:
+- `feature <설명>` - 전체 기능 개발 워크플로우
+- `bugfix <설명>` - 버그 수정 워크플로우
+- `refactor <설명>` - 리팩토링 워크플로우
+- `security <설명>` - 보안 리뷰 워크플로우
+- `custom <에이전트-목록> <설명>` - 사용자 정의 에이전트 순서
 
-## Custom Workflow Example
+## 사용자 정의 워크플로우 예시
 
 ```
-/orchestrate custom "architect,tdd-guide,code-reviewer" "Redesign caching layer"
+/orchestrate custom "architect,tdd-guide,code-reviewer" "캐싱 레이어 재설계"
 ```
 
-## Tips
+## 팁 (Tips)
 
-1. **Start with planner** for complex features
-2. **Always include code-reviewer** before merge
-3. **Use security-reviewer** for auth/payment/PII
-4. **Keep handoffs concise** - focus on what next agent needs
-5. **Run verification** between agents if needed
+1. 복잡한 기능은 반드시 **플래너(planner)부터 시작**하십시오.
+2. 머지(Merge) 전에는 **항상 코드 리뷰어(code-reviewer)를 포함**하십시오.
+3. 인증/결제/개인정보 관련 작업에는 **보안 리뷰어(security-reviewer)를 활용**하십시오.
+4. 인수인계 문서는 **간결하게 유지**하며 다음 에이전트에게 필요한 내용에 집중하십시오.
+5. 필요한 경우 에이전트 사이단계에서 **검증(verification)을 실행**하십시오.

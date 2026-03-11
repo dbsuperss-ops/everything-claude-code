@@ -1,29 +1,29 @@
 ---
 name: frontend-patterns
-description: React、Next.js、状态管理、性能优化和UI最佳实践的前端开发模式。
+description: React, Next.js, 상태 관리, 성능 최적화 및 UI 베스트 프랙티스를 위한 현대적 프론트엔드 개발 패턴 가이드입니다.
 origin: ECC
 ---
 
-# 前端开发模式
+# 프론트엔드 개발 패턴
 
-适用于 React、Next.js 和高性能用户界面的现代前端模式。
+React, Next.js 및 고성능 사용자 인터페이스(UI) 구축을 위한 현대적인 프론트엔드 패턴입니다.
 
-## 何时激活
+## 적용 시점
 
-* 构建 React 组件（组合、属性、渲染）
-* 管理状态（useState、useReducer、Zustand、Context）
-* 实现数据获取（SWR、React Query、服务器组件）
-* 优化性能（记忆化、虚拟化、代码分割）
-* 处理表单（验证、受控输入、Zod 模式）
-* 处理客户端路由和导航
-* 构建可访问、响应式的 UI 模式
+* React 컴포넌트를 설계할 때 (컴포지션, Props, 렌더링 전략)
+* 상태 관리를 구현할 때 (useState, useReducer, Zustand, Context API 등)
+* 데이터 페칭(Data Fetching) 로직을 작성할 때 (SWR, React Query, Server Components)
+* 성능 최적화가 필요할 때 (Memoization, Virtualization, Code Splitting)
+* 복잡한 폼(Form)을 처리할 때 (유효성 검사, Controlled inputs, Zod schema)
+* 클라이언트 사이드 라우팅 및 네비게이션을 구현할 때
+* 접근성(Accessibility)과 반응형 UI 패턴을 구축할 때
 
-## 组件模式
+## 컴포넌트 패턴
 
-### 组合优于继承
+### 상속보다 합성 (Composition over Inheritance)
 
 ```typescript
-// ✅ GOOD: Component composition
+// ✅ 권장: 컴포넌트 합성 방식
 interface CardProps {
   children: React.ReactNode
   variant?: 'default' | 'outlined'
@@ -41,29 +41,19 @@ export function CardBody({ children }: { children: React.ReactNode }) {
   return <div className="card-body">{children}</div>
 }
 
-// Usage
+// 사용 예시
 <Card>
-  <CardHeader>Title</CardHeader>
-  <CardBody>Content</CardBody>
+  <CardHeader>제목</CardHeader>
+  <CardBody>컨텐츠 내용</CardBody>
 </Card>
 ```
 
-### 复合组件
+### 복합 컴포넌트 (Compound Components)
 
 ```typescript
-interface TabsContextValue {
-  activeTab: string
-  setActiveTab: (tab: string) => void
-}
-
-const TabsContext = createContext<TabsContextValue | undefined>(undefined)
-
-export function Tabs({ children, defaultTab }: {
-  children: React.ReactNode
-  defaultTab: string
-}) {
+// 내부 상태를 공유하는 관련 컴포넌트 그룹 구성
+export function Tabs({ children, defaultTab }: { children: React.ReactNode, defaultTab: string }) {
   const [activeTab, setActiveTab] = useState(defaultTab)
-
   return (
     <TabsContext.Provider value={{ activeTab, setActiveTab }}>
       {children}
@@ -71,572 +61,159 @@ export function Tabs({ children, defaultTab }: {
   )
 }
 
-export function TabList({ children }: { children: React.ReactNode }) {
-  return <div className="tab-list">{children}</div>
-}
-
 export function Tab({ id, children }: { id: string, children: React.ReactNode }) {
   const context = useContext(TabsContext)
-  if (!context) throw new Error('Tab must be used within Tabs')
-
   return (
-    <button
-      className={context.activeTab === id ? 'active' : ''}
+    <button 
+      className={context.activeTab === id ? 'active' : ''} 
       onClick={() => context.setActiveTab(id)}
     >
       {children}
     </button>
   )
 }
-
-// Usage
-<Tabs defaultTab="overview">
-  <TabList>
-    <Tab id="overview">Overview</Tab>
-    <Tab id="details">Details</Tab>
-  </TabList>
-</Tabs>
 ```
 
-### 渲染属性模式
+## 커스텀 훅 (Custom Hooks) 패턴
 
-```typescript
-interface DataLoaderProps<T> {
-  url: string
-  children: (data: T | null, loading: boolean, error: Error | null) => React.ReactNode
-}
-
-export function DataLoader<T>({ url, children }: DataLoaderProps<T>) {
-  const [data, setData] = useState<T | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  useEffect(() => {
-    fetch(url)
-      .then(res => res.json())
-      .then(setData)
-      .catch(setError)
-      .finally(() => setLoading(false))
-  }, [url])
-
-  return <>{children(data, loading, error)}</>
-}
-
-// Usage
-<DataLoader<Market[]> url="/api/markets">
-  {(markets, loading, error) => {
-    if (loading) return <Spinner />
-    if (error) return <Error error={error} />
-    return <MarketList markets={markets!} />
-  }}
-</DataLoader>
-```
-
-## 自定义 Hooks 模式
-
-### 状态管理 Hook
-
+### 상태 제어 훅 (State Management)
 ```typescript
 export function useToggle(initialValue = false): [boolean, () => void] {
   const [value, setValue] = useState(initialValue)
-
-  const toggle = useCallback(() => {
-    setValue(v => !v)
-  }, [])
-
+  const toggle = useCallback(() => setValue(v => !v), [])
   return [value, toggle]
 }
-
-// Usage
-const [isOpen, toggleOpen] = useToggle()
 ```
 
-### 异步数据获取 Hook
-
+### 비동기 데이터 페칭 훅
 ```typescript
-interface UseQueryOptions<T> {
-  onSuccess?: (data: T) => void
-  onError?: (error: Error) => void
-  enabled?: boolean
-}
-
-export function useQuery<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-  options?: UseQueryOptions<T>
-) {
+export function useQuery<T>(key: string, fetcher: () => Promise<T>) {
   const [data, setData] = useState<T | null>(null)
-  const [error, setError] = useState<Error | null>(null)
   const [loading, setLoading] = useState(false)
-
+  
   const refetch = useCallback(async () => {
     setLoading(true)
-    setError(null)
-
     try {
       const result = await fetcher()
       setData(result)
-      options?.onSuccess?.(result)
-    } catch (err) {
-      const error = err as Error
-      setError(error)
-      options?.onError?.(error)
     } finally {
       setLoading(false)
     }
-  }, [fetcher, options])
+  }, [fetcher])
 
-  useEffect(() => {
-    if (options?.enabled !== false) {
-      refetch()
-    }
-  }, [key, refetch, options?.enabled])
-
-  return { data, error, loading, refetch }
+  useEffect(() => { refetch() }, [key, refetch])
+  return { data, loading, refetch }
 }
-
-// Usage
-const { data: markets, loading, error, refetch } = useQuery(
-  'markets',
-  () => fetch('/api/markets').then(r => r.json()),
-  {
-    onSuccess: data => console.log('Fetched', data.length, 'markets'),
-    onError: err => console.error('Failed:', err)
-  }
-)
 ```
 
-### 防抖 Hook
+## 상태 관리 패턴
 
+### Context + Reducer 패턴 (복잡한 로컬 상태)
 ```typescript
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => clearTimeout(handler)
-  }, [value, delay])
-
-  return debouncedValue
-}
-
-// Usage
-const [searchQuery, setSearchQuery] = useState('')
-const debouncedQuery = useDebounce(searchQuery, 500)
-
-useEffect(() => {
-  if (debouncedQuery) {
-    performSearch(debouncedQuery)
-  }
-}, [debouncedQuery])
-```
-
-## 状态管理模式
-
-### Context + Reducer 模式
-
-```typescript
-interface State {
-  markets: Market[]
-  selectedMarket: Market | null
-  loading: boolean
-}
-
-type Action =
-  | { type: 'SET_MARKETS'; payload: Market[] }
-  | { type: 'SELECT_MARKET'; payload: Market }
-  | { type: 'SET_LOADING'; payload: boolean }
-
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'SET_MARKETS':
-      return { ...state, markets: action.payload }
-    case 'SELECT_MARKET':
-      return { ...state, selectedMarket: action.payload }
-    case 'SET_LOADING':
-      return { ...state, loading: action.payload }
-    default:
-      return state
+    case 'SET_DATA': return { ...state, data: action.payload }
+    default: return state
   }
 }
 
-const MarketContext = createContext<{
-  state: State
-  dispatch: Dispatch<Action>
-} | undefined>(undefined)
-
-export function MarketProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, {
-    markets: [],
-    selectedMarket: null,
-    loading: false
-  })
-
+export function DataProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(reducer, initialState)
   return (
-    <MarketContext.Provider value={{ state, dispatch }}>
+    <DataContext.Provider value={{ state, dispatch }}>
       {children}
-    </MarketContext.Provider>
+    </DataContext.Provider>
   )
-}
-
-export function useMarkets() {
-  const context = useContext(MarketContext)
-  if (!context) throw new Error('useMarkets must be used within MarketProvider')
-  return context
 }
 ```
 
-## 性能优化
+## 성능 최적화
 
-### 记忆化
-
+### 메모이제이션 (Memoization)
 ```typescript
-// ✅ useMemo for expensive computations
-const sortedMarkets = useMemo(() => {
-  return markets.sort((a, b) => b.volume - a.volume)
-}, [markets])
+// ✅ 비용이 큰 계산 결과 재사용
+const sortedData = useMemo(() => data.sort(), [data])
 
-// ✅ useCallback for functions passed to children
-const handleSearch = useCallback((query: string) => {
-  setSearchQuery(query)
-}, [])
+// ✅ 자식 컴포넌트에 전달되는 함수 고정
+const handleClick = useCallback(() => { /* ... */ }, [])
 
-// ✅ React.memo for pure components
-export const MarketCard = React.memo<MarketCardProps>(({ market }) => {
-  return (
-    <div className="market-card">
-      <h3>{market.name}</h3>
-      <p>{market.description}</p>
-    </div>
-  )
-})
+// ✅ 순수 컴포넌트 렌더링 방지
+export const ListItem = React.memo(({ item }) => <div>{item.name}</div>)
 ```
 
-### 代码分割与懒加载
-
+### 코드 분할 및 지연 로딩 (Lazy Loading)
 ```typescript
 import { lazy, Suspense } from 'react'
 
-// ✅ Lazy load heavy components
 const HeavyChart = lazy(() => import('./HeavyChart'))
-const ThreeJsBackground = lazy(() => import('./ThreeJsBackground'))
 
 export function Dashboard() {
   return (
-    <div>
-      <Suspense fallback={<ChartSkeleton />}>
-        <HeavyChart data={data} />
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <ThreeJsBackground />
-      </Suspense>
-    </div>
+    <Suspense fallback={<LoadingSkeleton />}>
+      <HeavyChart />
+    </Suspense>
   )
 }
 ```
 
-### 长列表虚拟化
+## 표마(Form) 처리 패턴
 
+### 검증을 포함한 제어 컴포넌트
 ```typescript
-import { useVirtualizer } from '@tanstack/react-virtual'
+export function RegistrationForm() {
+  const [values, setValues] = useState({ email: '', password: '' })
+  const [errors, setErrors] = useState({})
 
-export function VirtualMarketList({ markets }: { markets: Market[] }) {
-  const parentRef = useRef<HTMLDivElement>(null)
-
-  const virtualizer = useVirtualizer({
-    count: markets.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 100,  // Estimated row height
-    overscan: 5  // Extra items to render
-  })
-
-  return (
-    <div ref={parentRef} style={{ height: '600px', overflow: 'auto' }}>
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          position: 'relative'
-        }}
-      >
-        {virtualizer.getVirtualItems().map(virtualRow => (
-          <div
-            key={virtualRow.index}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: `${virtualRow.size}px`,
-              transform: `translateY(${virtualRow.start}px)`
-            }}
-          >
-            <MarketCard market={markets[virtualRow.index]} />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-```
-
-## 表单处理模式
-
-### 带验证的受控表单
-
-```typescript
-interface FormData {
-  name: string
-  description: string
-  endDate: string
-}
-
-interface FormErrors {
-  name?: string
-  description?: string
-  endDate?: string
-}
-
-export function CreateMarketForm() {
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    description: '',
-    endDate: ''
-  })
-
-  const [errors, setErrors] = useState<FormErrors>({})
-
-  const validate = (): boolean => {
-    const newErrors: FormErrors = {}
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required'
-    } else if (formData.name.length > 200) {
-      newErrors.name = 'Name must be under 200 characters'
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required'
-    }
-
-    if (!formData.endDate) {
-      newErrors.endDate = 'End date is required'
-    }
-
+  const validate = () => {
+    const newErrors = {}
+    if (!values.email.includes('@')) newErrors.email = '유효한 이메일을 입력하세요'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-
-    if (!validate()) return
-
-    try {
-      await createMarket(formData)
-      // Success handling
-    } catch (error) {
-      // Error handling
-    }
+    if (validate()) { /* 서버 전송 */ }
   }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        value={formData.name}
-        onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-        placeholder="Market name"
-      />
-      {errors.name && <span className="error">{errors.name}</span>}
-
-      {/* Other fields */}
-
-      <button type="submit">Create Market</button>
-    </form>
-  )
 }
 ```
 
-## 错误边界模式
-
-```typescript
-interface ErrorBoundaryState {
-  hasError: boolean
-  error: Error | null
-}
-
-export class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  ErrorBoundaryState
-> {
-  state: ErrorBoundaryState = {
-    hasError: false,
-    error: null
-  }
-
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error boundary caught:', error, errorInfo)
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="error-fallback">
-          <h2>Something went wrong</h2>
-          <p>{this.state.error?.message}</p>
-          <button onClick={() => this.setState({ hasError: false })}>
-            Try again
-          </button>
-        </div>
-      )
-    }
-
-    return this.props.children
-  }
-}
-
-// Usage
-<ErrorBoundary>
-  <App />
-</ErrorBoundary>
-```
-
-## 动画模式
-
-### Framer Motion 动画
-
+## 애니메이션 패턴 (Framer Motion)
 ```typescript
 import { motion, AnimatePresence } from 'framer-motion'
 
-// ✅ List animations
-export function AnimatedMarketList({ markets }: { markets: Market[] }) {
+export function FadeInList({ items }) {
   return (
     <AnimatePresence>
-      {markets.map(market => (
+      {items.map(item => (
         <motion.div
-          key={market.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
+          key={item.id}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
         >
-          <MarketCard market={market} />
+          {item.content}
         </motion.div>
       ))}
     </AnimatePresence>
   )
 }
-
-// ✅ Modal animations
-export function Modal({ isOpen, onClose, children }: ModalProps) {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            className="modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-          <motion.div
-            className="modal-content"
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          >
-            {children}
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  )
-}
 ```
 
-## 无障碍模式
+## 웹 접근성 (A11y)
 
-### 键盘导航
+### 키보드 내비게이션 및 포커스 관리
+* **로킹(Trap Focus)**: 모달이 열려 있을 때 포커스가 모달 밖으로 나가지 않도록 관리하십시오.
+* **ARIA 속성**: `role="dialog"`, `aria-modal="true"`, `aria-label` 등을 적절히 사용하여 스크린 리더 사용자를 배려하십시오.
+* **Skip Link**: 반복되는 내비게이션을 건너뛰고 본문으로 바로 이동할 수 있는 링크를 제공하십시오.
 
-```typescript
-export function Dropdown({ options, onSelect }: DropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [activeIndex, setActiveIndex] = useState(0)
+## 요약 가이드라인
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault()
-        setActiveIndex(i => Math.min(i + 1, options.length - 1))
-        break
-      case 'ArrowUp':
-        e.preventDefault()
-        setActiveIndex(i => Math.max(i - 1, 0))
-        break
-      case 'Enter':
-        e.preventDefault()
-        onSelect(options[activeIndex])
-        setIsOpen(false)
-        break
-      case 'Escape':
-        setIsOpen(false)
-        break
-    }
-  }
+| 구분 | 전략 |
+|----------|-----------|
+| **가독성** | 복잡한 로직은 커스텀 훅으로 분리하고, 컴포넌트는 UI 렌더링에 집중하십시오. |
+| **재사용성** | 작고 단일 책임(Single Responsibility)을 갖는 컴포넌트로 쪼개고 합성을 활용하십시오. |
+| **성능** | 불필요한 리렌더링을 방지하기 위해 `memo`, `useMemo`를 적절히 사용하되 남용하지 마십시오. |
+| **견고함** | 에러 바운더리(Error Boundary)를 설정하여 부분적인 에러가 전체 앱을 멈추지 않게 하십시오. |
 
-  return (
-    <div
-      role="combobox"
-      aria-expanded={isOpen}
-      aria-haspopup="listbox"
-      onKeyDown={handleKeyDown}
-    >
-      {/* Dropdown implementation */}
-    </div>
-  )
-}
-```
-
-### 焦点管理
-
-```typescript
-export function Modal({ isOpen, onClose, children }: ModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null)
-  const previousFocusRef = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    if (isOpen) {
-      // Save currently focused element
-      previousFocusRef.current = document.activeElement as HTMLElement
-
-      // Focus modal
-      modalRef.current?.focus()
-    } else {
-      // Restore focus when closing
-      previousFocusRef.current?.focus()
-    }
-  }, [isOpen])
-
-  return isOpen ? (
-    <div
-      ref={modalRef}
-      role="dialog"
-      aria-modal="true"
-      tabIndex={-1}
-      onKeyDown={e => e.key === 'Escape' && onClose()}
-    >
-      {children}
-    </div>
-  ) : null
-}
-```
-
-**记住**：现代前端模式能实现可维护、高性能的用户界面。选择适合你项目复杂度的模式。
+**핵심 리마인더**: 현대적인 프론트엔드 패턴의 목표는 유지보수가 쉽고 성능이 뛰어난 UI를 구축하는 것입니다. 프로젝트의 규모와 복잡도에 가장 적합한 패턴을 선택하십시오.

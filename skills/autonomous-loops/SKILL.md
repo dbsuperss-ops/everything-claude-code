@@ -1,612 +1,211 @@
 ---
 name: autonomous-loops
-description: "Patterns and architectures for autonomous Claude Code loops — from simple sequential pipelines to RFC-driven multi-agent DAG systems."
+description: "단순한 순차적 파이프라인부터 RFC 기반 멀티 에이전트 DAG 시스템까지, 자율적인 Claude Code 루프를 위한 패턴과 아키텍처입니다."
 origin: ECC
 ---
 
-# Autonomous Loops Skill
+# 자율 루프 스킬 (Autonomous Loops Skill)
 
-> Compatibility note (v1.8.0): `autonomous-loops` is retained for one release.
-> The canonical skill name is now `continuous-agent-loop`. New loop guidance
-> should be authored there, while this skill remains available to avoid
-> breaking existing workflows.
+> 호환성 고지 (v1.8.0): `autonomous-loops`는 이번 릴리스까지만 유지됩니다.
+> 표준 스킬 이름은 이제 `continuous-agent-loop`입니다. 새로운 루프 가이드는
+> 해당 위치에서 작성되어야 하며, 기존 워크플로우의 하위 호환성을 위해 이 스킬은 당분간 유지됩니다.
 
-Patterns, architectures, and reference implementations for running Claude Code autonomously in loops. Covers everything from simple `claude -p` pipelines to full RFC-driven multi-agent DAG orchestration.
+Claude Code를 자율적으로 루프에서 실행하기 위한 패턴, 아키텍처 및 참조 구현체들을 다룹니다. 단순한 `claude -p` 파이프라인부터 완전한 RFC 기반 멀티 에이전트 DAG 오케스트레이션까지 모든 내용을 포함합니다.
 
-## When to Use
+## 활성화 시점
 
-- Setting up autonomous development workflows that run without human intervention
-- Choosing the right loop architecture for your problem (simple vs complex)
-- Building CI/CD-style continuous development pipelines
-- Running parallel agents with merge coordination
-- Implementing context persistence across loop iterations
-- Adding quality gates and cleanup passes to autonomous workflows
+- 사람의 개입 없이 실행되는 자율 개발 워크플로우를 설정할 때
+- 문제에 적합한 루프 아키텍처(단순형 vs 복잡형)를 선택할 때
+- CI/CD 스타일의 지속적 개발 파이프라인을 구축할 때
+- 머지 조율을 포함하여 병렬 에이전트를 실행할 때
+- 루프 반복 간의 컨텍스트 유지 기능을 구현할 때
+- 자율 워크플로우에 품질 게이트(Quality gates) 및 정리 단계를 추가할 때
 
-## Loop Pattern Spectrum
+## 루프 패턴 스펙트럼
 
-From simplest to most sophisticated:
+가장 단순한 것부터 가장 정교한 것까지:
 
-| Pattern | Complexity | Best For |
+| 패턴 | 복잡도 | 용도 |
 |---------|-----------|----------|
-| [Sequential Pipeline](#1-sequential-pipeline-claude--p) | Low | Daily dev steps, scripted workflows |
-| [NanoClaw REPL](#2-nanoclaw-repl) | Low | Interactive persistent sessions |
-| [Infinite Agentic Loop](#3-infinite-agentic-loop) | Medium | Parallel content generation, spec-driven work |
-| [Continuous Claude PR Loop](#4-continuous-claude-pr-loop) | Medium | Multi-day iterative projects with CI gates |
-| [De-Sloppify Pattern](#5-the-de-sloppify-pattern) | Add-on | Quality cleanup after any Implementer step |
-| [Ralphinho / RFC-Driven DAG](#6-ralphinho--rfc-driven-dag-orchestration) | High | Large features, multi-unit parallel work with merge queue |
+| [순차적 파이프라인](#1-순차적-파이프라인-claude--p) | 낮음 | 일상적인 개발 단계, 스크립트 기반 워크플로우 |
+| [NanoClaw REPL](#2-nanoclaw-repl) | 낮음 | 대화형 영구 세션 |
+| [무한 에이전틱 루프](#3-무한-에이전틱-루프) | 중간 | 병렬 콘텐츠 생성, 사양 기반 작업 |
+| [지속적 Claude PR 루프](#4-지속적-claude-pr-루프) | 중간 | CI 게이트가 포함된 수일간의 반복 프로젝트 |
+| [De-Sloppify 패턴](#5-de-sloppify-패턴) | 애드온 | 구현 단계 후의 품질 정리 작업 |
+| [Ralphinho / RFC 기반 DAG](#6-ralphinho--rfc-기반-dag-오케스트레이션) | 높음 | 대규모 기능, 머지 큐가 포함된 다중 단위 병렬 작업 |
 
 ---
 
-## 1. Sequential Pipeline (`claude -p`)
+## 1. 순차적 파이프라인 (`claude -p`)
 
-**The simplest loop.** Break daily development into a sequence of non-interactive `claude -p` calls. Each call is a focused step with a clear prompt.
+**가장 단순한 루프.** 일상적인 개발을 비대화형 `claude -p` 호출의 순서로 나눕니다. 각 호출은 명확한 프롬프트를 가진 집중된 단계입니다.
 
-### Core Insight
+### 핵심 통찰
 
-> If you can't figure out a loop like this, it means you can't even drive the LLM to fix your code in interactive mode.
+> 만약 이런 방식의 루프를 구성하지 못한다면, 대화 모드에서도 LLM이 코드를 수정하도록 유도하지 못한다는 의미입니다.
 
-The `claude -p` flag runs Claude Code non-interactively with a prompt, exits when done. Chain calls to build a pipeline:
+`claude -p` 플래그는 Claude Code를 프롬프트와 함께 비대화형으로 실행하고 작업이 완료되면 종료합니다. 호출을 연결하여 파이프라인을 구축할 수 있습니다:
 
 ```bash
 #!/bin/bash
-# daily-dev.sh — Sequential pipeline for a feature branch
+# daily-dev.sh — 기능 브랜치를 위한 순차적 파이프라인
 
 set -e
 
-# Step 1: Implement the feature
-claude -p "Read the spec in docs/auth-spec.md. Implement OAuth2 login in src/auth/. Write tests first (TDD). Do NOT create any new documentation files."
+# 1단계: 기능 구현
+claude -p "docs/auth-spec.md의 사양을 읽으세요. src/auth/에 OAuth2 로그인을 구현하세요. 테스트를 먼저 작성하세요(TDD). 새로운 문서 파일을 생성하지 마세요."
 
-# Step 2: De-sloppify (cleanup pass)
-claude -p "Review all files changed by the previous commit. Remove any unnecessary type tests, overly defensive checks, or testing of language features (e.g., testing that TypeScript generics work). Keep real business logic tests. Run the test suite after cleanup."
+# 2단계: De-sloppify (정리 단계)
+claude -p "이전 커밋에서 변경된 모든 파일을 검토하세요. 불필요한 타입 테스트, 과도하게 방어적인 체크, 또는 언어 기능 자체를 테스트하는 코드(예: TypeScript 제네릭이 작동하는지 테스트)를 제거하세요. 실제 비즈니스 로직 테스트는 유지하세요. 정리 후 테스트 스위트를 실행하세요."
 
-# Step 3: Verify
-claude -p "Run the full build, lint, type check, and test suite. Fix any failures. Do not add new features."
+# 3단계: 검증
+claude -p "전체 빌드, 린트, 타입 체크 및 테스트 스위트를 실행하세요. 실패하는 부분이 있으면 수정하세요. 새로운 기능을 추가하지 마세요."
 
-# Step 4: Commit
-claude -p "Create a conventional commit for all staged changes. Use 'feat: add OAuth2 login flow' as the message."
+# 4단계: 커밋
+claude -p "스테이징된 모든 변경 사항에 대해 컨벤셔널 커밋을 생성하세요. 메시지는 'feat: add OAuth2 login flow'를 사용하세요."
 ```
 
-### Key Design Principles
+### 주요 설계 원칙
 
-1. **Each step is isolated** — A fresh context window per `claude -p` call means no context bleed between steps.
-2. **Order matters** — Steps execute sequentially. Each builds on the filesystem state left by the previous.
-3. **Negative instructions are dangerous** — Don't say "don't test type systems." Instead, add a separate cleanup step (see [De-Sloppify Pattern](#5-the-de-sloppify-pattern)).
-4. **Exit codes propagate** — `set -e` stops the pipeline on failure.
-
-### Variations
-
-**With model routing:**
-```bash
-# Research with Opus (deep reasoning)
-claude -p --model opus "Analyze the codebase architecture and write a plan for adding caching..."
-
-# Implement with Sonnet (fast, capable)
-claude -p "Implement the caching layer according to the plan in docs/caching-plan.md..."
-
-# Review with Opus (thorough)
-claude -p --model opus "Review all changes for security issues, race conditions, and edge cases..."
-```
-
-**With environment context:**
-```bash
-# Pass context via files, not prompt length
-echo "Focus areas: auth module, API rate limiting" > .claude-context.md
-claude -p "Read .claude-context.md for priorities. Work through them in order."
-rm .claude-context.md
-```
-
-**With `--allowedTools` restrictions:**
-```bash
-# Read-only analysis pass
-claude -p --allowedTools "Read,Grep,Glob" "Audit this codebase for security vulnerabilities..."
-
-# Write-only implementation pass
-claude -p --allowedTools "Read,Write,Edit,Bash" "Implement the fixes from security-audit.md..."
-```
+1. **각 단계는 고립됩니다** — 각 `claude -p` 호출마다 신규 컨텍스트 윈도우가 생성되므로 단계 간의 컨텍스트 오염이 없습니다.
+2. **순서가 중요합니다** — 단계들이 순차적으로 실행됩니다. 각 단계는 이전 단계가 남긴 파일시스템 상태를 기반으로 작업합니다.
+3. **부정적인 지시는 위험할 수 있습니다** — "타입 시스템을 테스트하지 마세요"라고 말하는 대신, 별도의 정리 단계를 추가하십시오 ([De-Sloppify 패턴](#5-de-sloppify-패턴) 참조).
+4. **종료 코드가 전파됩니다** — `set -e`를 사용하여 실패 시 파이프라인을 중단합니다.
 
 ---
 
 ## 2. NanoClaw REPL
 
-**ECC's built-in persistent loop.** A session-aware REPL that calls `claude -p` synchronously with full conversation history.
+**ECC에 내장된 영구 루프.** 전체 대화 내역을 유지하며 `claude -p`를 동기적으로 호출하는 세션 인식 REPL입니다.
 
 ```bash
-# Start the default session
+# 기본 세션 시작
 node scripts/claw.js
 
-# Named session with skill context
+# 스킬 컨텍스트가 포함된 이름 있는 세션
 CLAW_SESSION=my-project CLAW_SKILLS=tdd-workflow,security-review node scripts/claw.js
 ```
 
-### How It Works
+### 작동 방식
 
-1. Loads conversation history from `~/.claude/claw/{session}.md`
-2. Each user message is sent to `claude -p` with full history as context
-3. Responses are appended to the session file (Markdown-as-database)
-4. Sessions persist across restarts
+1. `~/.claude/claw/{session}.md`에서 대화 내역을 로드합니다.
+2. 각 사용자 메시지는 전체 내역을 컨텍스트로 포함하여 `claude -p`로 전송됩니다.
+3. 응답은 세션 파일에 추가됩니다 (데이터베이스로서의 마크다운).
+4. 세션은 재시작 후에도 유지됩니다.
 
-### When NanoClaw vs Sequential Pipeline
-
-| Use Case | NanoClaw | Sequential Pipeline |
-|----------|----------|-------------------|
-| Interactive exploration | Yes | No |
-| Scripted automation | No | Yes |
-| Session persistence | Built-in | Manual |
-| Context accumulation | Grows per turn | Fresh each step |
-| CI/CD integration | Poor | Excellent |
-
-See the `/claw` command documentation for full details.
+상세 내용은 `/claw` 명령어 문서를 참조하십시오.
 
 ---
 
-## 3. Infinite Agentic Loop
+## 3. 무한 에이전틱 루프 (Infinite Agentic Loop)
 
-**A two-prompt system** that orchestrates parallel sub-agents for specification-driven generation. Developed by disler (credit: @disler).
+사양 기반의 생성을 위해 병렬 하위 에이전트들을 조율하는 **두 개의 프롬프트 시스템**입니다. disler(@disler)에 의해 개발되었습니다.
 
-### Architecture: Two-Prompt System
+### 아키텍처: 투 프롬프트(Two-Prompt) 시스템
 
-```
-PROMPT 1 (Orchestrator)              PROMPT 2 (Sub-Agents)
-┌─────────────────────┐             ┌──────────────────────┐
-│ Parse spec file      │             │ Receive full context  │
-│ Scan output dir      │  deploys   │ Read assigned number  │
-│ Plan iteration       │────────────│ Follow spec exactly   │
-│ Assign creative dirs │  N agents  │ Generate unique output │
-│ Manage waves         │             │ Save to output dir    │
-└─────────────────────┘             └──────────────────────┘
-```
+1. **사양 분석** — 오케스트레이터가 생성할 대상을 정의한 사양 파일(마크다운)을 읽습니다.
+2. **디렉토리 정찰** — 기존 출력물을 스캔하여 가장 높은 반복 번호를 찾습니다.
+3. **병렬 배포** — N개의 하위 에이전트를 배포하며, 각각은 다음을 받습니다:
+   - 전체 사양 텍스트
+   - 고유한 창의적 방향성 (Creative direction)
+   - 충돌 없는 특정 반복 번호
+   - 기존 반복물들의 스냅샷 (중복 방지용)
+4. **웨이브(Wave) 관리** — 무한 모드의 경우, 컨텍스트가 소진될 때까지 3~5개의 에이전트를 파동 형태로 계속 배포합니다.
 
-### The Pattern
+### 핵심 통찰: 할당을 통한 고유성 확보
 
-1. **Spec Analysis** — Orchestrator reads a specification file (Markdown) defining what to generate
-2. **Directory Recon** — Scans existing output to find the highest iteration number
-3. **Parallel Deployment** — Launches N sub-agents, each with:
-   - The full spec
-   - A unique creative direction
-   - A specific iteration number (no conflicts)
-   - A snapshot of existing iterations (for uniqueness)
-4. **Wave Management** — For infinite mode, deploys waves of 3-5 agents until context is exhausted
-
-### Implementation via Claude Code Commands
-
-Create `.claude/commands/infinite.md`:
-
-```markdown
-Parse the following arguments from $ARGUMENTS:
-1. spec_file — path to the specification markdown
-2. output_dir — where iterations are saved
-3. count — integer 1-N or "infinite"
-
-PHASE 1: Read and deeply understand the specification.
-PHASE 2: List output_dir, find highest iteration number. Start at N+1.
-PHASE 3: Plan creative directions — each agent gets a DIFFERENT theme/approach.
-PHASE 4: Deploy sub-agents in parallel (Task tool). Each receives:
-  - Full spec text
-  - Current directory snapshot
-  - Their assigned iteration number
-  - Their unique creative direction
-PHASE 5 (infinite mode): Loop in waves of 3-5 until context is low.
-```
-
-**Invoke:**
-```bash
-/project:infinite specs/component-spec.md src/ 5
-/project:infinite specs/component-spec.md src/ infinite
-```
-
-### Batching Strategy
-
-| Count | Strategy |
-|-------|----------|
-| 1-5 | All agents simultaneously |
-| 6-20 | Batches of 5 |
-| infinite | Waves of 3-5, progressive sophistication |
-
-### Key Insight: Uniqueness via Assignment
-
-Don't rely on agents to self-differentiate. The orchestrator **assigns** each agent a specific creative direction and iteration number. This prevents duplicate concepts across parallel agents.
+에이전트가 스스로 차별화하기를 기대하지 마십시오. 오케스트레이터가 각 에이전트에게 **고유한 창의적 방향성**과 번호를 **할당**해야 합니다. 이를 통해 병렬 에이전트 간의 개념 중복을 방지할 수 있습니다.
 
 ---
 
-## 4. Continuous Claude PR Loop
+## 4. 지속적 Claude PR 루프 (Continuous Claude PR Loop)
 
-**A production-grade shell script** that runs Claude Code in a continuous loop, creating PRs, waiting for CI, and merging automatically. Created by AnandChowdhary (credit: @AnandChowdhary).
+Claude Code를 지속적으로 실행하여 PR을 생성하고, CI를 기다린 후 자동으로 머지하는 **운영 수준의 쉘 스크립트**입니다. AnandChowdhary(@AnandChowdhary)에 의해 개발되었습니다.
 
-### Core Loop
+### 핵심 반복 구조
 
-```
-┌─────────────────────────────────────────────────────┐
-│  CONTINUOUS CLAUDE ITERATION                        │
-│                                                     │
-│  1. Create branch (continuous-claude/iteration-N)   │
-│  2. Run claude -p with enhanced prompt              │
-│  3. (Optional) Reviewer pass — separate claude -p   │
-│  4. Commit changes (claude generates message)       │
-│  5. Push + create PR (gh pr create)                 │
-│  6. Wait for CI checks (poll gh pr checks)          │
-│  7. CI failure? → Auto-fix pass (claude -p)         │
-│  8. Merge PR (squash/merge/rebase)                  │
-│  9. Return to main → repeat                         │
-│                                                     │
-│  Limit by: --max-runs N | --max-cost $X             │
-│            --max-duration 2h | completion signal     │
-└─────────────────────────────────────────────────────┘
-```
+1. 브랜치 생성 (`continuous-claude/iteration-N`)
+2. 강화된 프롬프트와 함께 `claude -p` 실행
+3. (선택 사항) 리뷰어 단계 — 별도의 `claude -p` 실행
+4. 변경 사항 커밋 (Claude가 메시지 생성)
+5. 푸시 및 PR 생성 (`gh pr create`)
+6. CI 체크 대기 (폴링)
+7. CI 실패 시? → 자동 수정 작업 (`claude -p`)
+8. PR 머지 (squash/merge/rebase)
+9. 메인 브랜치로 복귀 -> 반복
 
-### Installation
+### 반복 간 컨텍스트 공유: SHARED_TASK_NOTES.md
+
+가장 중요한 혁신은 반복 간에 유지되는 `SHARED_TASK_NOTES.md` 파일입니다. Claude는 반복 시작 시 이 파일을 읽고 종료 시 업데이트합니다. 이는 독립적인 `claude -p` 호출 사이의 컨텍스트 간극을 메워줍니다.
+
+---
+
+## 5. De-Sloppify 패턴
+
+**모든 루프에 적용 가능한 애드온 패턴.** 각 구현 단계 뒤에 전용 정리/리팩토링 단계를 추가합니다.
+
+### 문제점
+
+LLM에게 TDD로 구현하라고 요청하면 "테스트 작성"을 너무 문자 그대로 받아들여 다음과 같은 결과물을 낼 수 있습니다:
+- 언어 자체의 기능 테스트 (예: `typeof x === 'string'` 확인)
+- 타입 시스템이 이미 보장하는 것에 대한 과도한 런타임 체크
+- 프레임워크 동작에 대한 중복 테스트
+- 실제 코드를 가리는 과도한 에러 처리 루틴
+
+### 해결책: 별도의 단계 (Pass)
+
+구현 에이전트를 제약하지 말고 철저하게 작업하게 두십시오. 그다음 정리 에이전트를 추가하십시오:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/AnandChowdhary/continuous-claude/HEAD/install.sh | bash
+# 1단계: 구현 (철저하게 작업하게 둠)
+claude -p "TDD로 기능을 구현하세요. 테스트를 꼼꼼하게 만드세요."
+
+# 2단계: De-sloppify (고립된 컨텍스트에서 정리만 수행)
+claude -p "변경 사항을 검토하여 다음을 삭제하세요:
+- 비즈니스 로직이 아닌 언어/프레임워크 동작 테스트
+- 타입 시스템이 이미 강제하는 중복된 타입 체크
+- 불가능한 상태에 대한 과도한 에러 처리
+- Console.log 및 주석 처리된 코드
+실제 비즈니스 로직 테스트는 유지하고, 정리 후 테스트를 실행하세요."
 ```
-
-### Usage
-
-```bash
-# Basic: 10 iterations
-continuous-claude --prompt "Add unit tests for all untested functions" --max-runs 10
-
-# Cost-limited
-continuous-claude --prompt "Fix all linter errors" --max-cost 5.00
-
-# Time-boxed
-continuous-claude --prompt "Improve test coverage" --max-duration 8h
-
-# With code review pass
-continuous-claude \
-  --prompt "Add authentication feature" \
-  --max-runs 10 \
-  --review-prompt "Run npm test && npm run lint, fix any failures"
-
-# Parallel via worktrees
-continuous-claude --prompt "Add tests" --max-runs 5 --worktree tests-worker &
-continuous-claude --prompt "Refactor code" --max-runs 5 --worktree refactor-worker &
-wait
-```
-
-### Cross-Iteration Context: SHARED_TASK_NOTES.md
-
-The critical innovation: a `SHARED_TASK_NOTES.md` file persists across iterations:
-
-```markdown
-## Progress
-- [x] Added tests for auth module (iteration 1)
-- [x] Fixed edge case in token refresh (iteration 2)
-- [ ] Still need: rate limiting tests, error boundary tests
-
-## Next Steps
-- Focus on rate limiting module next
-- The mock setup in tests/helpers.ts can be reused
-```
-
-Claude reads this file at iteration start and updates it at iteration end. This bridges the context gap between independent `claude -p` invocations.
-
-### CI Failure Recovery
-
-When PR checks fail, Continuous Claude automatically:
-1. Fetches the failed run ID via `gh run list`
-2. Spawns a new `claude -p` with CI fix context
-3. Claude inspects logs via `gh run view`, fixes code, commits, pushes
-4. Re-waits for checks (up to `--ci-retry-max` attempts)
-
-### Completion Signal
-
-Claude can signal "I'm done" by outputting a magic phrase:
-
-```bash
-continuous-claude \
-  --prompt "Fix all bugs in the issue tracker" \
-  --completion-signal "CONTINUOUS_CLAUDE_PROJECT_COMPLETE" \
-  --completion-threshold 3  # Stops after 3 consecutive signals
-```
-
-Three consecutive iterations signaling completion stops the loop, preventing wasted runs on finished work.
-
-### Key Configuration
-
-| Flag | Purpose |
-|------|---------|
-| `--max-runs N` | Stop after N successful iterations |
-| `--max-cost $X` | Stop after spending $X |
-| `--max-duration 2h` | Stop after time elapsed |
-| `--merge-strategy squash` | squash, merge, or rebase |
-| `--worktree <name>` | Parallel execution via git worktrees |
-| `--disable-commits` | Dry-run mode (no git operations) |
-| `--review-prompt "..."` | Add reviewer pass per iteration |
-| `--ci-retry-max N` | Auto-fix CI failures (default: 1) |
 
 ---
 
-## 5. The De-Sloppify Pattern
+## 6. Ralphinho / RFC 기반 DAG 오케스트레이션
 
-**An add-on pattern for any loop.** Add a dedicated cleanup/refactor step after each Implementer step.
+**가장 정교한 패턴.** 사양을 의존성 DAG(Directed Acyclic Graph)로 분해하고, 각 단위를 계층화된 품질 파이프라인을 통해 실행하며, 에이전트 주도 머지 큐를 통해 반영하는 RFC 기반 멀티 에이전트 파이프라인입니다. enitrat(@enitrat)에 의해 개발되었습니다.
 
-### The Problem
+### 아키텍처 특징
 
-When you ask an LLM to implement with TDD, it takes "write tests" too literally:
-- Tests that verify TypeScript's type system works (testing `typeof x === 'string'`)
-- Overly defensive runtime checks for things the type system already guarantees
-- Tests for framework behavior rather than business logic
-- Excessive error handling that obscures the actual code
-
-### Why Not Negative Instructions?
-
-Adding "don't test type systems" or "don't add unnecessary checks" to the Implementer prompt has downstream effects:
-- The model becomes hesitant about ALL testing
-- It skips legitimate edge case tests
-- Quality degrades unpredictably
-
-### The Solution: Separate Pass
-
-Instead of constraining the Implementer, let it be thorough. Then add a focused cleanup agent:
-
-```bash
-# Step 1: Implement (let it be thorough)
-claude -p "Implement the feature with full TDD. Be thorough with tests."
-
-# Step 2: De-sloppify (separate context, focused cleanup)
-claude -p "Review all changes in the working tree. Remove:
-- Tests that verify language/framework behavior rather than business logic
-- Redundant type checks that the type system already enforces
-- Over-defensive error handling for impossible states
-- Console.log statements
-- Commented-out code
-
-Keep all business logic tests. Run the test suite after cleanup to ensure nothing breaks."
-```
-
-### In a Loop Context
-
-```bash
-for feature in "${features[@]}"; do
-  # Implement
-  claude -p "Implement $feature with TDD."
-
-  # De-sloppify
-  claude -p "Cleanup pass: review changes, remove test/code slop, run tests."
-
-  # Verify
-  claude -p "Run build + lint + tests. Fix any failures."
-
-  # Commit
-  claude -p "Commit with message: feat: add $feature"
-done
-```
-
-### Key Insight
-
-> Rather than adding negative instructions which have downstream quality effects, add a separate de-sloppify pass. Two focused agents outperform one constrained agent.
+1. **분해 (Decomposition)**: AI가 RFC를 읽고 의존 관계가 포함된 작업 단위들로 나눕니다.
+2. **계층별 실행**: 의존성에 따라 병렬 또는 순차적으로 작업을 수행합니다.
+3. **복잡도에 따른 티어(Tier)**: 단순한 변경은 '리서치/리뷰' 단계를 건너뛰고, 복잡한 변경은 최대 8단계의 검증을 거칩니다.
+4. **고립된 컨텍스트 윈도우**: 리뷰어 에이전트는 코드를 작성한 에이전트와 별개의 프로세스에서 실행되어 저자 편향(Author bias)을 제거합니다.
+5. **퇴출(Eviction) 기능이 있는 머지 큐**: 메인 브랜치에 반영 시 충돌이 나거나 테스트가 실패하면 해당 단위를 큐에서 제거하고 충돌 컨텍스트를Implementer에게 다시 전달합니다.
 
 ---
 
-## 6. Ralphinho / RFC-Driven DAG Orchestration
+## 패턴 선택 가이드
 
-**The most sophisticated pattern.** An RFC-driven, multi-agent pipeline that decomposes a spec into a dependency DAG, runs each unit through a tiered quality pipeline, and lands them via an agent-driven merge queue. Created by enitrat (credit: @enitrat).
+### 결정 매트릭스
 
-### Architecture Overview
-
-```
-RFC/PRD Document
-       │
-       ▼
-  DECOMPOSITION (AI)
-  Break RFC into work units with dependency DAG
-       │
-       ▼
-┌──────────────────────────────────────────────────────┐
-│  RALPH LOOP (up to 3 passes)                         │
-│                                                      │
-│  For each DAG layer (sequential, by dependency):     │
-│                                                      │
-│  ┌── Quality Pipelines (parallel per unit) ───────┐  │
-│  │  Each unit in its own worktree:                │  │
-│  │  Research → Plan → Implement → Test → Review   │  │
-│  │  (depth varies by complexity tier)             │  │
-│  └────────────────────────────────────────────────┘  │
-│                                                      │
-│  ┌── Merge Queue ─────────────────────────────────┐  │
-│  │  Rebase onto main → Run tests → Land or evict │  │
-│  │  Evicted units re-enter with conflict context  │  │
-│  └────────────────────────────────────────────────┘  │
-│                                                      │
-└──────────────────────────────────────────────────────┘
-```
-
-### RFC Decomposition
-
-AI reads the RFC and produces work units:
-
-```typescript
-interface WorkUnit {
-  id: string;              // kebab-case identifier
-  name: string;            // Human-readable name
-  rfcSections: string[];   // Which RFC sections this addresses
-  description: string;     // Detailed description
-  deps: string[];          // Dependencies (other unit IDs)
-  acceptance: string[];    // Concrete acceptance criteria
-  tier: "trivial" | "small" | "medium" | "large";
-}
-```
-
-**Decomposition Rules:**
-- Prefer fewer, cohesive units (minimize merge risk)
-- Minimize cross-unit file overlap (avoid conflicts)
-- Keep tests WITH implementation (never separate "implement X" + "test X")
-- Dependencies only where real code dependency exists
-
-The dependency DAG determines execution order:
-```
-Layer 0: [unit-a, unit-b]     ← no deps, run in parallel
-Layer 1: [unit-c]             ← depends on unit-a
-Layer 2: [unit-d, unit-e]     ← depend on unit-c
-```
-
-### Complexity Tiers
-
-Different tiers get different pipeline depths:
-
-| Tier | Pipeline Stages |
-|------|----------------|
-| **trivial** | implement → test |
-| **small** | implement → test → code-review |
-| **medium** | research → plan → implement → test → PRD-review + code-review → review-fix |
-| **large** | research → plan → implement → test → PRD-review + code-review → review-fix → final-review |
-
-This prevents expensive operations on simple changes while ensuring architectural changes get thorough scrutiny.
-
-### Separate Context Windows (Author-Bias Elimination)
-
-Each stage runs in its own agent process with its own context window:
-
-| Stage | Model | Purpose |
-|-------|-------|---------|
-| Research | Sonnet | Read codebase + RFC, produce context doc |
-| Plan | Opus | Design implementation steps |
-| Implement | Codex | Write code following the plan |
-| Test | Sonnet | Run build + test suite |
-| PRD Review | Sonnet | Spec compliance check |
-| Code Review | Opus | Quality + security check |
-| Review Fix | Codex | Address review issues |
-| Final Review | Opus | Quality gate (large tier only) |
-
-**Critical design:** The reviewer never wrote the code it reviews. This eliminates author bias — the most common source of missed issues in self-review.
-
-### Merge Queue with Eviction
-
-After quality pipelines complete, units enter the merge queue:
-
-```
-Unit branch
-    │
-    ├─ Rebase onto main
-    │   └─ Conflict? → EVICT (capture conflict context)
-    │
-    ├─ Run build + tests
-    │   └─ Fail? → EVICT (capture test output)
-    │
-    └─ Pass → Fast-forward main, push, delete branch
-```
-
-**File Overlap Intelligence:**
-- Non-overlapping units land speculatively in parallel
-- Overlapping units land one-by-one, rebasing each time
-
-**Eviction Recovery:**
-When evicted, full context is captured (conflicting files, diffs, test output) and fed back to the implementer on the next Ralph pass:
-
-```markdown
-## MERGE CONFLICT — RESOLVE BEFORE NEXT LANDING
-
-Your previous implementation conflicted with another unit that landed first.
-Restructure your changes to avoid the conflicting files/lines below.
-
-{full eviction context with diffs}
-```
-
-### Data Flow Between Stages
-
-```
-research.contextFilePath ──────────────────→ plan
-plan.implementationSteps ──────────────────→ implement
-implement.{filesCreated, whatWasDone} ─────→ test, reviews
-test.failingSummary ───────────────────────→ reviews, implement (next pass)
-reviews.{feedback, issues} ────────────────→ review-fix → implement (next pass)
-final-review.reasoning ────────────────────→ implement (next pass)
-evictionContext ───────────────────────────→ implement (after merge conflict)
-```
-
-### Worktree Isolation
-
-Every unit runs in an isolated worktree (uses jj/Jujutsu, not git):
-```
-/tmp/workflow-wt-{unit-id}/
-```
-
-Pipeline stages for the same unit **share** a worktree, preserving state (context files, plan files, code changes) across research → plan → implement → test → review.
-
-### Key Design Principles
-
-1. **Deterministic execution** — Upfront decomposition locks in parallelism and ordering
-2. **Human review at leverage points** — The work plan is the single highest-leverage intervention point
-3. **Separate concerns** — Each stage in a separate context window with a separate agent
-4. **Conflict recovery with context** — Full eviction context enables intelligent re-runs, not blind retries
-5. **Tier-driven depth** — Trivial changes skip research/review; large changes get maximum scrutiny
-6. **Resumable workflows** — Full state persisted to SQLite; resume from any point
-
-### When to Use Ralphinho vs Simpler Patterns
-
-| Signal | Use Ralphinho | Use Simpler Pattern |
-|--------|--------------|-------------------|
-| Multiple interdependent work units | Yes | No |
-| Need parallel implementation | Yes | No |
-| Merge conflicts likely | Yes | No (sequential is fine) |
-| Single-file change | No | Yes (sequential pipeline) |
-| Multi-day project | Yes | Maybe (continuous-claude) |
-| Spec/RFC already written | Yes | Maybe |
-| Quick iteration on one thing | No | Yes (NanoClaw or pipeline) |
+1. **단일 수정을 위한 집중된 작업인가?**
+   - 예 → 순차적 파이프라인 또는 NanoClaw
+2. **작성된 사양/RFC가 있는가?**
+   - 예 → 병렬 구현이 필요한가?
+     - 예 → Ralphinho (DAG 오케스트레이션)
+     - 아니오 → Continuous Claude (반복적 PR 루프)
+3. **동일한 대상의 여러 변형이 필요한가?**
+   - 예 → 무한 에이전틱 루프
+   - 아니오 → De-sloppify를 포함한 순차적 파이프라인
 
 ---
 
-## Choosing the Right Pattern
+## 안티 패턴 (피해야 할 것)
 
-### Decision Matrix
-
-```
-Is the task a single focused change?
-├─ Yes → Sequential Pipeline or NanoClaw
-└─ No → Is there a written spec/RFC?
-         ├─ Yes → Do you need parallel implementation?
-         │        ├─ Yes → Ralphinho (DAG orchestration)
-         │        └─ No → Continuous Claude (iterative PR loop)
-         └─ No → Do you need many variations of the same thing?
-                  ├─ Yes → Infinite Agentic Loop (spec-driven generation)
-                  └─ No → Sequential Pipeline with de-sloppify
-```
-
-### Combining Patterns
-
-These patterns compose well:
-
-1. **Sequential Pipeline + De-Sloppify** — The most common combination. Every implement step gets a cleanup pass.
-
-2. **Continuous Claude + De-Sloppify** — Add `--review-prompt` with a de-sloppify directive to each iteration.
-
-3. **Any loop + Verification** — Use ECC's `/verify` command or `verification-loop` skill as a gate before commits.
-
-4. **Ralphinho's tiered approach in simpler loops** — Even in a sequential pipeline, you can route simple tasks to Haiku and complex tasks to Opus:
-   ```bash
-   # Simple formatting fix
-   claude -p --model haiku "Fix the import ordering in src/utils.ts"
-
-   # Complex architectural change
-   claude -p --model opus "Refactor the auth module to use the strategy pattern"
-   ```
-
----
-
-## Anti-Patterns
-
-### Common Mistakes
-
-1. **Infinite loops without exit conditions** — Always have a max-runs, max-cost, max-duration, or completion signal.
-
-2. **No context bridge between iterations** — Each `claude -p` call starts fresh. Use `SHARED_TASK_NOTES.md` or filesystem state to bridge context.
-
-3. **Retrying the same failure** — If an iteration fails, don't just retry. Capture the error context and feed it to the next attempt.
-
-4. **Negative instructions instead of cleanup passes** — Don't say "don't do X." Add a separate pass that removes X.
-
-5. **All agents in one context window** — For complex workflows, separate concerns into different agent processes. The reviewer should never be the author.
-
-6. **Ignoring file overlap in parallel work** — If two parallel agents might edit the same file, you need a merge strategy (sequential landing, rebase, or conflict resolution).
-
----
-
-## References
-
-| Project | Author | Link |
-|---------|--------|------|
-| Ralphinho | enitrat | credit: @enitrat |
-| Infinite Agentic Loop | disler | credit: @disler |
-| Continuous Claude | AnandChowdhary | credit: @AnandChowdhary |
-| NanoClaw | ECC | `/claw` command in this repo |
-| Verification Loop | ECC | `skills/verification-loop/` in this repo |
+1. **종료 조건 없는 무한 루프** — 항상 최대 실행 횟수, 비용, 시간 또는 완료 시그널을 설정하십시오.
+2. **반복 간 컨텍스트 브릿지 부재** — `SHARED_TASK_NOTES.md` 등을 사용하여 정보를 전달하십시오.
+3. **동일한 실패의 무한 재시도** — 실패 시 에러 컨텍스트를 캡처하여 다음 시도에 반영하십시오.
+4. **정리 단계 대신 부정적 지시 사용** — "X 하지 마세요"라고 하기보다, X를 제거하는 별도의 단계를 만드십시오.
+5. **모든 에이전트를 하나의 컨텍스트 윈도우에 넣기** — 복잡한 워크플로우에서는 역할별로 에이전트 프로세스를 분리하십시오.
+    

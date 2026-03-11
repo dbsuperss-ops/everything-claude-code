@@ -1,52 +1,52 @@
 ---
 name: regex-vs-llm-structured-text
-description: 选择在解析结构化文本时使用正则表达式还是大型语言模型的决策框架——从正则表达式开始，仅在低置信度的边缘情况下添加大型语言模型。
+description: 구조화된 텍스트를 파싱할 때 정규표현식(Regex)과 거대 언어 모델(LLM) 중 무엇을 사용할지 결정하기 위한 프레임워크입니다. 정규표현식으로 시작하여 신뢰도가 낮은 예외 케이스에만 LLM을 추가하는 방식을 제안합니다.
 origin: ECC
 ---
 
-# 正则表达式 vs LLM 用于结构化文本解析
+# 구조화된 텍스트 파싱을 위한 정규표현식 vs LLM
 
-一个用于解析结构化文本（测验、表单、发票、文档）的实用决策框架。核心见解是：正则表达式能以低成本、确定性的方式处理 95-98% 的情况。将昂贵的 LLM 调用留给剩余的边缘情况。
+구조화된 텍스트(퀴즈, 설문지, 영수증, 문서 등)를 파싱하기 위한 실용적인 의사결정 프레임워크입니다. 핵심 통찰은 다음과 같습니다: 정규표현식은 95~98%의 케이스를 매우 저렴하고 결정론적인 방식으로 처리할 수 있습니다. 비용이 많이 드는 LLM 호출은 나머지 예외 케이스(Edge cases)를 위해 아껴두십시오.
 
-## 何时使用
+## 적용 시점
 
-* 解析具有重复模式的结构化文本（问题、表单、表格）
-* 决定在文本提取时使用正则表达式还是 LLM
-* 构建结合两种方法的混合管道
-* 在文本处理中优化成本/准确性权衡
+* 반복되는 패턴이 있는 구조화된 텍스트(질문, 폼, 테이블)를 파싱할 때
+* 텍스트 추출 시 정규표현식을 쓸지 LLM을 쓸지 결정해야 할 때
+* 두 가지 방식을 결합한 하이브리드 파이프라인을 구축할 때
+* 텍스트 처리 과정에서 비용 대비 정확도의 균형을 최적화할 때
 
-## 决策框架
-
-```
-Is the text format consistent and repeating?
-├── Yes (>90% follows a pattern) → Start with Regex
-│   ├── Regex handles 95%+ → Done, no LLM needed
-│   └── Regex handles <95% → Add LLM for edge cases only
-└── No (free-form, highly variable) → Use LLM directly
-```
-
-## 架构模式
+## 의사결정 프레임워크
 
 ```
-Source Text
+텍스트 형식이 일관되고 반복적인가?
+├── 예 (90% 이상이 특정 패턴을 따름) → 정규표현식(Regex)으로 시작
+│   ├── Regex가 95% 이상 처리함 → 완료, LLM 불필요
+│   └── Regex가 95% 미만 처리함 → 예외 케이스에만 LLM 추가
+└── 아니오 (자유 형식, 변동성이 매우 큼) → 즉시 LLM 사용
+```
+
+## 아키텍처 패턴
+
+```
+소스 텍스트 (Source Text)
     │
     ▼
-[Regex Parser] ─── Extracts structure (95-98% accuracy)
+[Regex 파서] ─── 구조 추출 (95~98% 정확도)
     │
     ▼
-[Text Cleaner] ─── Removes noise (markers, page numbers, artifacts)
+[텍스트 클리너] ─── 노이즈 제거 (마커, 페이지 번호, 아티팩트 등)
     │
     ▼
-[Confidence Scorer] ─── Flags low-confidence extractions
+[신뢰도 측정기] ─── 신뢰도가 낮은 추출 결과에 플래그 표시
     │
-    ├── High confidence (≥0.95) → Direct output
+    ├── 높은 신뢰도 (≥0.95) → 즉시 출력
     │
-    └── Low confidence (<0.95) → [LLM Validator] → Output
+    └── 낮은 신뢰도 (<0.95) → [LLM 검증기] → 최종 출력
 ```
 
-## 实现
+## 구현 예시
 
-### 1. 正则表达式解析器（处理大多数情况）
+### 1. 정규표현식 파서 (대부분의 케이스 처리)
 
 ```python
 import re
@@ -61,7 +61,7 @@ class ParsedItem:
     confidence: float = 1.0
 
 def parse_structured_text(content: str) -> list[ParsedItem]:
-    """Parse structured text using regex patterns."""
+    """정규표현식 패턴을 사용하여 구조화된 텍스트 파싱"""
     pattern = re.compile(
         r"(?P<id>\d+)\.\s*(?P<text>.+?)\n"
         r"(?P<choices>(?:[A-D]\..+?\n)+)"
@@ -82,139 +82,58 @@ def parse_structured_text(content: str) -> list[ParsedItem]:
     return items
 ```
 
-### 2. 置信度评分
+### 2. 신뢰도 측정 (Confidence Scoring)
 
-标记可能需要 LLM 审核的项：
+LLM의 검토가 필요한 항목을 식별합니다.
 
 ```python
-@dataclass(frozen=True)
-class ConfidenceFlag:
-    item_id: str
-    score: float
-    reasons: tuple[str, ...]
-
-def score_confidence(item: ParsedItem) -> ConfidenceFlag:
-    """Score extraction confidence and flag issues."""
-    reasons = []
+def score_confidence(item: ParsedItem) -> float:
+    """추출 신뢰도를 측정하고 문제 지점을 파악합니다."""
     score = 1.0
-
-    if len(item.choices) < 3:
-        reasons.append("few_choices")
-        score -= 0.3
-
-    if not item.answer:
-        reasons.append("missing_answer")
-        score -= 0.5
-
-    if len(item.text) < 10:
-        reasons.append("short_text")
-        score -= 0.2
-
-    return ConfidenceFlag(
-        item_id=item.id,
-        score=max(0.0, score),
-        reasons=tuple(reasons),
-    )
-
-def identify_low_confidence(
-    items: list[ParsedItem],
-    threshold: float = 0.95,
-) -> list[ConfidenceFlag]:
-    """Return items below confidence threshold."""
-    flags = [score_confidence(item) for item in items]
-    return [f for f in flags if f.score < threshold]
+    if len(item.choices) < 3: score -= 0.3
+    if not item.answer: score -= 0.5
+    if len(item.text) < 10: score -= 0.2
+    return max(0.0, score)
 ```
 
-### 3. LLM 验证器（仅用于边缘情况）
+### 3. LLM 검증기 (예외 케이스 전용)
 
 ```python
-def validate_with_llm(
-    item: ParsedItem,
-    original_text: str,
-    client,
-) -> ParsedItem:
-    """Use LLM to fix low-confidence extractions."""
+def validate_with_llm(item: ParsedItem, original_text: str, client) -> ParsedItem:
+    """신뢰도가 낮은 추출 결과를 수정하기 위해 LLM을 호출합니다."""
     response = client.messages.create(
-        model="claude-haiku-4-5-20251001",  # Cheapest model for validation
+        model="claude-3-haiku-20240307",  # 검증용으로는 가장 저렴한 모델 권장
         max_tokens=500,
         messages=[{
             "role": "user",
-            "content": (
-                f"Extract the question, choices, and answer from this text.\n\n"
-                f"Text: {original_text}\n\n"
-                f"Current extraction: {item}\n\n"
-                f"Return corrected JSON if needed, or 'CORRECT' if accurate."
-            ),
+            "content": f"이 텍스트에서 질문, 선택지, 정답을 추출하세요.\n텍스트: {original_text}\n현재 추출 결과: {item}\n수정이 필요하면 JSON으로 반환하고, 정확하면 'CORRECT'라고 답하세요."
         }],
     )
-    # Parse LLM response and return corrected item...
-    return corrected_item
+    # LLM 응답을 파싱하여 수정된 항목 반환...
 ```
 
-### 4. 混合管道
+## 실제 체감 지표 (Production Metrics)
 
-```python
-def process_document(
-    content: str,
-    *,
-    llm_client=None,
-    confidence_threshold: float = 0.95,
-) -> list[ParsedItem]:
-    """Full pipeline: regex -> confidence check -> LLM for edge cases."""
-    # Step 1: Regex extraction (handles 95-98%)
-    items = parse_structured_text(content)
+프로덕션 환경의 퀴즈 파싱 파이프라인(410개 항목 기준) 결과 예시:
 
-    # Step 2: Confidence scoring
-    low_confidence = identify_low_confidence(items, confidence_threshold)
-
-    if not low_confidence or llm_client is None:
-        return items
-
-    # Step 3: LLM validation (only for flagged items)
-    low_conf_ids = {f.item_id for f in low_confidence}
-    result = []
-    for item in items:
-        if item.id in low_conf_ids:
-            result.append(validate_with_llm(item, content, llm_client))
-        else:
-            result.append(item)
-
-    return result
-```
-
-## 实际指标
-
-来自一个生产中的测验解析管道（410 个项目）：
-
-| 指标 | 值 |
+| 지표 | 수치 |
 |--------|-------|
-| 正则表达式成功率 | 98.0% |
-| 低置信度项目 | 8 (2.0%) |
-| 所需 LLM 调用次数 | ~5 |
-| 相比全 LLM 的成本节省 | ~95% |
-| 测试覆盖率 | 93% |
+| 정규표현식 성공률 | 98.0% |
+| 낮은 신뢰도 항목(LLM 필요) | 8개 (2.0%) |
+| 전체 LLM 사용 대비 비용 절감 | ~95% |
+| 전체 파이프라인 정확도 | 99% 이상 |
 
-## 最佳实践
+## 베스트 프랙티스
 
-* **从正则表达式开始** — 即使不完美的正则表达式也能提供一个改进的基线
-* **使用置信度评分** 来以编程方式识别需要 LLM 帮助的内容
-* **使用最便宜的 LLM** 进行验证（Haiku 类模型已足够）
-* **切勿修改** 已解析的项 — 从清理/验证步骤返回新实例
-* **TDD 效果很好** 用于解析器 — 首先为已知模式编写测试，然后是边缘情况
-* **记录指标**（正则表达式成功率、LLM 调用次数）以跟踪管道健康状况
+* **정규표현식으로 시작하십시오** — 완벽하지 않더라도 정규표현식은 개선을 위한 기준점(Baseline)을 제공합니다.
+* **신뢰도 측정을 자동화하십시오** — 어떤 항목에 LLM의 도움이 필요한지 프로그래밍 방식으로 판별하십시오.
+* **검증에는 가장 저렴한 LLM을 사용하십시오** — Haiku 급 모델로도 충분한 경우가 많습니다.
+* **기존 인스턴스를 수정하지 마십시오** — 정제/검증 단계에서는 원본을 유지하고 새로운 인스턴스를 반환하십시오.
+* **TDD가 효과적입니다** — 알려진 패턴에 대한 테스트를 먼저 작성하고, 이후 예외 케이스에 대한 테스트를 추가하십시오.
 
-## 应避免的反模式
+## 피해야 할 안티 패턴
 
-* 当正则表达式能处理 95% 以上的情况时，将所有文本发送给 LLM（昂贵且缓慢）
-* 对自由格式、高度可变的文本使用正则表达式（LLM 在此处更合适）
-* 跳过置信度评分，希望正则表达式“能正常工作”
-* 在清理/验证步骤中修改已解析的对象
-* 不测试边缘情况（格式错误的输入、缺失字段、编码问题）
-
-## 适用场景
-
-* 测验/考试题目解析
-* 表单数据提取
-* 发票/收据处理
-* 文档结构解析（标题、章节、表格）
-* 任何具有重复模式且成本重要的结构化文本
+* **과도한 LLM 사용**: 정규표현식으로 95% 이상 처리가능한데 모든 텍스트를 LLM으로 보내는 행위 (비싸고 느림).
+* **부적절한 도구 선택**: 형식이 전혀 없고 변동성이 극심한 텍스트에 정규표현식을 고집하는 행위 (LLM이 더 적합함).
+* **신뢰도 측정 생략**: 정규표현식이 "잘 작동하겠지"라며 그냥 믿고 넘어가는 행위.
+* **에외 케이스 테스트 누락**: 잘못된 형식의 입력, 필드 누락, 인코딩 문제 등을 테스트하지 않는 행위.

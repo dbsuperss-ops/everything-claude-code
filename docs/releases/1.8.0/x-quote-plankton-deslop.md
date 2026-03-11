@@ -1,5 +1,6 @@
-# X Quote Draft - Plankton / De-slop Workflow
+# X 인용 초안 - Plankton / De-slop 워크플로우
 
-The quality gate model matters.
+품질 게이트(Quality gate) 모델은 매우 중요합니다.
 
-In v1.8.0 we pushed harder on write-time quality enforcement, deterministic checks, and cleaner loop recovery so agents converge faster with less noise.
+v1.8.0에서는 쓰기 단계의 품질 강제, 결정론적 체크, 깨끗한 루프 복구 기능을 더욱 강화하여, 에이전트가 노이즈를 줄이면서 더 빠르게 수렴할 수 있도록 개선했습니다.
+    

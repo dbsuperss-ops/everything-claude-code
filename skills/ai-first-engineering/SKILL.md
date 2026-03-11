@@ -1,51 +1,52 @@
 ---
 name: ai-first-engineering
-description: Engineering operating model for teams where AI agents generate a large share of implementation output.
+description: AI 에이전트가 구현 분량의 상당 부분을 생성하는 조직을 위한 엔지니어링 운영 모델입니다.
 origin: ECC
 ---
 
-# AI-First Engineering
+# AI 우선 엔지니어링 (AI-First Engineering)
 
-Use this skill when designing process, reviews, and architecture for teams shipping with AI-assisted code generation.
+AI 지원 코드 생성을 활용하는 팀의 프로세스, 리뷰 및 아키텍처를 설계할 때 이 스킬을 사용하십시오.
 
-## Process Shifts
+## 프로세스의 변화
 
-1. Planning quality matters more than typing speed.
-2. Eval coverage matters more than anecdotal confidence.
-3. Review focus shifts from syntax to system behavior.
+1. 타이핑 속도보다 계획의 품질이 더 중요해집니다.
+2. 개인적인 직관보다 평가(Eval) 커버리지가 더 중요해집니다.
+3. 리뷰의 초점이 문법(Syntax)에서 시스템 동작(Behavior)으로 옮겨집니다.
 
-## Architecture Requirements
+## 아키텍처 요구 사항
 
-Prefer architectures that are agent-friendly:
-- explicit boundaries
-- stable contracts
-- typed interfaces
-- deterministic tests
+에이전트 친화적인 아키텍처를 선호하십시오:
+- 명시적인 경계(Boundaries) 정의
+- 안정적인 규약(Contracts)
+- 타입이 명시된 인터페이스(Typed interfaces)
+- 결과가 예측 가능한 테스트(Deterministic tests)
 
-Avoid implicit behavior spread across hidden conventions.
+숨겨진 컨벤션에 흩어져 있는 암시적인 동작들을 피하십시오.
 
-## Code Review in AI-First Teams
+## AI 우선 팀에서의 코드 리뷰
 
-Review for:
-- behavior regressions
-- security assumptions
-- data integrity
-- failure handling
-- rollout safety
+다음을 리뷰하십시오:
+- 동작의 회귀(Regressions) 발생 여부
+- 보안 관련 가정(Assumptions) 확인
+- 데이터 무결성
+- 실패 처리(Failure handling)
+- 배포(Rollout) 안전성
 
-Minimize time spent on style issues already covered by automation.
+이미 자동화된 스타일 도구에서 처리하고 있는 이슈에는 시간을 최소한으로 할애하십시오.
 
-## Hiring and Evaluation Signals
+## 인력 채용 및 평가 지표
 
-Strong AI-first engineers:
-- decompose ambiguous work cleanly
-- define measurable acceptance criteria
-- produce high-signal prompts and evals
-- enforce risk controls under delivery pressure
+뛰어난 AI 우선 엔지니어의 특징:
+- 모호한 작업을 깔끔하게 분해함
+- 측정 가능한 수락 기준(Acceptance criteria)을 정의함
+- 높은 신뢰도의 프롬프트와 평가(Evals) 결과물을 산출함
+- 납기 압박 속에서도 리스크 관리(Risk control)를 철저히 함
 
-## Testing Standard
+## 테스트 표준
 
-Raise testing bar for generated code:
-- required regression coverage for touched domains
-- explicit edge-case assertions
-- integration checks for interface boundaries
+생성된 코드에 대해 더 높은 수준의 테스트를 요구하십시오:
+- 수정된 도메인에 대해 필수적인 회귀 테스트 커버리지 확보
+- 명시적인 에지 케이스(Edge-case) 단언문(Assertions) 추가
+- 인터페이스 경계에서의 통합 체크 수행
+    

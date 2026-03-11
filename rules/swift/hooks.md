@@ -3,18 +3,18 @@ paths:
   - "**/*.swift"
   - "**/Package.swift"
 ---
-# Swift Hooks
+# Swift 훅 (Swift Hooks)
 
-> This file extends [common/hooks.md](../common/hooks.md) with Swift specific content.
+> 이 파일은 [common/hooks.md](../common/hooks.md)을 Swift 전용 내용으로 확장합니다.
 
-## PostToolUse Hooks
+## PostToolUse 훅
 
-Configure in `~/.claude/settings.json`:
+`~/.claude/settings.json`에서 설정하십시오:
 
-- **SwiftFormat**: Auto-format `.swift` files after edit
-- **SwiftLint**: Run lint checks after editing `.swift` files
-- **swift build**: Type-check modified packages after edit
+- **SwiftFormat**: `.swift` 파일 수정 후 자동 포맷팅
+- **SwiftLint**: `.swift` 파일 수정 후 린트 체크 실행
+- **swift build**: 수정 후 해당 패키지에 대해 타입 체크 실행
 
-## Warning
+## 경고
 
-Flag `print()` statements — use `os.Logger` or structured logging instead for production code.
+`print()` 문을 감시하십시오 — 프로덕션 코드에서는 대신 `os.Logger`나 구조적 로깅을 사용하십시오.

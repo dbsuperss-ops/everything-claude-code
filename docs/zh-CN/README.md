@@ -1,6 +1,6 @@
-**语言：** [English](../../README.md) | [繁體中文](../zh-TW/README.md) | [简体中文](README.md)
+**언어:** [English](../../README.md) | [繁體中文](../zh-TW/README.md) | [简体中文](README.md)
 
-# Everything Claude Code
+# Everything Claude Code (ECC)
 
 [![Stars](https://img.shields.io/github/stars/affaan-m/everything-claude-code?style=flat)](https://github.com/affaan-m/everything-claude-code/stargazers)
 [![Forks](https://img.shields.io/github/forks/affaan-m/everything-claude-code?style=flat)](https://github.com/affaan-m/everything-claude-code/network/members)
@@ -16,13 +16,13 @@
 ![Java](https://img.shields.io/badge/-Java-ED8B00?logo=openjdk\&logoColor=white)
 ![Markdown](https://img.shields.io/badge/-Markdown-000000?logo=markdown\&logoColor=white)
 
-> **5万+ stars** | **6千+ forks** | **30位贡献者** | **支持6种语言** | **Anthropic黑客马拉松获胜者**
+> **5만+ 별(stars)** | **6천+ 포크(forks)** | **30명의 기여자** | **6개 언어 지원** | **Anthropic 해커톤 우승작**
 
 ***
 
 <div align="center">
 
-**🌐 语言 / 语言 / 語言**
+**🌐 언어 / Language / 語言**
 
 [**English**](../../README.md) | [简体中文](../../README.zh-CN.md) | [繁體中文](../zh-TW/README.md) | [日本語](../ja-JP/README.md)
 
@@ -30,1246 +30,615 @@
 
 ***
 
-**适用于 AI 智能体平台的性能优化系统。来自 Anthropic 黑客马拉松的获奖作品。**
+**AI 에이전트 플랫폼을 위한 성능 최적화 시스템. Anthropic 해커톤 수상작.**
 
-不仅仅是配置。一个完整的系统：技能、本能、内存优化、持续学习、安全扫描以及研究优先的开发。经过 10 多个月的密集日常使用和构建真实产品的经验，演进出生产就绪的智能体、钩子、命令、规则和 MCP 配置。
+단순한 설정 모음이 아닙니다. 스킬, 본능, 메모리 최적화, 지속적 학습, 보안 스캔, 연구 우선 개발을 포함하는 완전한 시스템입니다. 10개월 이상의 집중적인 일상 사용과 실제 제품 구축 경험을 통해 진화한 생산 환경용 에이전트, 후크, 명령어, 규칙 및 MCP 구성을 제공합니다.
 
-适用于 **Claude Code**、**Codex**、**Cowork** 以及其他 AI 智能体平台。
-
-***
-
-## 采用与分发
-
-向赞助商、平台或生态系统合作伙伴展示 ECC 时，请使用这些实时信号：
-
-* **主包安装量：** npm 上的 [`ecc-universal`](https://www.npmjs.com/package/ecc-universal)
-* **安全伴侣安装量：** npm 上的 [`ecc-agentshield`](https://www.npmjs.com/package/ecc-agentshield)
-* **GitHub 应用分发：** [ECC 工具市场列表](https://github.com/marketplace/ecc-tools)
-* **自动化月度指标问题：** 由 `.github/workflows/monthly-metrics.yml` 驱动
-* **仓库采用信号：** 本 README 顶部的 stars/forks/contributors 徽章
-
-Claude Code 插件安装的下载计数目前尚未作为公共 API 公开。对于合作伙伴报告，请将 npm 指标与 GitHub 应用安装量以及仓库流量/分支增长相结合。
-
-有关赞助商通话的指标清单和命令片段，请参阅 [`docs/business/metrics-and-sponsorship.md`](../business/metrics-and-sponsorship.md)。
-
-[**赞助 ECC**](https://github.com/sponsors/affaan-m) | [赞助层级](SPONSORS.md) | [赞助计划](SPONSORING.md)
+**Claude Code**, **Codex**, **Cowork** 및 기타 AI 에이전트 플랫폼에서 사용할 수 있습니다.
 
 ***
 
-## 指南
+## 도입 및 배포
 
-此仓库仅包含原始代码。指南解释了一切。
+후원자, 플랫폼 또는 에코시스템 파트너에게 ECC를 소개할 때 다음 실시간 신호를 사용하십시오:
+
+* **메인 패키지 설치 수:** npm의 [`ecc-universal`](https://www.npmjs.com/package/ecc-universal)
+* **보안 도구 설치 수:** npm의 [`ecc-agentshield`](https://www.npmjs.com/package/ecc-agentshield)
+* **GitHub 앱 배포:** [ECC 도구 마켓플레이스 목록](https://github.com/marketplace/ecc-tools)
+* **자동 월간 지표 이슈:** `.github/workflows/monthly-metrics.yml` 기반
+* **저장소 도입 신호:** 본 README 상단의 별(stars)/포크(forks)/기여자 배지
+
+Claude Code 플러그인 설치 수는 현재 공용 API로 제공되지 않습니다. 파트너 보고 시에는 npm 지표, GitHub 앱 설치 수, 저장소 트래픽 및 브랜치 성장 지표를 결합하여 사용하십시오.
+
+후원 미팅을 위한 지표 체크리스트와 명령어 스니펫은 [`docs/business/metrics-and-sponsorship.md`](../business/metrics-and-sponsorship.md)를 참조하십시오.
+
+[**ECC 후원하기**](https://github.com/sponsors/affaan-m) | [후원 등급](SPONSORS.md) | [후원 계획](SPONSORING.md)
+
+***
+
+## 가이드
+
+이 저장소에는 원본 코드만 포함되어 있습니다. 가이드에서 모든 것을 설명합니다.
 
 <table>
 <tr>
 <td width="50%">
 <a href="https://x.com/affaanmustafa/status/2012378465664745795">
-<img src="https://github.com/user-attachments/assets/1a471488-59cc-425b-8345-5245c7efbcef" alt="The Shorthand Guide to Everything Claude Code" />
+<img src="https://github.com/user-attachments/assets/1a471488-59cc-425b-8345-5245c7efbcef" alt="Everything Claude Code 요약 가이드" />
 </a>
 </td>
 <td width="50%">
 <a href="https://x.com/affaanmustafa/status/2014040193557471352">
-<img src="https://github.com/user-attachments/assets/c9ca43bc-b149-427f-b551-af6840c368f0" alt="The Longform Guide to Everything Claude Code" />
+<img src="https://github.com/user-attachments/assets/c9ca43bc-b149-427f-b551-af6840c368f0" alt="Everything Claude Code 상세 가이드" />
 </a>
 </td>
 </tr>
 <tr>
-<td align="center"><b>Shorthand Guide</b><br/>Setup, foundations, philosophy. <b>Read this first.</b></td>
-<td align="center"><b>Longform Guide</b><br/>Token optimization, memory persistence, evals, parallelization.</td>
+<td align="center"><b>요약 가이드(Shorthand Guide)</b><br/>설정, 기초, 철학. <b>먼저 읽어보세요.</b></td>
+<td align="center"><b>상세 가이드(Longform Guide)</b><br/>토큰 최적화, 메모리 유지, 평가, 병렬화.</td>
 </tr>
 </table>
 
-| 主题 | 你将学到什么 |
+| 주제 | 배울 내용 |
 |-------|-------------------|
-| 令牌优化 | 模型选择，系统提示精简，后台进程 |
-| 内存持久化 | 自动跨会话保存/加载上下文的钩子 |
-| 持续学习 | 从会话中自动提取模式为可重用技能 |
-| 验证循环 | 检查点与持续评估，评分器类型，pass@k 指标 |
-| 并行化 | Git 工作树，级联方法，何时扩展实例 |
-| 子智能体编排 | 上下文问题，迭代检索模式 |
+| 토큰 최적화 | 모델 선택, 시스템 프롬프트 간소화, 백그라운드 프로세스 |
+| 메모리 유지 | 세션 간 컨텍스트를 자동 저장/로드하는 후크 |
+| 지속적 학습 | 세션에서 패턴을 추출하여 재사용 가능한 스킬로 자동 변환 |
+| 검증 루프 | 체크포인트 및 지속적 평가, 채점자 유형, pass@k 지표 |
+| 병렬화 | Git 작업 트리(Working Tree), 계층적 접근 방식, 인스턴스 확장 시기 |
+| 서브 에이전트 오케스트레이션 | 컨텍스트 문제, 반복적 검색 패턴 |
 
 ***
 
-## 最新动态
+## 최신 소식
 
-### v1.8.0 — 平台性能系统（2026 年 3 月）
+### v1.8.0 — 플랫폼 성능 시스템 (2026년 3월)
 
-* **平台优先发布** — ECC 现在被明确构建为一个智能体平台性能系统，而不仅仅是一个配置包。
-* **钩子可靠性大修** — SessionStart 根回退、Stop 阶段会话摘要，以及用基于脚本的钩子替换脆弱的单行内联钩子。
-* **钩子运行时控制** — `ECC_HOOK_PROFILE=minimal|standard|strict` 和 `ECC_DISABLED_HOOKS=...` 用于运行时门控，无需编辑钩子文件。
-* **新平台命令** — `/harness-audit`、`/loop-start`、`/loop-status`、`/quality-gate`、`/model-route`。
-* **NanoClaw v2** — 模型路由、技能热加载、会话分支/搜索/导出/压缩/指标。
-* **跨平台一致性** — 在 Claude Code、Cursor、OpenCode 和 Codex 应用/CLI 中行为更加统一。
-* **997 项内部测试通过** — 钩子/运行时重构和兼容性更新后，完整套件全部通过。
+* **플랫폼 우선 릴리스** — ECC는 이제 단순한 설정 패키지가 아닌, 에이전트 플랫폼 성능 시스템으로 명확하게 설계되었습니다.
+* **후크 신뢰성 대개편** — SessionStart 루트 폴백, Stop 단계 세션 요약, 취약한 인라인 후크를 스크립트 기반 후크로 대체.
+* **후크 런타임 제어** — `ECC_HOOK_PROFILE=minimal|standard|strict` 및 `ECC_DISABLED_HOOKS=...`를 통해 파일 수정 없이 런타임 제어 가능.
+* **새로운 플랫폼 명령어** — `/harness-audit`, `/loop-start`, `/loop-status`, `/quality-gate`, `/model-route`.
+* **NanoClaw v2** — 모델 라우팅, 스킬 핫 로드, 세션 분기/검색/내보내기/압축/지표 추가.
+* **플랫폼 간 일관성** — Claude Code, Cursor, OpenCode, Codex 앱/CLI에서 더욱 통일된 동작 제공.
+* **997개 내부 테스트 통과** — 후크/런타임 리팩토링 및 호환성 업데이트 후 전체 테스트 슈트 통과.
 
-### v1.7.0 — 跨平台扩展与演示文稿生成器（2026年2月）
+### v1.7.0 — 플랫폼 확장 및 프레젠테이션 생성기 (2026년 2월)
 
-* **Codex 应用 + CLI 支持** — 基于 `AGENTS.md` 的直接 Codex 支持、安装器目标定位以及 Codex 文档
-* **`frontend-slides` 技能** — 零依赖的 HTML 演示文稿生成器，附带 PPTX 转换指导和严格的视口适配规则
-* **5个新的通用业务/内容技能** — `article-writing`、`content-engine`、`market-research`、`investor-materials`、`investor-outreach`
-* **更广泛的工具覆盖** — 加强了对 Cursor、Codex 和 OpenCode 的支持，使得同一代码仓库可以在所有主要平台上干净地部署
-* **992项内部测试** — 在插件、钩子、技能和打包方面扩展了验证和回归测试覆盖
+* **Codex 앱 + CLI 지원** — `AGENTS.md` 기반의 직접적인 Codex 지원, 설치 타겟 지정 및 Codex 문서 추가.
+* **`frontend-slides` 스킬** — 의존성 없는 HTML 프레젠테이션 생성기, PPTX 변환 가이드 및 엄격한 뷰포트 적응 규칙 포함.
+* **5개의 새로운 일반 비즈니스/콘텐츠 스킬** — `article-writing`, `content-engine`, `market-research`, `investor-materials`, `investor-outreach`.
+* **더 넓은 도구 지원** — Cursor, Codex, OpenCode 지원 강화로 동일한 코드베이스를 모든 주요 플랫폼에 깔끔하게 배포 가능.
+* **992개 내부 테스트** — 플러그인, 후크, 스킬 및 패키징 분야에서 검증 및 회귀 테스트 커버리지 확장.
 
-### v1.6.0 — Codex CLI、AgentShield 与市场（2026年2月）
+### v1.6.0 — Codex CLI, AgentShield 및 마켓플레이스 (2026년 2월)
 
-* **Codex CLI 支持** — 新的 `/codex-setup` 命令生成 `codex.md` 以实现 OpenAI Codex CLI 兼容性
-* **7个新技能** — `search-first`、`swift-actor-persistence`、`swift-protocol-di-testing`、`regex-vs-llm-structured-text`、`content-hash-cache-pattern`、`cost-aware-llm-pipeline`、`skill-stocktake`
-* **AgentShield 集成** — `/security-scan` 技能直接从 Claude Code 运行 AgentShield；1282 项测试，102 条规则
-* **GitHub 市场** — ECC Tools GitHub 应用已在 [github.com/marketplace/ecc-tools](https://github.com/marketplace/ecc-tools) 上线，提供免费/专业/企业版
-* **合并了 30+ 个社区 PR** — 来自 6 种语言的 30 位贡献者的贡献
-* **978项内部测试** — 在代理、技能、命令、钩子和规则方面扩展了验证套件
+* **Codex CLI 지원** — 새로운 `/codex-setup` 명령어로 OpenAI Codex CLI 호환성을 위한 `codex.md` 생성.
+* **7개의 신규 스킬** — `search-first`, `swift-actor-persistence`, `swift-protocol-di-testing`, `regex-vs-llm-structured-text`, `content-hash-cache-pattern`, `cost-aware-llm-pipeline`, `skill-stocktake`.
+* **AgentShield 통합** — `/security-scan` 스킬로 Claude Code에서 직접 AgentShield 실행; 1,282개 테스트, 102개 규칙 제공.
+* **GitHub 마켓플레이스** — ECC 도구 GitHub 앱이 [github.com/marketplace/ecc-tools](https://github.com/marketplace/ecc-tools)에서 제공됨 (무료/프로/엔터프라이즈).
+* **30개 이상의 커뮤니티 PR 병합** — 6개 언어, 30명의 기여자 참여.
+* **978개 내부 테스트** — 에이전트, 스킬, 명령어, 후크 및 규칙 분야의 검증 슈트 확장.
 
-### v1.4.1 — 错误修复 (2026年2月)
+### v1.4.1 — 버그 수정 (2026년 2월)
 
-* **修复了直觉导入内容丢失问题** — `parse_instinct_file()` 在 `/instinct-import` 期间会静默丢弃 frontmatter 之后的所有内容（Action, Evidence, Examples 部分）。已由社区贡献者 @ericcai0814 修复 ([#148](https://github.com/affaan-m/everything-claude-code/issues/148), [#161](https://github.com/affaan-m/everything-claude-code/pull/161))
+* **본능(Instinct) 가져오기 시 내용 유실 문제 해결** — `parse_instinct_file()`이 `/instinct-import` 중에 frontmatter 이후의 내용(Action, Evidence, Examples 섹션)을 자동으로 삭제하던 문제 해결. 커뮤니티 기여자 @ericcai0814 덕분에 수정됨 ([#148](https://github.com/affaan-m/everything-claude-code/issues/148), [#161](https://github.com/affaan-m/everything-claude-code/pull/161)).
 
-### v1.4.0 — 多语言规则、安装向导 & PM2 (2026年2月)
+### v1.4.0 — 다중 언어 규칙, 설치 마법사 및 PM2 (2026년 2월)
 
-* **交互式安装向导** — 新的 `configure-ecc` 技能提供了带有合并/覆盖检测的引导式设置
-* **PM2 & 多智能体编排** — 6 个新命令 (`/pm2`, `/multi-plan`, `/multi-execute`, `/multi-backend`, `/multi-frontend`, `/multi-workflow`) 用于管理复杂的多服务工作流
-* **多语言规则架构** — 规则从扁平文件重组为 `common/` + `typescript/` + `python/` + `golang/` 目录。仅安装您需要的语言
-* **中文 (zh-CN) 翻译** — 所有智能体、命令、技能和规则的完整翻译 (80+ 个文件)
-* **GitHub Sponsors 支持** — 通过 GitHub Sponsors 赞助项目
-* **增强的 CONTRIBUTING.md** — 针对每种贡献类型的详细 PR 模板
+* **대화형 설치 마법사** — 새로운 `configure-ecc` 스킬이 병합/덮어쓰기 감지를 포함한 가이드 설정을 제공합니다.
+* **PM2 및 다중 에이전트 오케스트레이션** — 복잡한 다중 서비스 워크플로우 관리를 위한 6개의 새로운 명령어 추가 (`/pm2`, `/multi-plan`, `/multi-execute`, `/multi-backend`, `/multi-frontend`, `/multi-workflow`).
+* **다중 언어 규칙 아키텍처** — 규칙 파일을 `common/` + `typescript/` + `python/` + `golang/` 디렉토리로 재구성하여 필요한 언어만 설치 가능.
+* **중국어(简体中文) 번역** — 모든 에이전트, 명령어, 스킬 및 규칙에 대한 완전한 번역 (80개 이상의 파일).
+* **GitHub Sponsors 지원** — 프로젝트 후원 가능.
+* **CONTRIBUTING.md 강화** — 기여 유형별 상세 PR 템플릿 제공.
 
-### v1.3.0 — OpenCode 插件支持 (2026年2月)
+### v1.3.0 — OpenCode 플러그인 지원 (2026년 2월)
 
-* **完整的 OpenCode 集成** — 12 个智能体，24 个命令，16 个技能，通过 OpenCode 的插件系统支持钩子 (20+ 种事件类型)
-* **3 个原生自定义工具** — run-tests, check-coverage, security-audit
-* **LLM 文档** — `llms.txt` 用于获取全面的 OpenCode 文档
+* **완전한 OpenCode 통합** — 12개의 에이전트, 24개의 명령어, 16개의 스킬, OpenCode 플러그인 시스템을 통한 후크 지원 (20개 이상의 이벤트 유형).
+* **3개의 네이티브 커스텀 도구** — run-tests, check-coverage, security-audit.
+* **LLM 문서** — 포괄적인 OpenCode 문서를 위한 `llms.txt` 제공.
 
-### v1.2.0 — 统一的命令和技能 (2026年2月)
+### v1.2.0 — 통합 명령어 및 스킬 (2026년 2월)
 
-* **Python/Django 支持** — Django 模式、安全、TDD 和验证技能
-* **Java Spring Boot 技能** — Spring Boot 的模式、安全、TDD 和验证
-* **会话管理** — `/sessions` 命令用于查看会话历史
-* **持续学习 v2** — 基于直觉的学习，带有置信度评分、导入/导出、进化
+* **Python/Django 지원** — Django 패턴, 보안, TDD 및 검증 스킬 추가.
+* **Java Spring Boot 스킬** — Spring Boot 패턴, 보안, TDD 및 검증 추가.
+* **세션 관리** — 세션 기록을 확인하기 위한 `/sessions` 명령어 추가.
+* **지속적 학습 v2** — 신뢰도 점수, 가져오기/내보내기, 진화 기능을 포함한 본능 기반 학습.
 
-完整的更新日志请参见 [Releases](https://github.com/affaan-m/everything-claude-code/releases)。
+전체 업데이트 기록은 [Releases](https://github.com/affaan-m/everything-claude-code/releases)를 참조하십시오.
 
 ***
 
-## 🚀 快速开始
+## 🚀 빠른 시작
 
-在 2 分钟内启动并运行：
+2분 안에 시작하기:
 
-### 步骤 1：安装插件
+### 1단계: 플러그인 설치
 
 ```bash
-# Add marketplace
+# 마켓플레이스 추가
 /plugin marketplace add affaan-m/everything-claude-code
 
-# Install plugin
+# 플러그인 설치
 /plugin install everything-claude-code@everything-claude-code
 ```
 
-### 步骤 2：安装规则（必需）
+### 2단계: 규칙 설치 (필수)
 
-> ⚠️ **重要提示：** Claude Code 插件无法自动分发 `rules`。请手动安装它们：
+> ⚠️ **중요:** Claude Code 플러그인은 `rules`를 자동으로 배포할 수 없습니다. 수동으로 설치하십시오:
 
 ```bash
-# Clone the repo first
+# 먼저 저장소 클론
 git clone https://github.com/affaan-m/everything-claude-code.git
 cd everything-claude-code
 
-# Recommended: use the installer (handles common + language rules safely)
-./install.sh typescript    # or python or golang
-# You can pass multiple languages:
+# 권장: 설치 스크립트 사용 (공통 및 언어 규칙을 안전하게 처리)
+./install.sh typescript    # 또는 python 또는 golang
+# 여러 언어 설치 시:
 # ./install.sh typescript python golang
-# or target cursor:
+# Cursor 대상:
 # ./install.sh --target cursor typescript
-# or target antigravity:
+# Antigravity 대상:
 # ./install.sh --target antigravity typescript
 ```
 
-手动安装说明请参阅 `rules/` 文件夹中的 README。
+수동 설치 지침은 `rules/` 폴더의 README를 참조하십시오.
 
-### 步骤 3：开始使用
+### 3단계: 시작하기
 
 ```bash
-# Try a command (plugin install uses namespaced form)
-/everything-claude-code:plan "Add user authentication"
+# 명령어 시도 (플러그인 설치 시 네임스페이스 형식 사용)
+/everything-claude-code:plan "사용자 인증 기능 추가"
 
-# Manual install (Option 2) uses the shorter form:
-# /plan "Add user authentication"
+# 수동 설치(옵션 2) 시에는 짧은 형식 사용 가능:
+# /plan "사용자 인증 기능 추가"
 
-# Check available commands
+# 사용 가능한 명령어 확인
 /plugin list everything-claude-code@everything-claude-code
 ```
 
-✨ **搞定！** 您现在可以访问 16 个智能体、65 项技能和 40 条命令。
+✨ **완료!** 이제 16개의 에이전트, 65개의 스킬, 40개의 명령어를 사용할 수 있습니다.
 
 ***
 
-## 🌐 跨平台支持
+## 🌐 크로스 플랫폼 지원
 
-此插件现已完全支持 **Windows、macOS 和 Linux**，并与主流 IDE（Cursor、OpenCode、Antigravity）和 CLI 平台紧密集成。所有钩子和脚本都已用 Node.js 重写，以实现最大兼容性。
+본 플러그인은 **Windows, macOS, Linux**를 완벽하게 지원하며 주요 IDE(Cursor, OpenCode, Antigravity) 및 CLI 플랫폼과 긴밀하게 통합됩니다. 모든 후크와 스크립트는 최대 호환성을 위해 Node.js로 재작성되었습니다.
 
-### 包管理器检测
+### 패키지 관리자 감지
 
-插件会自动检测您首选的包管理器（npm、pnpm、yarn 或 bun），优先级如下：
+플러그인은 다음과 같은 우선순위로 선호하는 패키지 관리자(npm, pnpm, yarn 또는 bun)를 자동 감지합니다:
 
-1. **环境变量**：`CLAUDE_PACKAGE_MANAGER`
-2. **项目配置**：`.claude/package-manager.json`
-3. **package.json**：`packageManager` 字段
-4. **锁文件**：从 package-lock.json、yarn.lock、pnpm-lock.yaml 或 bun.lockb 检测
-5. **全局配置**：`~/.claude/package-manager.json`
-6. **回退方案**：第一个可用的包管理器
+1. **환경 변수**: `CLAUDE_PACKAGE_MANAGER`
+2. **프로젝트 설정**: `.claude/package-manager.json`
+3. **package.json**: `packageManager` 필드
+4. **잠금 파일**: package-lock.json, yarn.lock, pnpm-lock.yaml 또는 bun.lockb 감지
+5. **전역 설정**: `~/.claude/package-manager.json`
+6. **폴백**: 사용 가능한 첫 번째 패키지 관리자
 
-要设置您首选的包管理器：
+선호하는 패키지 관리자 설정 방법:
 
 ```bash
-# Via environment variable
+# 환경 변수 사용
 export CLAUDE_PACKAGE_MANAGER=pnpm
 
-# Via global config
+# 전역 설정 사용
 node scripts/setup-package-manager.js --global pnpm
 
-# Via project config
+# 프로젝트 설정 사용
 node scripts/setup-package-manager.js --project bun
 
-# Detect current setting
+# 현재 설정 감지
 node scripts/setup-package-manager.js --detect
 ```
 
-或者在 Claude Code 中使用 `/setup-pm` 命令。
+또는 Claude Code에서 `/setup-pm` 명령어를 사용할 수도 있습니다.
 
-### 钩子运行时控制
+### 후크 런타임 제어
 
-使用运行时标志来调整严格性或临时禁用特定钩子：
+런타임 플래그를 사용하여 엄격도를 조정하거나 특정 후크를 일시적으로 비활성화할 수 있습니다:
 
 ```bash
-# Hook strictness profile (default: standard)
+# 후크 엄격도 프로필 (기본값: standard)
 export ECC_HOOK_PROFILE=standard
 
-# Comma-separated hook IDs to disable
+# 비활성화할 후크 ID (쉼표로 구분)
 export ECC_DISABLED_HOOKS="pre:bash:tmux-reminder,post:edit:typecheck"
 ```
 
 ***
 
-## 📦 包含内容
+## 📦 포함 내용
 
-此仓库是一个 **Claude Code 插件** - 可以直接安装或手动复制组件。
+이 저장소는 **Claude Code 플러그인**입니다. 직접 설치하거나 구성 요소를 수동으로 복사할 수 있습니다.
 
 ```
 everything-claude-code/
-|-- .claude-plugin/   # 插件和市场清单
-|   |-- plugin.json         # 插件元数据和组件路径
-|   |-- marketplace.json    # 用于 /plugin marketplace add 的市场目录
+|-- .claude-plugin/   # 플러그인 및 마켓플레이스 구성
+|   |-- plugin.json         # 플러그인 메타데이터 및 컴포넌트 경로
+|   |-- marketplace.json    # 마켓플레이스 디렉토리
 |
-|-- agents/           # 用于委派任务的专用子代理
-|   |-- planner.md           # 功能实现规划
-|   |-- architect.md         # 系统设计决策
-|   |-- tdd-guide.md         # 测试驱动开发
-|   |-- code-reviewer.md     # 质量和安全审查
-|   |-- security-reviewer.md # 漏洞分析
+|-- agents/           # 특정 작업을 위한 전용 서브 에이전트
+|   |-- planner.md           # 구현 계획 수립
+|   |-- architect.md         # 시스템 설계 결정
+|   |-- tdd-guide.md         # 테스트 주도 개발
+|   |-- code-reviewer.md     # 품질 및 보안 리뷰
+|   |-- security-reviewer.md # 취약점 분석
 |   |-- build-error-resolver.md
-|   |-- e2e-runner.md        # Playwright E2E 测试
-|   |-- refactor-cleaner.md  # 无用代码清理
-|   |-- doc-updater.md       # 文档同步
-|   |-- go-reviewer.md       # Go 代码审查
-|   |-- go-build-resolver.md # Go 构建错误修复
-|   |-- python-reviewer.md   # Python 代码审查 (新增)
-|   |-- database-reviewer.md # 数据库 / Supabase 审查 (新增)
+|   |-- e2e-runner.md        # Playwright E2E 테스트
+|   |-- refactor-cleaner.md  # 데드 코드 정리
+|   |-- doc-updater.md       # 문서 동기화
+|   |-- go-reviewer.md       # Go 코드 리뷰
+|   |-- go-build-resolver.md # Go 빌드 에러 수정
+|   |-- python-reviewer.md   # Python 코드 리뷰 (신규)
+|   |-- database-reviewer.md # 데이터베이스 / Supabase 리뷰 (신규)
 |
-|-- skills/           # 工作流定义和领域知识
-|   |-- coding-standards/           # 各语言最佳实践
-|   |-- clickhouse-io/              # ClickHouse 分析、查询和数据工程
-|   |-- backend-patterns/           # API、数据库、缓存模式
-|   |-- frontend-patterns/          # React、Next.js 模式
-|   |-- frontend-slides/            # HTML 幻灯片和 PPTX 转 Web 演示流程 (新增)
-|   |-- article-writing/            # 使用指定风格进行长文写作，避免通用 AI 语气 (新增)
-|   |-- content-engine/             # 多平台内容生成与复用工作流 (新增)
-|   |-- market-research/            # 带来源引用的市场、竞品和投资研究 (新增)
-|   |-- investor-materials/         # 融资演示文稿、单页、备忘录和财务模型 (新增)
-|   |-- investor-outreach/          # 个性化融资外联与跟进 (新增)
-|   |-- continuous-learning/        # 从会话中自动提取模式 (Longform Guide)
-|   |-- continuous-learning-v2/     # 基于直觉的学习与置信度评分
-|   |-- iterative-retrieval/        # 子代理的渐进式上下文优化
-|   |-- strategic-compact/          # 手动压缩建议 (Longform Guide)
-|   |-- tdd-workflow/               # TDD 方法论
-|   |-- security-review/            # 安全检查清单
-|   |-- eval-harness/               # 验证循环评估 (Longform Guide)
-|   |-- verification-loop/          # 持续验证 (Longform Guide)
-|   |-- golang-patterns/            # Go 语言惯用法和最佳实践
-|   |-- golang-testing/             # Go 测试模式、TDD、基准测试
-|   |-- cpp-coding-standards/         # 来自 C++ Core Guidelines 的 C++ 编码规范 (新增)
-|   |-- cpp-testing/                # 使用 GoogleTest、CMake/CTest 的 C++ 测试 (新增)
-|   |-- django-patterns/            # Django 模式、模型和视图 (新增)
-|   |-- django-security/            # Django 安全最佳实践 (新增)
-|   |-- django-tdd/                 # Django TDD 工作流 (新增)
-|   |-- django-verification/        # Django 验证循环 (新增)
-|   |-- python-patterns/            # Python 惯用法和最佳实践 (新增)
-|   |-- python-testing/             # 使用 pytest 的 Python 测试 (新增)
-|   |-- springboot-patterns/        # Java Spring Boot 模式 (新增)
-|   |-- springboot-security/        # Spring Boot 安全 (新增)
-|   |-- springboot-tdd/             # Spring Boot TDD (新增)
-|   |-- springboot-verification/    # Spring Boot 验证流程 (新增)
-|   |-- configure-ecc/              # 交互式安装向导 (新增)
-|   |-- security-scan/              # AgentShield 安全审计集成 (新增)
-|   |-- java-coding-standards/     # Java 编码规范 (新增)
-|   |-- jpa-patterns/              # JPA/Hibernate 模式 (新增)
-|   |-- postgres-patterns/         # PostgreSQL 优化模式 (新增)
-|   |-- nutrient-document-processing/ # 使用 Nutrient API 进行文档处理 (新增)
-|   |-- project-guidelines-example/   # 项目专用技能模板
-|   |-- database-migrations/         # 数据库迁移模式 (Prisma、Drizzle、Django、Go) (新增)
-|   |-- api-design/                  # REST API 设计、分页和错误响应 (新增)
-|   |-- deployment-patterns/         # CI/CD、Docker、健康检查和回滚 (新增)
-|   |-- docker-patterns/            # Docker Compose、网络、卷和容器安全 (新增)
-|   |-- e2e-testing/                 # Playwright E2E 模式和 Page Object Model (新增)
-|   |-- content-hash-cache-pattern/  # 使用 SHA-256 内容哈希进行文件处理缓存 (新增)
-|   |-- cost-aware-llm-pipeline/     # LLM 成本优化、模型路由和预算跟踪 (新增)
-|   |-- regex-vs-llm-structured-text/ # 文本解析决策框架：正则 vs LLM (新增)
-|   |-- swift-actor-persistence/     # 使用 Actor 的线程安全 Swift 数据持久化 (新增)
-|   |-- swift-protocol-di-testing/   # 基于 Protocol 的依赖注入用于可测试 Swift 代码 (新增)
-|   |-- search-first/               # 先研究再编码的工作流 (新增)
-|   |-- skill-stocktake/            # 审计技能和命令质量 (新增)
-|   |-- liquid-glass-design/         # iOS 26 Liquid Glass 设计系统 (新增)
-|   |-- foundation-models-on-device/ # Apple 设备端 LLM FoundationModels (新增)
-|   |-- swift-concurrency-6-2/       # Swift 6.2 易用并发模型 (新增)
-|   |-- autonomous-loops/           # 自动化循环模式：顺序流水线、PR 循环、DAG 编排 (新增)
-|   |-- plankton-code-quality/      # 使用 Plankton hooks 在编写阶段执行代码质量检查 (新增)
+|-- skills/           # 워크플로우 정의 및 도메인 지식
+|   |-- coding-standards/           # 언어별 최선 관행
+|   |-- clickhouse-io/              # ClickHouse 분석 및 데이터 엔지니어링
+|   |-- backend-patterns/           # API, DB, 캐시 패턴
+|   |-- frontend-patterns/          # React, Next.js 패턴
+|   |-- frontend-slides/            # HTML 슬라이드 생성 및 웹 프레젠테이션 (신규)
+|   |-- article-writing/            # AI 톤을 배제한 지정 스타일 장문 작성 (신규)
+|   |-- content-engine/             # 다중 플랫폼 콘텐츠 생성 워크플로우 (신규)
+|   |-- market-research/            # 출처가 명시된 시장 및 경쟁사 연구 (신규)
+|   |-- investor-materials/         # IR 피치덱, 재무 모델링 (신규)
+|   |-- investor-outreach/          # 개인화된 투자 외랜 및 후속 조치 (신규)
+|   |-- continuous-learning/        # 세션 패턴 자동 추출 (Longform Guide)
+|   |-- continuous-learning-v2/     # 본능 기반 학습 및 신뢰도 점수
+|   |-- iterative-retrieval/        # 서브 에이전트의 점진적 컨텍스트 최적화
+|   |-- strategic-compact/          # 수동 압축 제안 (Longform Guide)
+|   |-- tdd-workflow/               # TDD 방법론
+|   |-- security-review/            # 보안 체크리스트
+|   |-- eval-harness/               # 검증 루프 평가 (Longform Guide)
+|   |-- verification-loop/          # 지속적 검증 (Longform Guide)
+|   |-- golang-patterns/            # Go 관용구 및 최선 관행
+|   |-- golang-testing/             # Go 테스트 패턴, TDD, 벤치마크
+|   |-- cpp-coding-standards/       # C++ Core Guidelines 준수 (신규)
+|   |-- cpp-testing/                # GoogleTest, CMake 기반 C++ 테스트 (신규)
+|   |-- django-patterns/            # Django 패턴, 모델 및 뷰 (신규)
+|   |-- django-security/            # Django 보안 최선 관행 (신규)
+|   |-- django-tdd/                 # Django TDD 워크플로우 (신규)
+|   |-- django-verification/        # Django 검증 루프 (신규)
+|   |-- python-patterns/            # Python 관용구 및 최선 관행 (신규)
+|   |-- python-testing/             # pytest 기반 Python 테스트 (신규)
+|   |-- springboot-patterns/        # Java Spring Boot 패턴 (신규)
+|   |-- springboot-security/        # Spring Boot 보안 (신규)
+|   |-- springboot-tdd/             # Spring Boot TDD (신규)
+|   |-- springboot-verification/    # Spring Boot 검증 프로세스 (신규)
+|   |-- configure-ecc/              # 대화형 설치 마법사 (신규)
+|   |-- security-scan/              # AgentShield 보안 감사 통합 (신규)
+|   |-- java-coding-standards/     # Java 코딩 표준 (신규)
+|   |-- jpa-patterns/              # JPA/Hibernate 패턴 (신규)
+|   |-- postgres-patterns/         # PostgreSQL 최적화 패턴 (신규)
+|   |-- nutrient-document-processing/ # Nutrient API를 이용한 문서 처리 (신규)
+|   |-- project-guidelines-example/   # 프로젝트 전용 스킬 템플릿
+|   |-- database-migrations/         # DB 마이그레이션 패턴 (Prisma, Django 등) (신규)
+|   |-- api-design/                  # REST API 설계 및 오류 응답 (신규)
+|   |-- deployment-patterns/         # CI/CD, Docker, 상태 확인 및 롤백 (신규)
+|   |-- docker-patterns/            # Docker Compose, 네트워크, 컨테이너 보안 (신규)
+|   |-- e2e-testing/                 # Playwright E2E 패턴 (신규)
+|   |-- content-hash-cache-pattern/  # SHA-256 해시 기반 파일 처리 캐싱 (신규)
+|   |-- cost-aware-llm-pipeline/     # LLM 비용 최적화 및 모델 라우팅 (신규)
+|   |-- regex-vs-llm-structured-text/ # 텍스트 파싱 결정 프레임워크 (신규)
+|   |-- swift-actor-persistence/     # Actor 기반 스레드 안전 데이터 유지 (신규)
+|   |-- swift-protocol-di-testing/   # 프로토콜 기반 의존성 주입 테스트 (신규)
+|   |-- search-first/               # 연구 우선 코딩 워크플로우 (신규)
+|   |-- skill-stocktake/            # 스킬 및 명령어 품질 감사 (신규)
+|   |-- liquid-glass-design/         # iOS 26 Liquid Glass 디자인 시스템 (신규)
+|   |-- foundation-models-on-device/ # Apple 온디바이스 LLM (신규)
+|   |-- swift-concurrency-6-2/       # Swift 6.2 동시성 모델 (신규)
+|   |-- autonomous-loops/           # 자동화 루프 패턴 (신규)
+|   |-- plankton-code-quality/      # Plankton 후크 기반 코드 품질 검사 (신규)
 |
-|-- commands/         # 用于快速执行的 Slash 命令
-|   |-- tdd.md              # /tdd - 测试驱动开发
-|   |-- plan.md             # /plan - 实现规划
-|   |-- e2e.md              # /e2e - E2E 测试生成
-|   |-- code-review.md      # /code-review - 代码质量审查
-|   |-- build-fix.md        # /build-fix - 修复构建错误
-|   |-- refactor-clean.md   # /refactor-clean - 删除无用代码
-|   |-- learn.md            # /learn - 在会话中提取模式 (Longform Guide)
-|   |-- learn-eval.md       # /learn-eval - 提取、评估并保存模式 (新增)
-|   |-- checkpoint.md       # /checkpoint - 保存验证状态 (Longform Guide)
-|   |-- verify.md           # /verify - 运行验证循环 (Longform Guide)
-|   |-- setup-pm.md         # /setup-pm - 配置包管理器
-|   |-- go-review.md        # /go-review - Go 代码审查 (新增)
-|   |-- go-test.md          # /go-test - Go TDD 工作流 (新增)
-|   |-- go-build.md         # /go-build - 修复 Go 构建错误 (新增)
-|   |-- skill-create.md     # /skill-create - 从 git 历史生成技能 (新增)
-|   |-- instinct-status.md  # /instinct-status - 查看学习到的直觉规则 (新增)
-|   |-- instinct-import.md  # /instinct-import - 导入直觉规则 (新增)
-|   |-- instinct-export.md  # /instinct-export - 导出直觉规则 (新增)
-|   |-- evolve.md           # /evolve - 将直觉聚类为技能
-|   |-- pm2.md              # /pm2 - PM2 服务生命周期管理 (新增)
-|   |-- multi-plan.md       # /multi-plan - 多代理任务拆解 (新增)
-|   |-- multi-execute.md    # /multi-execute - 编排式多代理工作流 (新增)
-|   |-- multi-backend.md    # /multi-backend - 后端多服务编排 (新增)
-|   |-- multi-frontend.md   # /multi-frontend - 前端多服务编排 (新增)
-|   |-- multi-workflow.md   # /multi-workflow - 通用多服务工作流 (新增)
-|   |-- orchestrate.md      # /orchestrate - 多代理协调
-|   |-- sessions.md         # /sessions - 会话历史管理
-|   |-- eval.md             # /eval - 按标准进行评估
-|   |-- test-coverage.md    # /test-coverage - 测试覆盖率分析
-|   |-- update-docs.md      # /update-docs - 更新文档
-|   |-- update-codemaps.md  # /update-codemaps - 更新代码地图
-|   |-- python-review.md    # /python-review - Python 代码审查 (新增)
+|-- commands/         # 빠른 실행을 위한 슬래시 명령어
+|   |-- tdd.md              # /tdd - 테스트 주도 개발
+|   |-- plan.md             # /plan - 구현 계획
+|   |-- e2e.md              # /e2e - E2E 테스트 생성
+|   |-- code-review.md      # /code-review - 코드 품질 리뷰
+|   |-- build-fix.md        # /build-fix - 빌드 오류 수정
+|   |-- refactor-clean.md   # /refactor-clean - 데드 코드 삭제
+|   |-- learn.md            # /learn - 패턴 추출 (Longform Guide)
+|   |-- learn-eval.md       # /learn-eval - 패턴 추출 및 평가 (신규)
+|   |-- checkpoint.md       # /checkpoint - 검증 상태 저장 (Longform Guide)
+|   |-- verify.md           # /verify - 검증 루프 실행 (Longform Guide)
+|   |-- setup-pm.md         # /setup-pm - 패키지 관리자 설정
+|   |-- go-review.md        # /go-review - Go 코드 리뷰 (신규)
+|   |-- go-test.md          # /go-test - Go TDD 워크플로우 (신규)
+|   |-- go-build.md         # /go-build - Go 빌드 에러 수정 (신규)
+|   |-- skill-create.md     # /skill-create - git 이력 기반 스킬 생성 (신규)
+|   |-- instinct-status.md  # /instinct-status - 학습된 본능 확인 (신규)
+|   |-- instinct-import.md  # /instinct-import - 본능 규칙 가져오기 (신규)
+|   |-- instinct-export.md  # /instinct-export - 본능 규칙 내보내기 (신규)
+|   |-- evolve.md           # /evolve - 본능을 스킬로 클러스터링
+|   |-- pm2.md              # /pm2 - PM2 서비스 관리 (신규)
+|   |-- multi-plan.md       # /multi-plan - 다중 에이전트 작업 분해 (신규)
+|   |-- multi-execute.md    # /multi-execute - 오케스트레이션 워크플로우 (신규)
+|   |-- multi-backend.md    # /multi-backend - 백엔드 다중 서비스 오케스트레이션 (신규)
+|   |-- multi-frontend.md   # /multi-frontend - 프론트엔드 다중 서비스 오케스트레이션 (신규)
+|   |-- multi-workflow.md   # /multi-workflow - 범용 서비스 워크플로우 (신규)
+|   |-- orchestrate.md      # /orchestrate - 에이전트 협업
+|   |-- sessions.md         # /sessions - 세션 기록 관리
+|   |-- eval.md             # /eval - 기준 기반 평가
+|   |-- test-coverage.md    # /test-coverage - 테스트 커버리지 분석
+|   |-- update-docs.md      # /update-docs - 문서 업데이트
+|   |-- update-codemaps.md  # /update-codemaps - 코드 지도 업데이트
+|   |-- python-review.md    # /python-review - Python 코드 리뷰 (신규)
 |
-|-- rules/            # 必须遵循的规则 (复制到 ~/.claude/rules/)
-|   |-- README.md            # 结构概览和安装指南
-|   |-- common/              # 与语言无关的原则
-|   |   |-- coding-style.md    # 不可变性、文件组织
-|   |   |-- git-workflow.md    # 提交格式、PR 流程
-|   |   |-- testing.md         # TDD、80% 覆盖率要求
-|   |   |-- performance.md     # 模型选择、上下文管理
-|   |   |-- patterns.md        # 设计模式、骨架项目
-|   |   |-- hooks.md           # Hook 架构、TodoWrite
-|   |   |-- agents.md          # 何时委派给子代理
-|   |   |-- security.md        # 必须执行的安全检查
-|   |-- typescript/          # TypeScript / JavaScript 专用
-|   |-- python/              # Python 专用
-|   |-- golang/              # Go 专用
+|-- rules/            # 항상 준수해야 할 규칙
+|   |-- README.md            # 구조 개요 및 설치 가이드
+|   |-- common/              # 언어 공통 원칙
+|   |   |-- coding-style.md    # 불변성, 파일 구성
+|   |   |-- git-workflow.md    # 커밋 형식, PR 프로세스
+|   |   |-- testing.md         # TDD, 80% 커버리지 요구 사항
+|   |   |-- performance.md     # 모델 선택, 컨텍스트 관리
+|   |   |-- patterns.md        # 디자인 패턴, 스켈레톤 프로젝트
+|   |   |-- hooks.md           # 후크 아키텍처, TodoWrite
+|   |   |-- agents.md          # 서브 에이전트 위임 시점
+|   |   |-- security.md        # 필수 보안 점검
+|   |-- typescript/          # TS/JS 전용
+|   |-- python/              # Python 전용
+|   |-- golang/              # Go 전용
 |
-|-- hooks/            # 基于触发器的自动化
-|   |-- README.md                 # Hook 文档、示例和自定义指南
-|   |-- hooks.json                # 所有 Hook 配置 (PreToolUse、PostToolUse、Stop 等)
-|   |-- memory-persistence/       # 会话生命周期 Hook (Longform Guide)
-|   |-- strategic-compact/        # 压缩建议 (Longform Guide)
+|-- hooks/            # 트리거 기반 자동화
+|   |-- README.md                 # 후크 문서 및 사용자 정의 가이드
+|   |-- hooks.json                # 전체 후크 구성
+|   |-- memory-persistence/       # 세션 생명주기 후크 (Longform Guide)
+|   |-- strategic-compact/        # 압축 제안 (Longform Guide)
 |
-|-- scripts/          # 跨平台 Node.js 脚本 (新增)
-|   |-- lib/                     # 共享工具
-|   |   |-- utils.js             # 跨平台文件 / 路径 / 系统工具
-|   |   |-- package-manager.js   # 包管理器检测与选择
-|   |-- hooks/                   # Hook 实现
-|   |   |-- session-start.js     # 会话开始时加载上下文
-|   |   |-- session-end.js       # 会话结束时保存状态
-|   |   |-- pre-compact.js       # 压缩前状态保存
-|   |   |-- suggest-compact.js   # 战略压缩建议
-|   |   |-- evaluate-session.js  # 从会话中提取模式
-|   |-- setup-package-manager.js # 交互式包管理器设置
+|-- scripts/          # 크로스 플랫폼 Node.js 스크립트 (신규)
+|   |-- lib/                     # 공유 라이브러리
+|   |   |-- utils.js             # 파일/경로 유틸리티
+|   |   |-- package-manager.js   # 패키지 관리자 감지
+|   |-- hooks/                   # 후크 구현체
+|   |   |-- session-start.js     # 세션 시작 시 컨텍스트 로드
+|   |   |-- session-end.js       # 세션 종료 시 상태 저장
+|   |   |-- pre-compact.js       # 압축 전 상태 저장
+|   |   |-- suggest-compact.js   # 전략적 압축 제안
+|   |   |-- evaluate-session.js  # 패턴 추출
+|   |-- setup-package-manager.js # 패키지 관리자 설정 도구
 |
-|-- tests/            # 测试套件 (新增)
-|   |-- lib/                     # 库测试
-|   |-- hooks/                   # Hook 测试
-|   |-- run-all.js               # 运行所有测试
+|-- tests/            # 테스트 슈트 (신규)
+|   |-- lib/                     # 라이브러리 테스트
+|   |-- hooks/                   # 후크 테스트
+|   |-- run-all.js               # 전체 테스트 실행
 |
-|-- contexts/         # 动态系统提示上下文注入 (Longform Guide)
-|   |-- dev.md              # 开发模式上下文
-|   |-- review.md           # 代码审查模式上下文
-|   |-- research.md         # 研究 / 探索模式上下文
+|-- contexts/         # 동적 시스템 프롬프트 주입 (Longform Guide)
+|   |-- dev.md              # 개발 모드 컨텍스트
+|   |-- review.md           # 리뷰 모드 컨텍스트
+|   |-- research.md         # 연구 모드 컨텍스트
 |
-|-- examples/         # 示例配置和会话
-|   |-- CLAUDE.md             # 项目级配置示例
-|   |-- user-CLAUDE.md        # 用户级配置示例
-|   |-- saas-nextjs-CLAUDE.md   # 真实 SaaS 示例 (Next.js + Supabase + Stripe)
-|   |-- go-microservice-CLAUDE.md # 真实 Go 微服务示例 (gRPC + PostgreSQL)
-|   |-- django-api-CLAUDE.md      # 真实 Django REST API 示例 (DRF + Celery)
-|   |-- rust-api-CLAUDE.md        # 真实 Rust API 示例 (Axum + SQLx + PostgreSQL) (新增)
+|-- examples/         # 예시 구성 및 세션
+|   |-- CLAUDE.md             # 프로젝트 설정 예시
+|   |-- user-CLAUDE.md        # 사용자 설정 예시
+|   |-- saas-nextjs-CLAUDE.md   # SaaS 예시 (Next.js + Supabase)
+|   |-- go-microservice-CLAUDE.md # Go 서비스 예시 (gRPC + PostgreSQL)
+|   |-- django-api-CLAUDE.md      # Django REST API 예시 (DRF + Celery)
+|   |-- rust-api-CLAUDE.md        # Rust API 예시 (Axum + SQLx) (신규)
 |
-|-- mcp-configs/      # MCP 服务器配置
-|   |-- mcp-servers.json    # GitHub、Supabase、Vercel、Railway 等
+|-- mcp-configs/      # MCP 서버 구성
+|   |-- mcp-servers.json    # GitHub, Supabase, Vercel 등
 |
-|-- marketplace.json  # 自托管市场配置 (用于 /plugin marketplace add)
+|-- marketplace.json  # 자체 호스팅 마켓플레이스 구성
 ```
 
 ***
 
-## 🛠️ 生态系统工具
+## 🛠️ 생태계 도구
 
-### 技能创建器
+### 스킬 생성기 (Skill Creator)
 
-从您的仓库生成 Claude Code 技能的两种方式：
+저장소에서 Claude Code 스킬을 생성하는 두 가지 방법:
 
-#### 选项 A：本地分析（内置）
+#### 옵션 A: 로컬 분석 (내장)
 
-使用 `/skill-create` 命令进行本地分析，无需外部服务：
+외부 서비스 없이 `/skill-create` 명령어로 로컬 분석을 수행하십시오:
 
 ```bash
-/skill-create                    # Analyze current repo
-/skill-create --instincts        # Also generate instincts for continuous-learning
+/skill-create                    # 현재 저장소 분석
+/skill-create --instincts        # 지속적 학습을 위한 본능 규칙도 생성
 ```
 
-这会在本地分析您的 git 历史记录并生成 SKILL.md 文件。
+이 명령어는 로컬 git 이력을 분석하고 `SKILL.md` 파일을 생성합니다.
 
-#### 选项 B：GitHub 应用（高级）
+#### 옵션 B: GitHub 앱 (고급)
 
-适用于高级功能（10k+ 提交、自动 PR、团队共享）：
+1만 개 이상의 커밋, 자동 PR, 팀 공유 등 고급 기능이 필요한 경우:
 
-[安装 GitHub 应用](https://github.com/apps/skill-creator) | [ecc.tools](https://ecc.tools)
+[GitHub 앱 설치](https://github.com/apps/skill-creator) | [ecc.tools](https://ecc.tools)
 
 ```bash
-# Comment on any issue:
+# 이슈에 댓글 작성:
 /skill-creator analyze
 
-# Or auto-triggers on push to default branch
+# 또는 기본 브랜치 푸시 시 자동 트리거
 ```
 
-两种选项都会创建：
+두 옵션 모두 다음을 생성합니다:
+* **SKILL.md 파일** - 즉시 사용 가능한 스킬 정의
+* **본능(Instinct) 컬렉션** - 지속적 학습 v2용
+* **패턴 추출** - 커밋 이력 기반 학습
 
-* **SKILL.md 文件** - 可供 Claude Code 使用的即用型技能
-* **Instinct 集合** - 用于 continuous-learning-v2
-* **模式提取** - 从您的提交历史中学习
+### AgentShield — 보안 감사 도구
 
-### AgentShield — 安全审计器
+> Claude Code 해커톤(2026년 2월) 수상작. 1,282개 테스트, 98% 커버리지, 102개의 정적 분석 규칙 제공.
 
-> 在 Claude Code 黑客马拉松（Cerebral Valley x Anthropic，2026年2月）上构建。1282 项测试，98% 覆盖率，102 条静态分析规则。
-
-扫描您的 Claude Code 配置，查找漏洞、错误配置和注入风险。
+Claude Code 구성을 스캔하여 취약점, 잘못된 설정 및 주입 리스크를 찾아냅니다.
 
 ```bash
-# Quick scan (no install needed)
+# 빠른 스캔 (설치 불필요)
 npx ecc-agentshield scan
 
-# Auto-fix safe issues
+# 안전한 문제 자동 수정
 npx ecc-agentshield scan --fix
 
-# Deep analysis with three Opus 4.6 agents
+# 세 개의 Opus 4.6 에이전트를 이용한 심층 분석
 npx ecc-agentshield scan --opus --stream
 
-# Generate secure config from scratch
+# 새로운 보안 구성 생성
 npx ecc-agentshield init
 ```
 
-**它扫描什么：** CLAUDE.md、settings.json、MCP 配置、钩子、代理定义以及 5 个类别的技能 —— 密钥检测（14 种模式）、权限审计、钩子注入分析、MCP 服务器风险剖析和代理配置审查。
+**스캔 대상:** CLAUDE.md, settings.json, MCP 구성, 후크, 에이전트 정의 및 5개 카테고리의 스킬 — 비밀 정보 감지(14개 패턴), 권한 감사, 후크 주입 분석, MCP 서버 리스크 프로파일링, 에이전트 구성 리뷰.
 
-**`--opus` 标志** 在红队/蓝队/审计员管道中运行三个 Claude Opus 4.6 代理。攻击者寻找利用链，防御者评估保护措施，审计员将两者综合成优先风险评估。对抗性推理，而不仅仅是模式匹配。
+**`--opus` 플래그**는 레드팀/블루팀/감사자 파이프라인에서 세 개의 Claude Opus 4.6 에이전트를 실행합니다. 단순 패턴 매칭이 아닌 대립적 추론을 수행합니다.
 
-**输出格式：** 终端（按颜色分级的 A-F）、JSON（CI 管道）、Markdown、HTML。在关键发现时退出代码 2，用于构建门控。
+**출력 형식:** 터미널(A-F 등급), JSON(CI 파이프라인용), Markdown, HTML.
 
-在 Claude Code 中使用 `/security-scan` 来运行它，或者通过 [GitHub Action](https://github.com/affaan-m/agentshield) 添加到 CI。
+Claude Code에서 `/security-scan`을 사용하여 실행하거나 CI에 추가하십시오.
 
 [GitHub](https://github.com/affaan-m/agentshield) | [npm](https://www.npmjs.com/package/ecc-agentshield)
 
-### 🔬 Plankton — 编写时代码质量强制执行
+### 🔬 Plankton — 작성 시 코드 품질 실시간 적용
 
-Plankton（致谢：@alxfazio）是用于编写时代码质量强制执行的推荐伴侣。它通过 PostToolUse 钩子在每次文件编辑时运行格式化程序和 20 多个代码检查器，然后生成 Claude 子进程（根据违规复杂度路由到 Haiku/Sonnet/Opus）来修复主智能体遗漏的问题。采用三阶段架构：静默自动格式化（解决 40-50% 的问题），将剩余的违规收集为结构化 JSON，委托给子进程修复。包含配置保护钩子，防止智能体修改检查器配置以通过检查而非修复代码。支持 Python、TypeScript、Shell、YAML、JSON、TOML、Markdown 和 Dockerfile。与 AgentShield 结合使用，实现安全 + 质量覆盖。完整集成指南请参阅 `skills/plankton-code-quality/`。
+Plankton은 작성 시 코드 품질을 강제하기 위한 권장 도구입니다. PostToolUse 후크를 통해 매 파일 편집 시 20개 이상의 코드 검사기를 실행하고 에이전트가 놓친 부분을 해결합니다. 자세한 내용은 `skills/plankton-code-quality/`를 참조하십시오.
 
-### 🧠 持续学习 v2
+### 🧠 지속적 학습 v2 (Continuous Learning v2)
 
-基于本能的学习系统会自动学习您的模式：
+본능(Instinct) 기반 학습 시스템이 사용자의 패턴을 자동으로 학습합니다:
 
 ```bash
-/instinct-status        # Show learned instincts with confidence
-/instinct-import <file> # Import instincts from others
-/instinct-export        # Export your instincts for sharing
-/evolve                 # Cluster related instincts into skills
+/instinct-status        # 신뢰도 기반의 학습된 본능 확인
+/instinct-import <file> # 외부 본능 규칙 가져오기
+/instinct-export        # 본능 규칙 공유를 위해 내보내기
+/evolve                 # 관련 본능을 스킬로 클러스터링
 ```
 
-完整文档请参阅 `skills/continuous-learning-v2/`。
+상세 문서는 `skills/continuous-learning-v2/`를 참조하십시오.
 
 ***
 
-## 📋 要求
+## 📋 요구 사항
 
-### Claude Code CLI 版本
+### Claude Code CLI 버전
 
-**最低版本：v2.1.0 或更高版本**
+**최소 버전: v2.1.0 이상**
 
-此插件需要 Claude Code CLI v2.1.0+，因为插件系统处理钩子的方式发生了变化。
+플러그인 시스템의 후크 처리 방식이 변경되었으므로 v2.1.0+ 버전이 필요합니다.
 
-检查您的版本：
-
+버전 확인:
 ```bash
 claude --version
 ```
 
-### 重要提示：钩子自动加载行为
+### 중요: 후크 자동 로드 동작
 
-> ⚠️ **对于贡献者：** 请勿向 `.claude-plugin/plugin.json` 添加 `"hooks"` 字段。这由回归测试强制执行。
+> ⚠️ **기여자 주의:** `.claude-plugin/plugin.json`에 `"hooks"` 필드를 추가하지 마십시오. 회귀 테스트에 의해 강제됩니다.
 
-Claude Code v2.1+ **会自动加载** 任何已安装插件中的 `hooks/hooks.json`（按约定）。在 `plugin.json` 中显式声明会导致重复检测错误：
-
-```
-Duplicate hooks file detected: ./hooks/hooks.json resolves to already-loaded file
-```
-
-**历史背景：** 这已导致此仓库中多次修复/还原循环（[#29](https://github.com/affaan-m/everything-claude-code/issues/29), [#52](https://github.com/affaan-m/everything-claude-code/issues/52), [#103](https://github.com/affaan-m/everything-claude-code/issues/103)）。Claude Code 版本之间的行为发生了变化，导致了混淆。我们现在有一个回归测试来防止这种情况再次发生。
+Claude Code v2.1+는 설치된 플러그인의 `hooks/hooks.json`을 자동으로 로드합니다. 명시적으로 선언하면 중복 로드 오류가 발생합니다.
 
 ***
 
-## 📥 安装
+## 📥 설치 방법
 
-### 选项 1：作为插件安装（推荐）
+### 옵션 1: 플러그인으로 설치 (권장)
 
-使用此仓库的最简单方式 - 作为 Claude Code 插件安装：
+가장 간단한 방법입니다:
 
 ```bash
-# Add this repo as a marketplace
+# 마켓플레이스 추가
 /plugin marketplace add affaan-m/everything-claude-code
 
-# Install the plugin
+# 플러그인 설치
 /plugin install everything-claude-code@everything-claude-code
 ```
 
-或者直接添加到您的 `~/.claude/settings.json`：
+또는 `~/.claude/settings.json`에 직접 추가할 수도 있습니다.
 
-```json
-{
-  "extraKnownMarketplaces": {
-    "everything-claude-code": {
-      "source": {
-        "source": "github",
-        "repo": "affaan-m/everything-claude-code"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "everything-claude-code@everything-claude-code": true
-  }
-}
-```
-
-这将使您能够立即访问所有命令、代理、技能和钩子。
-
-> **注意：** Claude Code 插件系统不支持通过插件分发 `rules`（[上游限制](https://code.claude.com/docs/en/plugins-reference)）。你需要手动安装规则：
->
+> **주의:** 플러그인 시스템은 `rules` 배포를 지원하지 않습니다. 반드시 수동으로 규칙을 설치하십시오:
+> 
 > ```bash
-> # 首先克隆仓库
-> git clone https://github.com/affaan-m/everything-claude-code.git
->
-> # 选项 A：用户级规则（应用于所有项目）
-> mkdir -p ~/.claude/rules
+> # 저장소 클론 후 규칙 복사
 > cp -r everything-claude-code/rules/common/* ~/.claude/rules/
-> cp -r everything-claude-code/rules/typescript/* ~/.claude/rules/   # 选择你的技术栈
-> cp -r everything-claude-code/rules/python/* ~/.claude/rules/
-> cp -r everything-claude-code/rules/golang/* ~/.claude/rules/
->
-> # 选项 B：项目级规则（仅应用于当前项目）
-> mkdir -p .claude/rules
-> cp -r everything-claude-code/rules/common/* .claude/rules/
-> cp -r everything-claude-code/rules/typescript/* .claude/rules/     # 选择你的技术栈
+> cp -r everything-claude-code/rules/typescript/* ~/.claude/rules/ # 기술 스택에 맞춤
 > ```
 
 ***
 
-### 🔧 选项 2：手动安装
+### 🔧 옵션 2: 수동 설치
 
-如果您希望对安装的内容进行手动控制：
+설치 내용을 직접 제어하고 싶은 경우:
 
 ```bash
-# Clone the repo
+# 저장소 클론
 git clone https://github.com/affaan-m/everything-claude-code.git
 
-# Copy agents to your Claude config
+# 에이전트 복사
 cp everything-claude-code/agents/*.md ~/.claude/agents/
 
-# Copy rules (common + language-specific)
+# 규칙 복사 (공통 및 언어별)
 cp -r everything-claude-code/rules/common/* ~/.claude/rules/
-cp -r everything-claude-code/rules/typescript/* ~/.claude/rules/   # pick your stack
-cp -r everything-claude-code/rules/python/* ~/.claude/rules/
-cp -r everything-claude-code/rules/golang/* ~/.claude/rules/
-
-# Copy commands
-cp everything-claude-code/commands/*.md ~/.claude/commands/
-
-# Copy skills (core vs niche)
-# Recommended (new users): core/general skills only
-cp -r everything-claude-code/.agents/skills/* ~/.claude/skills/
-cp -r everything-claude-code/skills/search-first ~/.claude/skills/
-
-# Optional: add niche/framework-specific skills only when needed
-# for s in django-patterns django-tdd springboot-patterns; do
-#   cp -r everything-claude-code/skills/$s ~/.claude/skills/
-# done
+# 필요한 언어 규칙 추가
 ```
 
-#### 将钩子添加到 settings.json
+#### 후크를 settings.json에 추가
 
-将 `hooks/hooks.json` 中的钩子复制到你的 `~/.claude/settings.json`。
+`hooks/hooks.json`의 내용을 `~/.claude/settings.json`으로 복사하십시오.
 
-#### 配置 MCPs
+#### MCP 구성
 
-将 `mcp-configs/mcp-servers.json` 中所需的 MCP 服务器复制到你的 `~/.claude.json`。
-
-**重要：** 将 `YOUR_*_HERE` 占位符替换为你实际的 API 密钥。
+`mcp-configs/mcp-servers.json`의 내용을 `~/.claude.json`으로 복사하고 API 키를 본인의 값으로 바꾸십시오.
 
 ***
 
-## 🎯 关键概念
+## 🎯 핵심 개념
 
-### 智能体
+### 에이전트 (Agents)
 
-子智能体处理具有有限范围的委托任务。示例：
+서브 에이전트는 제한된 범위의 작업을 처리합니다. 예: `code-reviewer`는 코드 품질 및 보안을 담당합니다.
 
-```markdown
----
-name: code-reviewer
-description: 审查代码的质量、安全性和可维护性
-tools: ["Read", "Grep", "Glob", "Bash"]
-model: opus
----
+### 스킬 (Skills)
 
-您是一位资深代码审查员...
+스킬은 명령어 또는 에이전트에 의해 호출되는 워크플로우 정의입니다. 예: TDD 워크플로우 등.
 
-```
+### 후크 (Hooks)
 
-### 技能
+도구 이벤트 시 트리거됩니다. 예: `console.log` 감지 시 경고 등.
 
-技能是由命令或智能体调用的工作流定义：
+### 규칙 (Rules)
 
-```markdown
-# TDD Workflow
+언제나 준수해야 하는 가이드라인입니다. `common/`과 언어별 디렉토리로 구성됩니다.
 
-1. Define interfaces first
-2. Write failing tests (RED)
-3. Implement minimal code (GREEN)
-4. Refactor (IMPROVE)
-5. Verify 80%+ coverage
-```
-
-### 钩子
-
-钩子在工具事件上触发。示例 - 警告关于 console.log：
-
-```json
-{
-  "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx|js|jsx)$\"",
-  "hooks": [{
-    "type": "command",
-    "command": "#!/bin/bash\ngrep -n 'console\\.log' \"$file_path\" && echo '[Hook] Remove console.log' >&2"
-  }]
-}
-```
-
-### 规则
-
-规则是始终遵循的指导原则，组织成 `common/`（与语言无关）+ 语言特定目录：
-
-```
-rules/
-  common/          # Universal principles (always install)
-  typescript/      # TS/JS specific patterns and tools
-  python/          # Python specific patterns and tools
-  golang/          # Go specific patterns and tools
-```
-
-有关安装和结构详情，请参阅 [`rules/README.md`](rules/README.md)。
+상세 내용은 [`rules/README.md`](rules/README.md)를 참조하십시오.
 
 ***
 
-## 🗺️ 我应该使用哪个代理？
+## 🗺️ 어떤 에이전트를 사용해야 하나요?
 
-不确定从哪里开始？使用这个快速参考：
-
-| 我想要... | 使用此命令 | 使用的代理 |
+| 원하시는 작업 | 명령어 | 에이전트 |
 |--------------|-----------------|------------|
-| 规划新功能 | `/everything-claude-code:plan "Add auth"` | planner |
-| 设计系统架构 | `/everything-claude-code:plan` + architect agent | architect |
-| 先写带测试的代码 | `/tdd` | tdd-guide |
-| 审查我刚写的代码 | `/code-review` | code-reviewer |
-| 修复失败的构建 | `/build-fix` | build-error-resolver |
-| 运行端到端测试 | `/e2e` | e2e-runner |
-| 查找安全漏洞 | `/security-scan` | security-reviewer |
-| 移除死代码 | `/refactor-clean` | refactor-cleaner |
-| 更新文档 | `/update-docs` | doc-updater |
-| 审查 Go 代码 | `/go-review` | go-reviewer |
-| 审查 Python 代码 | `/python-review` | python-reviewer |
-| 审计数据库查询 | *(自动委派)* | database-reviewer |
+| 신규 기능 계획 | `/everything-claude-code:plan "Add auth"` | planner |
+| 시스템 아키텍처 설계 | `/plan` + architect 에이전트 | architect |
+| 테스트 우선 구현 | `/tdd` | tdd-guide |
+| 코드 품질 리뷰 | `/code-review` | code-reviewer |
+| 빌드 오류 수정 | `/build-fix` | build-error-resolver |
+| 엔드투엔드 테스트 | `/e2e` | e2e-runner |
+| 보안 취약점 점검 | `/security-scan` | security-reviewer |
+| 불필요한 코드 제거 | `/refactor-clean` | refactor-cleaner |
+| 문서 업데이트 | `/update-docs` | doc-updater |
 
-### 常见工作流
-
-**开始新功能：**
-
-```
-/everything-claude-code:plan "Add user authentication with OAuth"
-                                              → planner creates implementation blueprint
-/tdd                                          → tdd-guide enforces write-tests-first
-/code-review                                  → code-reviewer checks your work
-```
-
-**修复错误：**
-
-```
-/tdd                                          → tdd-guide: write a failing test that reproduces it
-                                              → implement the fix, verify test passes
-/code-review                                  → code-reviewer: catch regressions
-```
-
-**准备生产环境：**
-
-```
-/security-scan                                → security-reviewer: OWASP Top 10 audit
-/e2e                                          → e2e-runner: critical user flow tests
-/test-coverage                                → verify 80%+ coverage
-```
+전체 목록 및 명령어 사용법은 저장소의 에이전트 섹션을 참조하십시오.
 
 ***
 
-## ❓ 常见问题
+## ❓ 자주 묻는 질문 (FAQ)
 
 <details>
-<summary><b>How do I check which agents/commands are installed?</b></summary>
+<summary><b>설치된 에이전트/명령어를 어떻게 확인하나요?</b></summary>
 
 ```bash
 /plugin list everything-claude-code@everything-claude-code
 ```
-
-这会显示插件中所有可用的代理、命令和技能。
-
 </details>
 
 <details>
-<summary><b>My hooks aren't working / I see "Duplicate hooks file" errors</b></summary>
-
-这是最常见的问题。**不要在 `.claude-plugin/plugin.json` 中添加 `"hooks"` 字段。** Claude Code v2.1+ 会自动从已安装的插件加载 `hooks/hooks.json`。显式声明它会导致重复检测错误。参见 [#29](https://github.com/affaan-m/everything-claude-code/issues/29), [#52](https://github.com/affaan-m/everything-claude-code/issues/52), [#103](https://github.com/affaan-m/everything-claude-code/issues/103)。
-
+<summary><b>후크가 작동하지 않거나 중복 오류가 납니다.</b></summary>
+Claude Code v2.1+는 플러그인 후크를 자동 로드하므로 `plugin.json`에 명시적으로 추가하지 마십시오.
 </details>
 
 <details>
-<summary><b>My context window is shrinking / Claude is running out of context</b></summary>
-
-太多的 MCP 服务器会消耗你的上下文。每个 MCP 工具描述都会消耗你 200k 窗口的令牌，可能将其减少到约 70k。
-
-**修复：** 按项目禁用未使用的 MCP：
-
-```json
-// In your project's .claude/settings.json
-{
-  "disabledMcpServers": ["supabase", "railway", "vercel"]
-}
-```
-
-保持启用的 MCP 少于 10 个，活动工具少于 80 个。
-
-</details>
-
-<details>
-<summary><b>Can I use only some components (e.g., just agents)?</b></summary>
-
-是的。使用选项 2（手动安装）并仅复制你需要的部分：
-
-```bash
-# Just agents
-cp everything-claude-code/agents/*.md ~/.claude/agents/
-
-# Just rules
-cp -r everything-claude-code/rules/common/* ~/.claude/rules/
-```
-
-每个组件都是完全独立的。
-
-</details>
-
-<details>
-<summary><b>Does this work with Cursor / OpenCode / Codex / Antigravity?</b></summary>
-
-是的。ECC 是跨平台的：
-
-* **Cursor**：`.cursor/` 中的预翻译配置。请参阅 [Cursor IDE 支持](#cursor-ide-支持)。
-* **OpenCode**：`.opencode/` 中的完整插件支持。请参阅 [OpenCode 支持](#-opencode-支持)。
-* **Codex**：对 macOS 应用和 CLI 的一流支持，带有适配器漂移防护和 SessionStart 回退。请参阅 PR [#257](https://github.com/affaan-m/everything-claude-code/pull/257)。
-* **Antigravity**：`.agent/` 中针对工作流、技能和扁平化规则的紧密集成设置。
-* **Claude Code**：原生支持 — 这是主要目标。
-
-</details>
-
-<details>
-<summary><b>How do I contribute a new skill or agent?</b></summary>
-
-参见 [CONTRIBUTING.md](CONTRIBUTING.md)。简短版本：
-
-1. Fork 仓库
-2. 在 `skills/your-skill-name/SKILL.md` 中创建你的技能（带有 YAML 前言）
-3. 或在 `agents/your-agent.md` 中创建代理
-4. 提交 PR，清晰描述其功能和使用时机
-
+<summary><b>컨텍스트 윈도우가 너무 빨리 줄어듭니다.</b></summary>
+너무 많은 MCP 서버를 활성화하면 토큰을 많이 소비합니다. 프로젝트별로 사용하지 않는 MCP를 비활성화하십시오.
 </details>
 
 ***
-
-## 🧪 运行测试
-
-该插件包含一个全面的测试套件：
-
-```bash
-# Run all tests
-node tests/run-all.js
-
-# Run individual test files
-node tests/lib/utils.test.js
-node tests/lib/package-manager.test.js
-node tests/hooks/hooks.test.js
-```
-
-***
-
-## 🤝 贡献
-
-**欢迎并鼓励贡献。**
-
-此仓库旨在成为社区资源。如果你有：
-
-* 有用的智能体或技能
-* 巧妙的钩子
-* 更好的 MCP 配置
-* 改进的规则
-
-请贡献！请参阅 [CONTRIBUTING.md](CONTRIBUTING.md) 了解指南。
-
-### 贡献想法
-
-* 特定语言技能 (Rust, C#, Swift, Kotlin) — Go, Python, Java 已包含
-* 特定框架配置 (Rails, Laravel, FastAPI, NestJS) — Django, Spring Boot 已包含
-* DevOps 智能体 (Kubernetes, Terraform, AWS, Docker)
-* 测试策略 (不同框架，视觉回归)
-* 领域特定知识 (ML, 数据工程, 移动端)
-
-***
-
-## Cursor IDE 支持
-
-ECC 提供**完整的 Cursor IDE 支持**，包括为 Cursor 原生格式适配的钩子、规则、代理、技能、命令和 MCP 配置。
-
-### 快速开始 (Cursor)
-
-```bash
-# Install for your language(s)
-./install.sh --target cursor typescript
-./install.sh --target cursor python golang swift
-```
-
-### 包含内容
-
-| 组件 | 数量 | 详情 |
-|-----------|-------|---------|
-| 钩子事件 | 15 | sessionStart, beforeShellExecution, afterFileEdit, beforeMCPExecution, beforeSubmitPrompt, 以及另外 10 个 |
-| 钩子脚本 | 16 | 通过共享适配器委托给 `scripts/hooks/` 的轻量 Node.js 脚本 |
-| 规则 | 29 | 9 条通用规则 (alwaysApply) + 20 条语言特定规则 (TypeScript, Python, Go, Swift) |
-| 代理 | 共享 | 通过根目录下的 AGENTS.md（被 Cursor 原生读取） |
-| 技能 | 共享 + 捆绑 | 通过根目录下的 AGENTS.md 和用于翻译补充的 `.cursor/skills/` |
-| 命令 | 共享 | `.cursor/commands/`（如果已安装） |
-| MCP 配置 | 共享 | `.cursor/mcp.json`（如果已安装） |
-
-### 钩子架构（DRY 适配器模式）
-
-Cursor 的**钩子事件比 Claude Code 多**（20 对 8）。`.cursor/hooks/adapter.js` 模块将 Cursor 的 stdin JSON 转换为 Claude Code 的格式，允许重用现有的 `scripts/hooks/*.js` 而无需重复。
-
-```
-Cursor stdin JSON → adapter.js → transforms → scripts/hooks/*.js
-                                              (shared with Claude Code)
-```
-
-关键钩子：
-
-* **beforeShellExecution** — 阻止在 tmux 外启动开发服务器（退出码 2），git push 审查
-* **afterFileEdit** — 自动格式化 + TypeScript 检查 + console.log 警告
-* **beforeSubmitPrompt** — 检测提示中的密钥（sk-、ghp\_、AKIA 模式）
-* **beforeTabFileRead** — 阻止 Tab 读取 .env、.key、.pem 文件（退出码 2）
-* **beforeMCPExecution / afterMCPExecution** — MCP 审计日志记录
-
-### 规则格式
-
-Cursor 规则使用带有 `description`、`globs` 和 `alwaysApply` 的 YAML 前言：
-
-```yaml
----
-description: "TypeScript coding style extending common rules"
-globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
-alwaysApply: false
----
-```
-
-***
-
-## Codex macOS 应用 + CLI 支持
-
-ECC 为 macOS 应用和 CLI 提供 **一流的 Codex 支持**，包括参考配置、Codex 特定的 AGENTS.md 补充文档以及共享技能。
-
-### 快速开始（Codex 应用 + CLI）
-
-```bash
-# Copy the reference config to your home directory
-cp .codex/config.toml ~/.codex/config.toml
-
-# Run Codex CLI in the repo — AGENTS.md is auto-detected
-codex
-```
-
-Codex macOS 应用：
-
-* 将此仓库作为您的工作区打开。
-* 根目录的 `AGENTS.md` 会被自动检测。
-* 可选：将 `.codex/config.toml` 复制到 `~/.codex/config.toml` 以实现 CLI/应用行为一致性。
-
-### 包含内容
-
-| 组件 | 数量 | 详情 |
-|-----------|-------|---------|
-| 配置 | 1 | `.codex/config.toml` — 模型、权限、MCP 服务器、持久指令 |
-| AGENTS.md | 2 | 根目录（通用）+ `.codex/AGENTS.md`（Codex 特定补充） |
-| 技能 | 16 | `.agents/skills/` — 每个技能包含 SKILL.md + agents/openai.yaml |
-| MCP 服务器 | 4 | GitHub、Context7、Memory、Sequential Thinking（基于命令） |
-| 配置文件 | 2 | `strict`（只读沙箱）和 `yolo`（完全自动批准） |
-
-### 技能
-
-位于 `.agents/skills/` 的技能会被 Codex 自动加载：
-
-| 技能 | 描述 |
-|-------|-------------|
-| tdd-workflow | 测试驱动开发，覆盖率 80%+ |
-| security-review | 全面的安全检查清单 |
-| coding-standards | 通用编码标准 |
-| frontend-patterns | React/Next.js 模式 |
-| frontend-slides | HTML 演示文稿、PPTX 转换、视觉风格探索 |
-| article-writing | 根据笔记和语音参考进行长文写作 |
-| content-engine | 平台原生的社交内容和再利用 |
-| market-research | 带来源归属的市场和竞争对手研究 |
-| investor-materials | 幻灯片、备忘录、模型和一页纸文档 |
-| investor-outreach | 个性化外联、跟进和介绍摘要 |
-| backend-patterns | API 设计、数据库、缓存 |
-| e2e-testing | Playwright 端到端测试 |
-| eval-harness | 评估驱动的开发 |
-| strategic-compact | 上下文管理 |
-| api-design | REST API 设计模式 |
-| verification-loop | 构建、测试、代码检查、类型检查、安全 |
-
-### 关键限制
-
-Codex **尚未提供 Claude 风格的钩子执行对等性**。ECC 在该平台上的强制执行是通过 `AGENTS.md` 和 `persistent_instructions` 基于指令实现的，外加沙箱权限。
-
-***
-
-## 🔌 OpenCode 支持
-
-ECC 提供 **完整的 OpenCode 支持**，包括插件和钩子。
-
-### 快速开始
-
-```bash
-# Install OpenCode
-npm install -g opencode
-
-# Run in the repository root
-opencode
-```
-
-配置会自动从 `.opencode/opencode.json` 检测。
-
-### 功能对等
-
-| 功能 | Claude Code | OpenCode | 状态 |
-|---------|-------------|----------|--------|
-| 智能体 | ✅ 16 个智能体 | ✅ 12 个智能体 | **Claude Code 领先** |
-| 命令 | ✅ 40 条命令 | ✅ 31 条命令 | **Claude Code 领先** |
-| 技能 | ✅ 65 项技能 | ✅ 37 项技能 | **Claude Code 领先** |
-| 钩子 | ✅ 8 种事件类型 | ✅ 11 种事件 | **OpenCode 更多！** |
-| 规则 | ✅ 29 条规则 | ✅ 13 条指令 | **Claude Code 领先** |
-| MCP 服务器 | ✅ 14 个服务器 | ✅ 完整 | **完全对等** |
-| 自定义工具 | ✅ 通过钩子 | ✅ 6 个原生工具 | **OpenCode 更好** |
-
-### 通过插件实现的钩子支持
-
-OpenCode 的插件系统比 Claude Code 更复杂，有 20 多种事件类型：
-
-| Claude Code 钩子 | OpenCode 插件事件 |
-|-----------------|----------------------|
-| PreToolUse | `tool.execute.before` |
-| PostToolUse | `tool.execute.after` |
-| Stop | `session.idle` |
-| SessionStart | `session.created` |
-| SessionEnd | `session.deleted` |
-
-**额外的 OpenCode 事件**：`file.edited`、`file.watcher.updated`、`message.updated`、`lsp.client.diagnostics`、`tui.toast.show` 等等。
-
-### 可用命令（31+）
-
-| 命令 | 描述 |
-|---------|-------------|
-| `/plan` | 创建实施计划 |
-| `/tdd` | 强制执行 TDD 工作流 |
-| `/code-review` | 审查代码变更 |
-| `/build-fix` | 修复构建错误 |
-| `/e2e` | 生成端到端测试 |
-| `/refactor-clean` | 移除死代码 |
-| `/orchestrate` | 多智能体工作流 |
-| `/learn` | 从会话中提取模式 |
-| `/checkpoint` | 保存验证状态 |
-| `/verify` | 运行验证循环 |
-| `/eval` | 根据标准进行评估 |
-| `/update-docs` | 更新文档 |
-| `/update-codemaps` | 更新代码地图 |
-| `/test-coverage` | 分析覆盖率 |
-| `/go-review` | Go 代码审查 |
-| `/go-test` | Go TDD 工作流 |
-| `/go-build` | 修复 Go 构建错误 |
-| `/python-review` | Python 代码审查（PEP 8、类型提示、安全性） |
-| `/multi-plan` | 多模型协作规划 |
-| `/multi-execute` | 多模型协作执行 |
-| `/multi-backend` | 后端聚焦的多模型工作流 |
-| `/multi-frontend` | 前端聚焦的多模型工作流 |
-| `/multi-workflow` | 完整的多模型开发工作流 |
-| `/pm2` | 自动生成 PM2 服务命令 |
-| `/sessions` | 管理会话历史 |
-| `/skill-create` | 从 git 生成技能 |
-| `/instinct-status` | 查看已学习的本能 |
-| `/instinct-import` | 导入本能 |
-| `/instinct-export` | 导出本能 |
-| `/evolve` | 将本能聚类为技能 |
-| `/promote` | 将项目本能提升到全局范围 |
-| `/projects` | 列出已知项目和本能统计信息 |
-| `/learn-eval` | 保存前提取和评估模式 |
-| `/setup-pm` | 配置包管理器 |
-| `/harness-audit` | 审计平台可靠性、评估准备情况和风险状况 |
-| `/loop-start` | 启动受控的智能体循环执行模式 |
-| `/loop-status` | 检查活动循环状态和检查点 |
-| `/quality-gate` | 对路径或整个仓库运行质量门检查 |
-| `/model-route` | 根据复杂度和预算将任务路由到模型 |
-
-### 插件安装
-
-**选项 1：直接使用**
-
-```bash
-cd everything-claude-code
-opencode
-```
-
-**选项 2：作为 npm 包安装**
-
-```bash
-npm install ecc-universal
-```
-
-然后添加到您的 `opencode.json`：
-
-```json
-{
-  "plugin": ["ecc-universal"]
-}
-```
-
-### 文档
-
-* **迁移指南**：`.opencode/MIGRATION.md`
-* **OpenCode 插件 README**：`.opencode/README.md`
-* **整合的规则**：`.opencode/instructions/INSTRUCTIONS.md`
-* **LLM 文档**：`llms.txt`（完整的 OpenCode 文档，供 LLM 使用）
-
-***
-
-## 跨工具功能对等
-
-ECC 是**第一个最大化利用每个主要 AI 编码工具的插件**。以下是每个平台的比较：
-
-| 功能 | Claude Code | Cursor IDE | Codex CLI | OpenCode |
-|---------|------------|------------|-----------|----------|
-| **智能体** | 16 | 共享（AGENTS.md） | 共享（AGENTS.md） | 12 |
-| **命令** | 40 | 共享 | 基于指令 | 31 |
-| **技能** | 65 | 共享 | 10（原生格式） | 37 |
-| **钩子事件** | 8 种类型 | 15 种类型 | 暂无 | 11 种类型 |
-| **钩子脚本** | 20+ 个脚本 | 16 个脚本（DRY 适配器） | 不适用 | 插件钩子 |
-| **规则** | 29（通用 + 语言） | 29（YAML 前言） | 基于指令 | 13 条指令 |
-| **自定义工具** | 通过钩子 | 通过钩子 | 不适用 | 6 个原生工具 |
-| **MCP 服务器** | 14 | 共享（mcp.json） | 4（基于命令） | 完整 |
-| **配置格式** | settings.json | hooks.json + rules/ | config.toml | opencode.json |
-| **上下文文件** | CLAUDE.md + AGENTS.md | AGENTS.md | AGENTS.md | AGENTS.md |
-| **秘密检测** | 基于钩子 | beforeSubmitPrompt 钩子 | 基于沙箱 | 基于钩子 |
-| **自动格式化** | PostToolUse 钩子 | afterFileEdit 钩子 | 不适用 | file.edited 钩子 |
-| **版本** | 插件 | 插件 | 参考配置 | 1.8.0 |
-
-**关键架构决策：**
-
-* 根目录下的 **AGENTS.md** 是通用的跨工具文件（被所有 4 个工具读取）
-* **DRY 适配器模式** 让 Cursor 可以重用 Claude Code 的钩子脚本而无需重复
-* **技能格式**（带有 YAML 前言的 SKILL.md）在 Claude Code、Codex 和 OpenCode 上都能工作
-* Codex 缺乏钩子的问题通过 `persistent_instructions` 和沙箱权限来弥补
-
-***
-
-## 📖 背景
-
-我从实验性推出以来就一直在使用 Claude Code。在 2025 年 9 月，与 [@DRodriguezFX](https://x.com/DRodriguezFX) 一起使用 Claude Code 构建 [zenith.chat](https://zenith.chat)，赢得了 Anthropic x Forum Ventures 黑客马拉松。
-
-这些配置已在多个生产应用程序中经过实战测试。
-
-## 灵感致谢
-
-* 灵感来自 [zarazhangrui](https://github.com/zarazhangrui)
-* homunculus 灵感来自 [humanplane](https://github.com/humanplane)
-
-***
-
-## 令牌优化
-
-如果不管理令牌消耗，使用 Claude Code 可能会很昂贵。这些设置能在不牺牲质量的情况下显著降低成本。
-
-### 推荐设置
-
-添加到 `~/.claude/settings.json`：
-
-```json
-{
-  "model": "sonnet",
-  "env": {
-    "MAX_THINKING_TOKENS": "10000",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50"
-  }
-}
-```
-
-| 设置 | 默认值 | 推荐值 | 影响 |
-|---------|---------|-------------|--------|
-| `model` | opus | **sonnet** | 约 60% 的成本降低；处理 80%+ 的编码任务 |
-| `MAX_THINKING_TOKENS` | 31,999 | **10,000** | 每个请求的隐藏思考成本降低约 70% |
-| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 95 | **50** | 更早压缩 —— 在长会话中质量更好 |
-
-仅在需要深度架构推理时切换到 Opus：
-
-```
-/model opus
-```
-
-### 日常工作流命令
-
-| 命令 | 何时使用 |
-|---------|-------------|
-| `/model sonnet` | 大多数任务的默认选择 |
-| `/model opus` | 复杂架构、调试、深度推理 |
-| `/clear` | 在不相关的任务之间（免费，即时重置） |
-| `/compact` | 在逻辑任务断点处（研究完成，里程碑达成） |
-| `/cost` | 在会话期间监控令牌花费 |
-
-### 策略性压缩
-
-`strategic-compact` 技能（包含在此插件中）建议在逻辑断点处进行 `/compact`，而不是依赖在 95% 上下文时的自动压缩。完整决策指南请参见 `skills/strategic-compact/SKILL.md`。
-
-**何时压缩：**
-
-* 研究/探索之后，实施之前
-* 完成一个里程碑之后，开始下一个之前
-* 调试之后，继续功能工作之前
-* 失败的方法之后，尝试新方法之前
-
-**何时不压缩：**
-
-* 实施过程中（你会丢失变量名、文件路径、部分状态）
-
-### 上下文窗口管理
-
-**关键：** 不要一次性启用所有 MCP。每个 MCP 工具描述都会消耗你 200k 窗口的令牌，可能将其减少到约 70k。
-
-* 每个项目保持启用的 MCP 少于 10 个
-* 保持活动工具少于 80 个
-* 在项目配置中使用 `disabledMcpServers` 来禁用未使用的 MCP
-
-### 代理团队成本警告
-
-代理团队会生成多个上下文窗口。每个团队成员独立消耗令牌。仅用于并行性能提供明显价值的任务（多模块工作、并行审查）。对于简单的顺序任务，子代理更节省令牌。
-
-***
-
-## ⚠️ 重要说明
-
-### 令牌优化
-
-达到每日限制？参见 **[令牌优化指南](../token-optimization.md)** 获取推荐设置和工作流提示。
-
-快速见效的方法：
-
-```json
-// ~/.claude/settings.json
-{
-  "model": "sonnet",
-  "env": {
-    "MAX_THINKING_TOKENS": "10000",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
-  }
-}
-```
-
-在不相关的任务之间使用 `/clear`，在逻辑断点处使用 `/compact`，并使用 `/cost` 来监控花费。
-
-### 定制化
-
-这些配置适用于我的工作流。你应该：
-
-1. 从引起共鸣的部分开始
-2. 根据你的技术栈进行修改
-3. 移除你不使用的部分
-4. 添加你自己的模式
-
-***
-
-## 💜 赞助商
-
-这个项目是免费和开源的。赞助商帮助保持其维护和发展。
-
-[**成为赞助商**](https://github.com/sponsors/affaan-m) | [赞助层级](SPONSORS.md) | [赞助计划](SPONSORING.md)
-
-***
-
-## 🌟 Star 历史
-
-[![Star History Chart](https://api.star-history.com/svg?repos=affaan-m/everything-claude-code\&type=Date)](https://star-history.com/#affaan-m/everything-claude-code\&Date)
-
-***
-
-## 🔗 链接
-
-* **速查指南（从这里开始）：** [Claude Code 速查指南](https://x.com/affaanmustafa/status/2012378465664745795)
-* **详细指南（进阶）：** [Claude Code 详细指南](https://x.com/affaanmustafa/status/2014040193557471352)
-* **关注：** [@affaanmustafa](https://x.com/affaanmustafa)
-* **zenith.chat：** [zenith.chat](https://zenith.chat)
-* **技能目录：** awesome-agent-skills（社区维护的智能体技能目录）
-
-***
-
-## 📄 许可证
-
-MIT - 自由使用，根据需要修改，如果可以请回馈贡献。
-
-***
-
-**如果此仓库对你有帮助，请点星。阅读两份指南。构建伟大的东西。**

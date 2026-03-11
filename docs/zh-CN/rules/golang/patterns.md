@@ -5,11 +5,11 @@ paths:
   - "**/go.sum"
 ---
 
-# Go 模式
+# Go 패턴 (Patterns)
 
-> 本文档在 [common/patterns.md](../common/patterns.md) 的基础上扩展了 Go 语言特定的内容。
+> 이 문서는 [common/patterns.md](../common/patterns.md)의 내용을 바탕으로 Go 언어에 특화된 내용을 확장합니다.
 
-## 函数式选项
+## 함수형 옵션 (Functional Options) 패턴
 
 ```go
 type Option func(*Server)
@@ -27,13 +27,13 @@ func NewServer(opts ...Option) *Server {
 }
 ```
 
-## 小接口
+## 인터페이스 최소화
 
-在接口被使用的地方定义它们，而不是在它们被实现的地方。
+인터페이스는 구현되는 곳이 아니라 **사용되는 곳**에서 정의하십시오.
 
-## 依赖注入
+## 의존성 주입 (Dependency Injection)
 
-使用构造函数来注入依赖：
+생성자를 사용하여 의존성을 주입하십시오:
 
 ```go
 func NewUserService(repo UserRepository, logger Logger) *UserService {
@@ -41,6 +41,6 @@ func NewUserService(repo UserRepository, logger Logger) *UserService {
 }
 ```
 
-## 参考
+## 참고 자료
 
-有关全面的 Go 模式（包括并发、错误处理和包组织），请参阅技能：`golang-patterns`。
+동시성, 에러 처리, 패키지 구성 등을 포함한 Go 언어의 종합적인 패턴에 대해서는 `golang-patterns` 스킬을 참조하십시오.

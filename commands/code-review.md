@@ -1,40 +1,40 @@
-# Code Review
+# 코드 리뷰 (Code Review)
 
-Comprehensive security and quality review of uncommitted changes:
+커밋되지 않은 변경 사항에 대해 종합적인 보안 및 품질 리뷰를 수행합니다:
 
-1. Get changed files: git diff --name-only HEAD
+1. 변경된 파일 목록 확인: `git diff --name-only HEAD`
 
-2. For each changed file, check for:
+2. 각 변경된 파일에 대해 다음 항목을 점검합니다:
 
-**Security Issues (CRITICAL):**
-- Hardcoded credentials, API keys, tokens
-- SQL injection vulnerabilities
-- XSS vulnerabilities  
-- Missing input validation
-- Insecure dependencies
-- Path traversal risks
+**보안 이슈 (치명적 - CRITICAL):**
+- 하드코딩된 자격 증명, API 키, 토큰
+- SQL 인젝션 취약점
+- XSS 취약점
+- 입력값 검증 누락
+- 안전하지 않은 의존성
+- 경로 탐색(Path traversal) 위험
 
-**Code Quality (HIGH):**
-- Functions > 50 lines
-- Files > 800 lines
-- Nesting depth > 4 levels
-- Missing error handling
-- console.log statements
-- TODO/FIXME comments
-- Missing JSDoc for public APIs
+**코드 품질 (높음 - HIGH):**
+- 함수 길이 > 50라인
+- 파일 길이 > 800라인
+- 중첩 깊이 > 4단계
+- 에러 처리 누락
+- console.log 구문
+- TODO/FIXME 주석
+- 퍼블릭 API에 대한 JSDoc 누락
 
-**Best Practices (MEDIUM):**
-- Mutation patterns (use immutable instead)
-- Emoji usage in code/comments
-- Missing tests for new code
-- Accessibility issues (a11y)
+**최선 관행 (보통 - MEDIUM):**
+- 객체 수정(Mutation) 패턴 (대신 불변 패턴 사용)
+- 코드/주석 내 이모지 사용
+- 새로운 코드에 대한 테스트 누락
+- 접근성(a11y) 이슈
 
-3. Generate report with:
-   - Severity: CRITICAL, HIGH, MEDIUM, LOW
-   - File location and line numbers
-   - Issue description
-   - Suggested fix
+3. 다음 내용을 포함하여 보고서를 생성합니다:
+   - 심각도: CRITICAL, HIGH, MEDIUM, LOW
+   - 파일 위치 및 라인 번호
+   - 이슈 설명
+   - 제안하는 수정 방안
 
-4. Block commit if CRITICAL or HIGH issues found
+4. 치명적(CRITICAL) 또는 높음(HIGH) 이슈 발견 시 커밋을 차단합니다.
 
-Never approve code with security vulnerabilities!
+보안 취약점이 있는 코드를 절대 승인하지 마십시오!

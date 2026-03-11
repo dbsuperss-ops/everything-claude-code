@@ -1,175 +1,96 @@
 ---
 name: search-first
-description: 研究优先于编码的工作流程。在编写自定义代码之前，搜索现有的工具、库和模式。调用研究员代理。
+description: 코딩보다 조사를 우선하는 워크플로우입니다. 직접 코드를 작성하기 전에 기존 도구, 라이브러리 및 패턴을 먼저 검색합니다. 연구원 에이전트를 호출하여 최적의 솔루션을 찾습니다.
 origin: ECC
 ---
 
-# /search-first — 编码前先研究
+# /search-first — 코딩 전 조사 우선(Research-First)
 
-系统化“在实现之前先寻找现有解决方案”的工作流程。
+"구현하기 전에 이미 존재하는 해결책이 있는지 찾는다"는 원칙을 체계화한 워크플로우입니다.
 
-## 触发时机
+## 적용 시점
 
-在以下情况使用此技能：
+이 스킬은 다음과 같은 상황에서 반드시 사용하십시오:
 
-* 开始一项很可能已有解决方案的新功能
-* 添加依赖项或集成
-* 用户要求“添加 X 功能”而你准备开始编写代码
-* 在创建新的实用程序、助手或抽象之前
+* 이미 해결책이 존재할 확률이 높은 새로운 기능을 시작할 때
+* 새로운 의존성(Dependency)을 추가하거나 외부 시스템과 연동할 때
+* 사용자가 "X 기능을 추가해줘"라고 요청하여 코드를 작성하기 직전일 때
+* 새로운 유틸리티, 헬퍼 함수 또는 추상화 계층을 만들기 전일 때
 
-## 工作流程
+## 워크플로우 단계
 
 ```
 ┌─────────────────────────────────────────────┐
-│  1. NEED ANALYSIS                           │
-│     Define what functionality is needed      │
-│     Identify language/framework constraints  │
+│  1. 요구 사항 분석 (Need Analysis)          │
+│     필요한 구체적인 기능 정의                │
+│     언어/프레임워크 제약 사항 식별           │
 ├─────────────────────────────────────────────┤
-│  2. PARALLEL SEARCH (researcher agent)      │
+│  2. 병렬 검색 (연구원 에이전트 활용)        │
 │     ┌──────────┐ ┌──────────┐ ┌──────────┐  │
 │     │  npm /   │ │  MCP /   │ │  GitHub / │  │
 │     │  PyPI    │ │  Skills  │ │  Web      │  │
 │     └──────────┘ └──────────┘ └──────────┘  │
 ├─────────────────────────────────────────────┤
-│  3. EVALUATE                                │
-│     Score candidates (functionality, maint, │
-│     community, docs, license, deps)         │
+│  3. 평가 (Evaluate)                         │
+│     후보군 점수 매기기 (기능성, 유지보수성,   │
+│     커뮤니티 활성도, 문서화, 라이선스 등)     |
 ├─────────────────────────────────────────────┤
-│  4. DECIDE                                  │
+│  4. 의사결정 (Decide)                       │
 │     ┌─────────┐  ┌──────────┐  ┌─────────┐  │
-│     │  Adopt  │  │  Extend  │  │  Build   │  │
-│     │ as-is   │  │  /Wrap   │  │  Custom  │  │
+│     │  채택   │  │  확장     │  │  직접    │  │
+│     │  (Adopt) │  │  (Extend) │  │  개발    │  │
 │     └─────────┘  └──────────┘  └─────────┘  │
 ├─────────────────────────────────────────────┤
-│  5. IMPLEMENT                               │
-│     Install package / Configure MCP /       │
-│     Write minimal custom code               │
+│  5. 구현 (Implement)                        │
+│     패키지 설치 / MCP 설정 /                 │
+│     최소한의 커스텀 코드 작성                │
 └─────────────────────────────────────────────┘
 ```
 
-## 决策矩阵
+## 의사결정 매트릭스 (Decision Matrix)
 
-| 信号 | 行动 |
+| 상태 | 권장 행동 |
 |--------|--------|
-| 完全匹配，维护良好，MIT/Apache 许可证 | **采纳** — 直接安装并使用 |
-| 部分匹配，基础良好 | **扩展** — 安装 + 编写薄封装层 |
-| 多个弱匹配 | **组合** — 组合 2-3 个小包 |
-| 未找到合适的 | **构建** — 编写自定义代码，但需基于研究 |
+| 기능 일치, 유지보수 양호, 적절한 라이선스 | **채택(Adopt)** — 직접 설치하여 즉시 사용 |
+| 부분 일치, 기초 설계 양호 | **확장(Extend)** — 설치 후 가벼운 래퍼(Wrapper) 개발 |
+| 여러 개의 소규모 해결책 존재 | **조합(Combine)** — 2~3개의 작은 패키지 병합 활용 |
+| 적절한 대안 없음 | **구축(Build)** — 연구 결과를 바탕으로 커스텀 코드 작성 |
 
-## 使用方法
+## 사용 방법
 
-### 快速模式（内联）
+### 1. 퀵 모드 (인라인 체크)
+유틸리티를 작성하거나 기능을 추가하기 전 다음을 스스로 점검하십시오:
+* **이미 우리 프로젝트에 있는가?** → `rg`를 사용하여 관련 모듈/테스트 코드 검색
+* **자주 발생하는 일반적인 문제인가?** → npm/PyPI 검색
+* **대응하는 MCP 서버가 있는가?** → `~/.claude/settings.json` 확인 및 검색
+* **사용 가능한 스킬이 있는가?** → `~/.claude/skills/` 확인
+* **GitHub에 구현체/템플릿이 있는가?** → 새로 작성하기 전 오픈소스 프로젝트 검색
 
-在编写实用程序或添加功能之前，在脑中过一遍：
-
-0. 这已经在仓库中存在吗？ → 首先通过相关模块/测试检查 `rg`
-1. 这是一个常见问题吗？ → 搜索 npm/PyPI
-2. 有对应的 MCP 吗？ → 检查 `~/.claude/settings.json` 并进行搜索
-3. 有对应的技能吗？ → 检查 `~/.claude/skills/`
-4. 有 GitHub 上的实现/模板吗？ → 在编写全新代码之前，先运行 GitHub 代码搜索以查找维护中的开源项目
-
-### 完整模式（代理）
-
-对于非平凡的功能，启动研究员代理：
-
+### 2. 풀 모드 (에이전트 위임)
+복잡한 기능의 경우 연구원 에이전트(Sub-agent)를 가동하십시오:
 ```
 Task(subagent_type="general-purpose", prompt="
-  Research existing tools for: [DESCRIPTION]
-  Language/framework: [LANG]
-  Constraints: [ANY]
+  다음 기능에 대한 기존 도구들을 조사해줘: [설명]
+  언어/프레임워크: [언어]
+  제약 사항: [제약 사항]
 
-  Search: npm/PyPI, MCP servers, Claude Code skills, GitHub
-  Return: Structured comparison with recommendation
+  검색 범위: npm/PyPI, MCP 서버, Claude Code 스킬, GitHub
+  결과: 권장 사항을 포함한 구조화된 비교표 제공
 ")
 ```
 
-## 按类别搜索快捷方式
+## 카테고리별 검색 키워드 예시
 
-### 开发工具
+* **개발 도구**: Linting (`eslint`, `ruff`), Formatting (`prettier`, `black`), Testing (`jest`, `pytest`)
+* **AI/LLM 연동**: Claude SDK, 프롬프트 관리 (MCP 서버 확인), 문서 처리 (`unstructured`, `pdfplumber`)
+* **데이터 및 API**: HTTP 클라이언트 (`httpx`, `ky`), 유효성 검증 (`zod`, `pydantic`), DB (MCP 우선 확인)
+* **콘텐츠**: 마크다운 처리 (`remark`, `unified`), 이미지 최적화 (`sharp`)
 
-* Linting → `eslint`, `ruff`, `textlint`, `markdownlint`
-* Formatting → `prettier`, `black`, `gofmt`
-* Testing → `jest`, `pytest`, `go test`
-* Pre-commit → `husky`, `lint-staged`, `pre-commit`
+## 예외 사례 및 안티 패턴
 
-### AI/LLM 集成
+* **코딩으로 직행**: 대안이 있는지 확인도 안 하고 바로 유틸리티 함수 작성 시작
+* **MCP 무시**: MCP 서버가 이미 기능을 제공하는데도 중복된 도구 사용
+* **과잉 커스터마이징**: 라이브러리를 너무 두껍게 감싸서 라이브러리 본연의 장점을 잃어버림
+* **의존성 낭비**: 아주 작은 기능을 위해 거대한 패키지 전체를 설치하는 행위
 
-* Claude SDK → 使用 Context7 获取最新文档
-* 提示词管理 → 检查 MCP 服务器
-* 文档处理 → `unstructured`, `pdfplumber`, `mammoth`
-
-### 数据与 API
-
-* HTTP 客户端 → `httpx` (Python), `ky`/`got` (Node)
-* 验证 → `zod` (TS), `pydantic` (Python)
-* 数据库 → 首先检查是否有 MCP 服务器
-
-### 内容与发布
-
-* Markdown 处理 → `remark`, `unified`, `markdown-it`
-* 图片优化 → `sharp`, `imagemin`
-
-## 集成点
-
-### 与规划器代理
-
-规划器应在阶段 1（架构评审）之前调用研究员：
-
-* 研究员识别可用的工具
-* 规划器将它们纳入实施计划
-* 避免在计划中“重新发明轮子”
-
-### 与架构师代理
-
-架构师应向研究员咨询：
-
-* 技术栈决策
-* 集成模式发现
-* 现有参考架构
-
-### 与迭代检索技能
-
-结合进行渐进式发现：
-
-* 循环 1：广泛搜索 (npm, PyPI, MCP)
-* 循环 2：详细评估顶级候选方案
-* 循环 3：测试与项目约束的兼容性
-
-## 示例
-
-### 示例 1：“添加死链检查”
-
-```
-Need: Check markdown files for broken links
-Search: npm "markdown dead link checker"
-Found: textlint-rule-no-dead-link (score: 9/10)
-Action: ADOPT — npm install textlint-rule-no-dead-link
-Result: Zero custom code, battle-tested solution
-```
-
-### 示例 2：“添加 HTTP 客户端包装器”
-
-```
-Need: Resilient HTTP client with retries and timeout handling
-Search: npm "http client retry", PyPI "httpx retry"
-Found: got (Node) with retry plugin, httpx (Python) with built-in retry
-Action: ADOPT — use got/httpx directly with retry config
-Result: Zero custom code, production-proven libraries
-```
-
-### 示例 3：“添加配置文件 linter”
-
-```
-Need: Validate project config files against a schema
-Search: npm "config linter schema", "json schema validator cli"
-Found: ajv-cli (score: 8/10)
-Action: ADOPT + EXTEND — install ajv-cli, write project-specific schema
-Result: 1 package + 1 schema file, no custom validation logic
-```
-
-## 反模式
-
-* **直接跳转到编码**：不检查是否存在就编写实用程序
-* **忽略 MCP**：不检查 MCP 服务器是否已提供该能力
-* **过度定制**：对库进行如此厚重的包装以至于失去了其优势
-* **依赖项膨胀**：为了一个小功能安装一个庞大的包
+**핵심**: 가장 훌륭한 코드는 '작성할 필요가 없는 코드'입니다. 기존의 검증된 도구를 활용하여 개발 속도와 코드의 신뢰성을 동시에 확보하십시오.

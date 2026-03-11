@@ -1,190 +1,41 @@
 ---
 name: swift-protocol-di-testing
-description: Protocol-based dependency injection for testable Swift code — mock file system, network, and external APIs using focused protocols and Swift Testing.
+description: 테스트 가능한 Swift 코드를 위한 프로토콜 기반 의존성 주입(Dependency Injection) — 집중된 프로토콜과 Swift Testing을 사용하여 파일 시스템, 네트워크 및 외부 API를 모킹(Mocking)합니다.
 origin: ECC
 ---
 
-# Swift Protocol-Based Dependency Injection for Testing
+# 테스트를 위한 Swift 프로토콜 기반 의존성 주입
 
-Patterns for making Swift code testable by abstracting external dependencies (file system, network, iCloud) behind small, focused protocols. Enables deterministic tests without I/O.
+외부 의존성(파일 시스템, 네트워크, iCloud 등)을 작고 집중된 프로토콜 뒤에 추상화하여 Swift 코드를 테스트 가능하게 만드는 패턴입니다. I/O 없이 결정론적인 테스트를 수행할 수 있게 해줍니다.
 
-## When to Activate
+## 활성화 시점
 
-- Writing Swift code that accesses file system, network, or external APIs
-- Need to test error handling paths without triggering real failures
-- Building modules that work across environments (app, test, SwiftUI preview)
-- Designing testable architecture with Swift concurrency (actors, Sendable)
+- 파일 시스템, 네트워크, 또는 외부 API에 접근하는 Swift 코드를 작성할 때
+- 실제 장애가 발생하지 않아도 에러 처리 경로를 테스트해야 할 때
+- 다양한 환경(앱, 테스트, SwiftUI 프리뷰)에서 동작하는 모듈을 구축할 때
+- Swift 동시성(Actors, Sendable)을 고려한 테스트 가능 아키텍처를 설계할 때
 
-## Core Pattern
+## 핵심 패턴
 
-### 1. Define Small, Focused Protocols
+1. **작고 집중된 프로토콜 정의**: 각 프로토콜은 하나의 외부 관심사만 처리합니다. (예: `FileSystemProviding`, `FileAccessorProviding`)
+2. **기본(운영용) 구현체 생성**: `FileManager.default` 등을 사용하는 실제 모델을 만듭니다.
+3. **테스트용 모립 구현체(Mock) 생성**: 에러를 강제로 발생시키거나 가짜 데이터를 관리할 수 있는 클래스를 만듭니다. (Actor 경계를 넘나들 경우 `Sendable` 준수가 필요할 수 있습니다.)
+4. **기본 매개변수를 통한 의존성 주입**: 초기화(`init`) 시 기본값으로 운영용 객체를 지정하고, 테스트 시에는 모크 객체를 주입합니다.
+5. **Swift Testing을 사용한 테스트 작성**: `#expect(throws: ...)` 등을 활용하여 성공 및 실패 경로를 검증하십시오.
 
-Each protocol handles exactly one external concern.
+## 최선 관행 (Best Practices)
 
-```swift
-// File system access
-public protocol FileSystemProviding: Sendable {
-    func containerURL(for purpose: Purpose) -> URL?
-}
+- **단일 책임 원칙**: 하나의 프로토콜에 너무 많은 메서드를 넣지 마십시오.
+- **기본 매개변수 활용**: 운영 코드에서는 기본값을 사용하게 하고, 테스트 코드에서만 모크를 주입하게 하여 사용성을 높이십시오.
+- **에러 시뮬레이션**: 모크 객체에 에러 발생 여부를 제어할 수 있는 프로퍼티를 두어 실패 경로를 정교하게 테스트하십시오.
+- **경계만 모킹하십시오**: 내부 타입이 아닌, 외부 의존성이 있는 경계 부분만 프로토콜로 추상화하십시오.
 
-// File read/write operations
-public protocol FileAccessorProviding: Sendable {
-    func read(from url: URL) throws -> Data
-    func write(_ data: Data, to url: URL) throws
-    func fileExists(at url: URL) -> Bool
-}
+## 피해야 할 안티 패턴
 
-// Bookmark storage (e.g., for sandboxed apps)
-public protocol BookmarkStorageProviding: Sendable {
-    func saveBookmark(_ data: Data, for key: String) throws
-    func loadBookmark(for key: String) throws -> Data?
-}
-```
+- 모든 외부 접근을 포함하는 하나의 거대한 프로토콜 만들기.
+- 의존성이 없는 내부 타입까지 무리하게 프로토콜로 감싸기(오버엔지니어링).
+- 의존성 주입 대신 `#if DEBUG` 조건부 컴파일에 의존하기.
+- 액터와 함께 사용하면서 `Sendable` 준수를 누락하는 것.
 
-### 2. Create Default (Production) Implementations
-
-```swift
-public struct DefaultFileSystemProvider: FileSystemProviding {
-    public init() {}
-
-    public func containerURL(for purpose: Purpose) -> URL? {
-        FileManager.default.url(forUbiquityContainerIdentifier: nil)
-    }
-}
-
-public struct DefaultFileAccessor: FileAccessorProviding {
-    public init() {}
-
-    public func read(from url: URL) throws -> Data {
-        try Data(contentsOf: url)
-    }
-
-    public func write(_ data: Data, to url: URL) throws {
-        try data.write(to: url, options: .atomic)
-    }
-
-    public func fileExists(at url: URL) -> Bool {
-        FileManager.default.fileExists(atPath: url.path)
-    }
-}
-```
-
-### 3. Create Mock Implementations for Testing
-
-```swift
-public final class MockFileAccessor: FileAccessorProviding, @unchecked Sendable {
-    public var files: [URL: Data] = [:]
-    public var readError: Error?
-    public var writeError: Error?
-
-    public init() {}
-
-    public func read(from url: URL) throws -> Data {
-        if let error = readError { throw error }
-        guard let data = files[url] else {
-            throw CocoaError(.fileReadNoSuchFile)
-        }
-        return data
-    }
-
-    public func write(_ data: Data, to url: URL) throws {
-        if let error = writeError { throw error }
-        files[url] = data
-    }
-
-    public func fileExists(at url: URL) -> Bool {
-        files[url] != nil
-    }
-}
-```
-
-### 4. Inject Dependencies with Default Parameters
-
-Production code uses defaults; tests inject mocks.
-
-```swift
-public actor SyncManager {
-    private let fileSystem: FileSystemProviding
-    private let fileAccessor: FileAccessorProviding
-
-    public init(
-        fileSystem: FileSystemProviding = DefaultFileSystemProvider(),
-        fileAccessor: FileAccessorProviding = DefaultFileAccessor()
-    ) {
-        self.fileSystem = fileSystem
-        self.fileAccessor = fileAccessor
-    }
-
-    public func sync() async throws {
-        guard let containerURL = fileSystem.containerURL(for: .sync) else {
-            throw SyncError.containerNotAvailable
-        }
-        let data = try fileAccessor.read(
-            from: containerURL.appendingPathComponent("data.json")
-        )
-        // Process data...
-    }
-}
-```
-
-### 5. Write Tests with Swift Testing
-
-```swift
-import Testing
-
-@Test("Sync manager handles missing container")
-func testMissingContainer() async {
-    let mockFileSystem = MockFileSystemProvider(containerURL: nil)
-    let manager = SyncManager(fileSystem: mockFileSystem)
-
-    await #expect(throws: SyncError.containerNotAvailable) {
-        try await manager.sync()
-    }
-}
-
-@Test("Sync manager reads data correctly")
-func testReadData() async throws {
-    let mockFileAccessor = MockFileAccessor()
-    mockFileAccessor.files[testURL] = testData
-
-    let manager = SyncManager(fileAccessor: mockFileAccessor)
-    let result = try await manager.loadData()
-
-    #expect(result == expectedData)
-}
-
-@Test("Sync manager handles read errors gracefully")
-func testReadError() async {
-    let mockFileAccessor = MockFileAccessor()
-    mockFileAccessor.readError = CocoaError(.fileReadCorruptFile)
-
-    let manager = SyncManager(fileAccessor: mockFileAccessor)
-
-    await #expect(throws: SyncError.self) {
-        try await manager.sync()
-    }
-}
-```
-
-## Best Practices
-
-- **Single Responsibility**: Each protocol should handle one concern — don't create "god protocols" with many methods
-- **Sendable conformance**: Required when protocols are used across actor boundaries
-- **Default parameters**: Let production code use real implementations by default; only tests need to specify mocks
-- **Error simulation**: Design mocks with configurable error properties for testing failure paths
-- **Only mock boundaries**: Mock external dependencies (file system, network, APIs), not internal types
-
-## Anti-Patterns to Avoid
-
-- Creating a single large protocol that covers all external access
-- Mocking internal types that have no external dependencies
-- Using `#if DEBUG` conditionals instead of proper dependency injection
-- Forgetting `Sendable` conformance when used with actors
-- Over-engineering: if a type has no external dependencies, it doesn't need a protocol
-
-## When to Use
-
-- Any Swift code that touches file system, network, or external APIs
-- Testing error handling paths that are hard to trigger in real environments
-- Building modules that need to work in app, test, and SwiftUI preview contexts
-- Apps using Swift concurrency (actors, structured concurrency) that need testable architecture
+**기억하십시오**: 테스트 가능한 코드는 좋은 설계의 결과물입니다. 테스트하기 어렵다면 프로토콜을 통해 의존성을 분리해 보십시오.
+    

@@ -1,72 +1,72 @@
-# Update Codemaps
+# 코드맵 업데이트 (Update Codemaps)
 
-Analyze the codebase structure and generate token-lean architecture documentation.
+코드베이스 구조를 분석하고 토큰 효율적인 아키텍처 문서를 생성합니다.
 
-## Step 1: Scan Project Structure
+## 1단계: 프로젝트 구조 스캔
 
-1. Identify the project type (monorepo, single app, library, microservice)
-2. Find all source directories (src/, lib/, app/, packages/)
-3. Map entry points (main.ts, index.ts, app.py, main.go, etc.)
+1. 프로젝트 유형(모노레포, 단일 앱, 라이브러리, 마이크로서비스 등)을 식별합니다.
+2. 모든 소스 디렉토리(src/, lib/, app/, packages/ 등)를 찾습니다.
+3. 진입점(entry points: main.ts, index.ts, app.py, main.go 등)을 매핑합니다.
 
-## Step 2: Generate Codemaps
+## 2단계: 코드맵 생성
 
-Create or update codemaps in `docs/CODEMAPS/` (or `.reports/codemaps/`):
+`docs/CODEMAPS/` (또는 `.reports/codemaps/`) 경로에 코드맵을 생성하거나 업데이트합니다:
 
-| File | Contents |
+| 파일 | 내용 |
 |------|----------|
-| `architecture.md` | High-level system diagram, service boundaries, data flow |
-| `backend.md` | API routes, middleware chain, service → repository mapping |
-| `frontend.md` | Page tree, component hierarchy, state management flow |
-| `data.md` | Database tables, relationships, migration history |
-| `dependencies.md` | External services, third-party integrations, shared libraries |
+| `architecture.md` | 상위 수준의 시스템 다이어그램, 서비스 경계, 데이터 흐름 |
+| `backend.md` | API 라우트, 미들웨어 체인, 서비스 → 레포지토리 매핑 |
+| `frontend.md` | 페이지 트리, 컴포넌트 계층 구조, 상태 관리 흐름 |
+| `data.md` | 데이터베이스 테이블, 관계, 마이그레이션 이력 |
+| `dependencies.md` | 외부 서비스, 서드파티 통합, 공유 라이브러리 |
 
-### Codemap Format
+### 코드맵 형식
 
-Each codemap should be token-lean — optimized for AI context consumption:
+각 코드맵은 AI 컨텍스트 소모에 최적화되도록 토큰 효율적으로 작성되어야 합니다:
 
 ```markdown
-# Backend Architecture
+# 백엔드 아키텍처 (Backend Architecture)
 
-## Routes
+## 라우트 (Routes)
 POST /api/users → UserController.create → UserService.create → UserRepo.insert
 GET  /api/users/:id → UserController.get → UserService.findById → UserRepo.findById
 
-## Key Files
-src/services/user.ts (business logic, 120 lines)
-src/repos/user.ts (database access, 80 lines)
+## 주요 파일
+src/services/user.ts (비즈니스 로직, 120줄)
+src/repos/user.ts (데이터베이스 액세스, 80줄)
 
-## Dependencies
-- PostgreSQL (primary data store)
-- Redis (session cache, rate limiting)
-- Stripe (payment processing)
+## 의존성 (Dependencies)
+- PostgreSQL (메인 데이터 저장소)
+- Redis (세션 캐시, 속도 제한)
+- Stripe (결제 처리)
 ```
 
-## Step 3: Diff Detection
+## 3단계: 차이(Diff) 감지
 
-1. If previous codemaps exist, calculate the diff percentage
-2. If changes > 30%, show the diff and request user approval before overwriting
-3. If changes <= 30%, update in place
+1. 이전 코드맵이 존재하는 경우, 변경된 비율을 계산합니다.
+2. 변경 사항이 30%를 초과하면, 차이점을 보여주고 덮어쓰기 전 사용자의 승인을 요청합니다.
+3. 변경 사항이 30% 이하인 경우, 즉시 업데이트합니다.
 
-## Step 4: Add Metadata
+## 4단계: 메타데이터 추가
 
-Add a freshness header to each codemap:
+각 코드맵에 최신화 상태를 알리는 헤더를 추가합니다:
 
 ```markdown
-<!-- Generated: 2026-02-11 | Files scanned: 142 | Token estimate: ~800 -->
+<!-- 생성일: 2026-02-11 | 스캔된 파일: 142 | 추정 토큰 수: ~800 -->
 ```
 
-## Step 5: Save Analysis Report
+## 5단계: 분석 보고서 저장
 
-Write a summary to `.reports/codemap-diff.txt`:
-- Files added/removed/modified since last scan
-- New dependencies detected
-- Architecture changes (new routes, new services, etc.)
-- Staleness warnings for docs not updated in 90+ days
+`.reports/codemap-diff.txt`에 요약을 작성합니다:
+- 마지막 스캔 이후 추가/삭제/수정된 파일
+- 새로 감지된 의존성
+- 아키텍처 변경 사항 (새로운 라우트, 새로운 서비스 등)
+- 90일 이상 업데이트되지 않은 문서에 대한 경고
 
-## Tips
+## 팁
 
-- Focus on **high-level structure**, not implementation details
-- Prefer **file paths and function signatures** over full code blocks
-- Keep each codemap under **1000 tokens** for efficient context loading
-- Use ASCII diagrams for data flow instead of verbose descriptions
-- Run after major feature additions or refactoring sessions
+- 구현 상세 내용이 아닌 **상위 수준의 구조**에 집중하십시오.
+- 전체 코드 블록보다는 **파일 경로와 함수 시그니처**를 선호하십시오.
+- 효율적인 컨텍스트 로딩을 위해 각 코드맵을 **1000 토큰 이하**로 유지하십시오.
+- 장황한 설명 대신 ASCII 다이어그램을 사용하여 데이터 흐름을 표현하십시오.
+- 주요 기능 추가나 리팩토링 세션 후에 실행하십시오.

@@ -1,239 +1,42 @@
 ---
 name: plankton-code-quality
-description: "Write-time code quality enforcement using Plankton — auto-formatting, linting, and Claude-powered fixes on every file edit via hooks."
+description: Plankton을 사용한 작성 시점(Write-time) 코드 품질 강제 — 하이후(Hook)를 통해 모든 파일 편집 시 자동 포맷팅, 린팅 및 Claude 지원 수정을 수행합니다.
 origin: community
 ---
 
-# Plankton Code Quality Skill
+# Plankton 코드 품질 스킬 (Plankton Code Quality Skill)
 
-Integration reference for Plankton (credit: @alxfazio), a write-time code quality enforcement system for Claude Code. Plankton runs formatters and linters on every file edit via PostToolUse hooks, then spawns Claude subprocesses to fix violations the agent didn't catch.
+Claude Code를 위한 작성 시점 코드 품질 강제 시스템인 Plankton(제작: @alxfazio) 통합 참조 가이드입니다. Plankton은 파일 편집 시마다 `PostToolUse` 후크를 통해 포맷터와 린터를 실행하고, 에이전트가 놓친 위반 사항을 수정하기 위해 Claude 서브프로세스를 가동합니다.
 
-## When to Use
+## 활성화 시점
 
-- You want automatic formatting and linting on every file edit (not just at commit time)
-- You need defense against agents modifying linter configs to pass instead of fixing code
-- You want tiered model routing for fixes (Haiku for simple style, Sonnet for logic, Opus for types)
-- You work with multiple languages (Python, TypeScript, Shell, YAML, JSON, TOML, Markdown, Dockerfile)
+- 커밋 시점이 아닌, 파일 편집 시마다 자동 포맷팅과 린팅을 원할 때
+- 에이전트가 코드를 수정하는 대신 린터 설정을 변조하여 통과시키려는 행위를 방지하고 싶을 때
+- 수정 작업의 복잡도에 따라 모델을 다르게 라우팅(Haiku: 스타일, Sonnet: 로직, Opus: 타입 등)하고 싶을 때
+- 다양한 언어(Python, TS, Shell, YAML, JSON, Markdown 등)를 혼용해 작업할 때
 
-## How It Works
+## 작동 원리 (3단계 아키텍처)
 
-### Three-Phase Architecture
+1. **Phase 1: 자동 포맷 (Silent)** - `ruff`, `biome`, `shfmt` 등을 실행하여 이슈의 40-50%를 자동으로 조용히 수정합니다.
+2. **Phase 2: 위반 사항 수집 (JSON)** - 수정 불가능한 위반 사항을 수집하여 구조화된 JSON으로 반환합니다.
+3. **Phase 3: 위임 및 검증 (Delegate + Verify)** - 위반 사항 JSON을 가지고 Claude 서브프로세스를 생성합니다. 위상 상태에 따라 적절한 모델(Haiku, Sonnet, Opus)에 수정을 맡기고, 다시 1-2단계를 실행하여 완벽히 수정되었는지 검증합니다.
 
-Every time Claude Code edits or writes a file, Plankton's `multi_linter.sh` PostToolUse hook runs:
+## 주요 기능 및 보호 장치
 
-```
-Phase 1: Auto-Format (Silent)
-├─ Runs formatters (ruff format, biome, shfmt, taplo, markdownlint)
-├─ Fixes 40-50% of issues silently
-└─ No output to main agent
+- **에이전트 시점**: 대부분의 품질 문제는 투명하게 해결되며, 서브프로세스조차 해결하지 못한 경우에만 메인 에이전트에게 보고됩니다.
+- **설정 파일 보호 (Config Protection)**: 에이전트가 코드를 고치는 대신 `.ruff.toml`이나 `biome.json` 등을 수정하여 규칙을 비활성화하는 것을 3중 레이어(PreToolUse, Stop hook, Protected list)로 차단합니다.
+- **패키지 매니저 강제**: `pip` 대신 `uv`, `npm` 대신 `bun` 사용을 강제하는 등 최신 도구 사용을 유도합니다.
 
-Phase 2: Collect Violations (JSON)
-├─ Runs linters and collects unfixable violations
-├─ Returns structured JSON: {line, column, code, message, linter}
-└─ Still no output to main agent
+## 설정 및 통합
 
-Phase 3: Delegate + Verify
-├─ Spawns claude -p subprocess with violations JSON
-├─ Routes to model tier based on violation complexity:
-│   ├─ Haiku: formatting, imports, style (E/W/F codes) — 120s timeout
-│   ├─ Sonnet: complexity, refactoring (C901, PLR codes) — 300s timeout
-│   └─ Opus: type system, deep reasoning (unresolved-attribute) — 600s timeout
-├─ Re-runs Phase 1+2 to verify fixes
-└─ Exit 0 if clean, Exit 2 if violations remain (reported to main agent)
-```
+- `git clone`을 통해 Plankton을 프로젝트에 추가하고 `uv`, `ruff`, `biome` 등의 의존성을 설치하십시오.
+- `.claude/settings.json`에 후크 설정을 추가하면 자동으로 활성화됩니다.
+- **ECC와의 연동**: ECC는 보안 스캔 및 검증 루프를 담당하고, Plankton은 실시간 코드 품질 강제를 담당하도록 적절히 조합하여 사용하십시오.
 
-### What the Main Agent Sees
+## 환경 변수 제어
 
-| Scenario | Agent sees | Hook exit |
-|----------|-----------|-----------|
-| No violations | Nothing | 0 |
-| All fixed by subprocess | Nothing | 0 |
-| Violations remain after subprocess | `[hook] N violation(s) remain` | 2 |
-| Advisory (duplicates, old tooling) | `[hook:advisory] ...` | 0 |
+- `HOOK_SKIP_SUBPROCESS=1`: AI 서브프로세스 수정을 건너뛰고 위반 사항만 보고합니다.
+- `HOOK_SKIP_PM=1`: 패키지 매니저 강제 기능을 우회합니다.
 
-The main agent only sees issues the subprocess couldn't fix. Most quality problems are resolved transparently.
-
-### Config Protection (Defense Against Rule-Gaming)
-
-LLMs will modify `.ruff.toml` or `biome.json` to disable rules rather than fix code. Plankton blocks this with three layers:
-
-1. **PreToolUse hook** — `protect_linter_configs.sh` blocks edits to all linter configs before they happen
-2. **Stop hook** — `stop_config_guardian.sh` detects config changes via `git diff` at session end
-3. **Protected files list** — `.ruff.toml`, `biome.json`, `.shellcheckrc`, `.yamllint`, `.hadolint.yaml`, and more
-
-### Package Manager Enforcement
-
-A PreToolUse hook on Bash blocks legacy package managers:
-- `pip`, `pip3`, `poetry`, `pipenv` → Blocked (use `uv`)
-- `npm`, `yarn`, `pnpm` → Blocked (use `bun`)
-- Allowed exceptions: `npm audit`, `npm view`, `npm publish`
-
-## Setup
-
-### Quick Start
-
-```bash
-# Clone Plankton into your project (or a shared location)
-# Note: Plankton is by @alxfazio
-git clone https://github.com/alexfazio/plankton.git
-cd plankton
-
-# Install core dependencies
-brew install jaq ruff uv
-
-# Install Python linters
-uv sync --all-extras
-
-# Start Claude Code — hooks activate automatically
-claude
-```
-
-No install command, no plugin config. The hooks in `.claude/settings.json` are picked up automatically when you run Claude Code in the Plankton directory.
-
-### Per-Project Integration
-
-To use Plankton hooks in your own project:
-
-1. Copy `.claude/hooks/` directory to your project
-2. Copy `.claude/settings.json` hook configuration
-3. Copy linter config files (`.ruff.toml`, `biome.json`, etc.)
-4. Install the linters for your languages
-
-### Language-Specific Dependencies
-
-| Language | Required | Optional |
-|----------|----------|----------|
-| Python | `ruff`, `uv` | `ty` (types), `vulture` (dead code), `bandit` (security) |
-| TypeScript/JS | `biome` | `oxlint`, `semgrep`, `knip` (dead exports) |
-| Shell | `shellcheck`, `shfmt` | — |
-| YAML | `yamllint` | — |
-| Markdown | `markdownlint-cli2` | — |
-| Dockerfile | `hadolint` (>= 2.12.0) | — |
-| TOML | `taplo` | — |
-| JSON | `jaq` | — |
-
-## Pairing with ECC
-
-### Complementary, Not Overlapping
-
-| Concern | ECC | Plankton |
-|---------|-----|----------|
-| Code quality enforcement | PostToolUse hooks (Prettier, tsc) | PostToolUse hooks (20+ linters + subprocess fixes) |
-| Security scanning | AgentShield, security-reviewer agent | Bandit (Python), Semgrep (TypeScript) |
-| Config protection | — | PreToolUse blocks + Stop hook detection |
-| Package manager | Detection + setup | Enforcement (blocks legacy PMs) |
-| CI integration | — | Pre-commit hooks for git |
-| Model routing | Manual (`/model opus`) | Automatic (violation complexity → tier) |
-
-### Recommended Combination
-
-1. Install ECC as your plugin (agents, skills, commands, rules)
-2. Add Plankton hooks for write-time quality enforcement
-3. Use AgentShield for security audits
-4. Use ECC's verification-loop as a final gate before PRs
-
-### Avoiding Hook Conflicts
-
-If running both ECC and Plankton hooks:
-- ECC's Prettier hook and Plankton's biome formatter may conflict on JS/TS files
-- Resolution: disable ECC's Prettier PostToolUse hook when using Plankton (Plankton's biome is more comprehensive)
-- Both can coexist on different file types (ECC handles what Plankton doesn't cover)
-
-## Configuration Reference
-
-Plankton's `.claude/hooks/config.json` controls all behavior:
-
-```json
-{
-  "languages": {
-    "python": true,
-    "shell": true,
-    "yaml": true,
-    "json": true,
-    "toml": true,
-    "dockerfile": true,
-    "markdown": true,
-    "typescript": {
-      "enabled": true,
-      "js_runtime": "auto",
-      "biome_nursery": "warn",
-      "semgrep": true
-    }
-  },
-  "phases": {
-    "auto_format": true,
-    "subprocess_delegation": true
-  },
-  "subprocess": {
-    "tiers": {
-      "haiku":  { "timeout": 120, "max_turns": 10 },
-      "sonnet": { "timeout": 300, "max_turns": 10 },
-      "opus":   { "timeout": 600, "max_turns": 15 }
-    },
-    "volume_threshold": 5
-  }
-}
-```
-
-**Key settings:**
-- Disable languages you don't use to speed up hooks
-- `volume_threshold` — violations > this count auto-escalate to a higher model tier
-- `subprocess_delegation: false` — skip Phase 3 entirely (just report violations)
-
-## Environment Overrides
-
-| Variable | Purpose |
-|----------|---------|
-| `HOOK_SKIP_SUBPROCESS=1` | Skip Phase 3, report violations directly |
-| `HOOK_SUBPROCESS_TIMEOUT=N` | Override tier timeout |
-| `HOOK_DEBUG_MODEL=1` | Log model selection decisions |
-| `HOOK_SKIP_PM=1` | Bypass package manager enforcement |
-
-## References
-
-- Plankton (credit: @alxfazio)
-- Plankton REFERENCE.md — Full architecture documentation (credit: @alxfazio)
-- Plankton SETUP.md — Detailed installation guide (credit: @alxfazio)
-
-## ECC v1.8 Additions
-
-### Copyable Hook Profile
-
-Set strict quality behavior:
-
-```bash
-export ECC_HOOK_PROFILE=strict
-export ECC_QUALITY_GATE_FIX=true
-export ECC_QUALITY_GATE_STRICT=true
-```
-
-### Language Gate Table
-
-- TypeScript/JavaScript: Biome preferred, Prettier fallback
-- Python: Ruff format/check
-- Go: gofmt
-
-### Config Tamper Guard
-
-During quality enforcement, flag changes to config files in same iteration:
-
-- `biome.json`, `.eslintrc*`, `prettier.config*`, `tsconfig.json`, `pyproject.toml`
-
-If config is changed to suppress violations, require explicit review before merge.
-
-### CI Integration Pattern
-
-Use the same commands in CI as local hooks:
-
-1. run formatter checks
-2. run lint/type checks
-3. fail fast on strict mode
-4. publish remediation summary
-
-### Health Metrics
-
-Track:
-- edits flagged by gates
-- average remediation time
-- repeat violations by category
-- merge blocks due to gate failures
+**기억하십시오**: Plankton은 에이전트가 작성하는 코드의 품질을 실시간으로 감시하고 교정하는 "품질 경찰" 역할을 합니다. 이를 통해 코드베이스가 항상 깨끗하고 표준화된 상태를 유지하도록 돕습니다.
+    

@@ -1,102 +1,102 @@
 ---
 name: project-guidelines-example
-description: "基于真实生产应用的示例项目特定技能模板。"
+description: 실제 프로덕션 애플리케이션을 기반으로 한 프로젝트 전용 스킬 템플릿 예시입니다.
 origin: ECC
 ---
 
-# 项目指南技能（示例）
+# 프로젝트 가이드라인 스킬 (예시)
 
-这是一个项目特定技能的示例。将其用作您自己项目的模板。
+이 파일은 프로젝트 전용 스킬의 예시입니다. 여러분의 실제 프로젝트를 위한 템플릿으로 활용하십시오.
 
-基于一个真实的生产应用程序：[Zenith](https://zenith.chat) - 由 AI 驱动的客户发现平台。
+본 예시는 AI 기반 고객 발굴 플랫폼인 [Zenith](https://zenith.chat)라는 실제 프로덕션 애플리케이션을 바탕으로 작성되었습니다.
 
-## 何时使用
+## 적용 시점
 
-在为其设计的特定项目上工作时，请参考此技能。项目技能包含：
+이 스킬은 해당 프로젝트를 수행할 때 참고하십시오. 프로젝트 전용 스킬은 다음 내용을 포함합니다:
 
-* 架构概述
-* 文件结构
-* 代码模式
-* 测试要求
-* 部署工作流
+* 아키텍처 개요
+* 파일 구조
+* 코드 패턴
+* 테스트 요구 사항
+* 배포 워크플로우
 
 ***
 
-## 架构概述
+## 아키텍처 개요 (Architecture Overview)
 
-**技术栈：**
+**기술 스택:**
 
-* **前端**: Next.js 15 (App Router), TypeScript, React
-* **后端**: FastAPI (Python), Pydantic 模型
-* **数据库**: Supabase (PostgreSQL)
-* **AI**: Claude API，支持工具调用和结构化输出
-* **部署**: Google Cloud Run
-* **测试**: Playwright (E2E), pytest (后端), React Testing Library
+* **프런트엔드**: Next.js 15 (App Router), TypeScript, React
+* **백엔드**: FastAPI (Python), Pydantic 모델
+* **데이터베이스**: Supabase (PostgreSQL)
+* **AI**: Claude API (도구 호출 및 구조화된 출력 지원)
+* **배포**: Google Cloud Run
+* **테스트**: Playwright (E2E), pytest (백엔드), React Testing Library
 
-**服务：**
+**서비스 구성 도표:**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                         Frontend                            │
+│                       프런트엔드 (Frontend)                 │
 │  Next.js 15 + TypeScript + TailwindCSS                     │
-│  Deployed: Vercel / Cloud Run                              │
+│  배포: Vercel / Cloud Run                                   │
 └─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
+                               │
+                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                         Backend                             │
+│                        백엔드 (Backend)                     │
 │  FastAPI + Python 3.11 + Pydantic                          │
-│  Deployed: Cloud Run                                       │
+│  배포: Cloud Run                                            │
 └─────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              ▼               ▼               ▼
-        ┌──────────┐   ┌──────────┐   ┌──────────┐
-        │ Supabase │   │  Claude  │   │  Redis   │
-        │ Database │   │   API    │   │  Cache   │
-        └──────────┘   └──────────┘   └──────────┘
+                               │
+               ┌───────────────┼───────────────┐
+               ▼               ▼               ▼
+         ┌──────────┐   ┌──────────┐   ┌──────────┐
+         │ Supabase │   │  Claude  │   │  Redis   │
+         │ Database │   │   API    │   │  Cache   │
+         └──────────┘   └──────────┘   └──────────┘
 ```
 
 ***
 
-## 文件结构
+## 파일 구조 (File Structure)
 
 ```
 project/
 ├── frontend/
 │   └── src/
-│       ├── app/              # Next.js app router pages
-│       │   ├── api/          # API routes
-│       │   ├── (auth)/       # Auth-protected routes
-│       │   └── workspace/    # Main app workspace
-│       ├── components/       # React components
-│       │   ├── ui/           # Base UI components
-│       │   ├── forms/        # Form components
-│       │   └── layouts/      # Layout components
-│       ├── hooks/            # Custom React hooks
-│       ├── lib/              # Utilities
-│       ├── types/            # TypeScript definitions
-│       └── config/           # Configuration
+│       ├── app/              # Next.js 앱 라우터 페이지
+│       │   ├── api/          # 내부 API 라우트
+│       │   ├── (auth)/       # 인증 보호 라우트
+│       │   └── workspace/    # 메인 앱 워크스페이스
+│       ├── components/       # React 컴포넌트
+│       │   ├── ui/           # 기본 UI 컴포넌트 (Shadcn 등)
+│       │   ├── forms/        # 폼 관련 컴포넌트
+│       │   └── layouts/      # 레이아웃 컴포넌트
+│       ├── hooks/            # 커스텀 React 훅
+│       ├── lib/              # 유틸리티 함수
+│       ├── types/            # TypeScript 타입 정의
+│       └── config/           # 설정 파일
 │
 ├── backend/
-│   ├── routers/              # FastAPI route handlers
-│   ├── models.py             # Pydantic models
-│   ├── main.py               # FastAPI app entry
-│   ├── auth_system.py        # Authentication
-│   ├── database.py           # Database operations
-│   ├── services/             # Business logic
-│   └── tests/                # pytest tests
+│   ├── routers/              # FastAPI 라우트 핸들러
+│   ├── models.py             # Pydantic 모델 정의
+│   ├── main.py               # FastAPI 앱 엔트리 포인트
+│   ├── auth_system.py        # 인증 시스템
+│   ├── database.py           # 데이터베이스 작업
+│   ├── services/             # 비즈니스 로직 처리
+│   └── tests/                # pytest 테스트 코드
 │
-├── deploy/                   # Deployment configs
-├── docs/                     # Documentation
-└── scripts/                  # Utility scripts
+├── deploy/                   # 배포 설정 파일
+├── docs/                     # 프로젝트 문서
+└── scripts/                  # 유틸리티 스크립트
 ```
 
 ***
 
-## 代码模式
+## 코드 패턴 (Code Patterns)
 
-### API 响应格式 (FastAPI)
+### API 응답 형식 (FastAPI)
 
 ```python
 from pydantic import BaseModel
@@ -118,7 +118,7 @@ class ApiResponse(BaseModel, Generic[T]):
         return cls(success=False, error=error)
 ```
 
-### 前端 API 调用 (TypeScript)
+### 프런트엔드 API 호출 (TypeScript)
 
 ```typescript
 interface ApiResponse<T> {
@@ -141,7 +141,7 @@ async function fetchApi<T>(
     })
 
     if (!response.ok) {
-      return { success: false, error: `HTTP ${response.status}` }
+      return { success: false, error: `HTTP 에러 ${response.status}` }
     }
 
     return await response.json()
@@ -151,7 +151,7 @@ async function fetchApi<T>(
 }
 ```
 
-### Claude AI 集成 (结构化输出)
+### Claude AI 통합 (구조화된 출력)
 
 ```python
 from anthropic import Anthropic
@@ -166,18 +166,18 @@ async def analyze_with_claude(content: str) -> AnalysisResult:
     client = Anthropic()
 
     response = client.messages.create(
-        model="claude-sonnet-4-5-20250514",
+        model="claude-3-5-sonnet-20240620",
         max_tokens=1024,
         messages=[{"role": "user", "content": content}],
         tools=[{
             "name": "provide_analysis",
-            "description": "Provide structured analysis",
-            "input_schema": AnalysisResult.model_json_schema()
+            "description": "구조화된 분석 결과 제공",
+            "input_schema": AnalysisResult.model_config
         }],
         tool_choice={"type": "tool", "name": "provide_analysis"}
     )
 
-    # Extract tool use result
+    # 도구 사용 결과 추출
     tool_use = next(
         block for block in response.content
         if block.type == "tool_use"
@@ -186,169 +186,77 @@ async def analyze_with_claude(content: str) -> AnalysisResult:
     return AnalysisResult(**tool_use.input)
 ```
 
-### 自定义 Hooks (React)
-
-```typescript
-import { useState, useCallback } from 'react'
-
-interface UseApiState<T> {
-  data: T | null
-  loading: boolean
-  error: string | null
-}
-
-export function useApi<T>(
-  fetchFn: () => Promise<ApiResponse<T>>
-) {
-  const [state, setState] = useState<UseApiState<T>>({
-    data: null,
-    loading: false,
-    error: null,
-  })
-
-  const execute = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }))
-
-    const result = await fetchFn()
-
-    if (result.success) {
-      setState({ data: result.data!, loading: false, error: null })
-    } else {
-      setState({ data: null, loading: false, error: result.error! })
-    }
-  }, [fetchFn])
-
-  return { ...state, execute }
-}
-```
-
 ***
 
-## 测试要求
+## 테스트 요구 사항
 
-### 后端 (pytest)
+### 백엔드 (pytest)
 
 ```bash
-# Run all tests
+# 모든 테스트 실행
 poetry run pytest tests/
 
-# Run with coverage
+# 커버리지와 함께 실행
 poetry run pytest tests/ --cov=. --cov-report=html
 
-# Run specific test file
+# 특정 테스트 파일 실행
 poetry run pytest tests/test_auth.py -v
 ```
 
-**测试结构：**
-
-```python
-import pytest
-from httpx import AsyncClient
-from main import app
-
-@pytest.fixture
-async def client():
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        yield ac
-
-@pytest.mark.asyncio
-async def test_health_check(client: AsyncClient):
-    response = await client.get("/health")
-    assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
-```
-
-### 前端 (React Testing Library)
+### 프런트엔드 (React Testing Library)
 
 ```bash
-# Run tests
+# 테스트 실행
 npm run test
 
-# Run with coverage
+# 커버리지와 함께 실행
 npm run test -- --coverage
 
-# Run E2E tests
+# E2E 테스트 실행
 npm run test:e2e
-```
-
-**测试结构：**
-
-```typescript
-import { render, screen, fireEvent } from '@testing-library/react'
-import { WorkspacePanel } from './WorkspacePanel'
-
-describe('WorkspacePanel', () => {
-  it('renders workspace correctly', () => {
-    render(<WorkspacePanel />)
-    expect(screen.getByRole('main')).toBeInTheDocument()
-  })
-
-  it('handles session creation', async () => {
-    render(<WorkspacePanel />)
-    fireEvent.click(screen.getByText('New Session'))
-    expect(await screen.findByText('Session created')).toBeInTheDocument()
-  })
-})
 ```
 
 ***
 
-## 部署工作流
+## 배포 워크플로우
 
-### 部署前检查清单
+### 배포 전 체크리스트
+* [ ] 로컬에서 모든 테스트 통과 확인
+* [ ] 프런트엔드 `npm run build` 성공 확인
+* [ ] 백엔드 `poetry run pytest` 통과 확인
+* [ ] 하드코딩된 비밀 정보가 없는지 확인
+* [ ] 환경 변수 문서화 완료
+* [ ] 데이터베이스 마이그레이션 준비 완료
 
-* \[ ] 所有测试在本地通过
-* \[ ] `npm run build` 成功 (前端)
-* \[ ] `poetry run pytest` 通过 (后端)
-* \[ ] 没有硬编码的密钥
-* \[ ] 环境变量已记录
-* \[ ] 数据库迁移就绪
-
-### 部署命令
-
+### 배포 명령어
 ```bash
-# Build and deploy frontend
+# 프런트엔드 빌드 및 배포
 cd frontend && npm run build
 gcloud run deploy frontend --source .
 
-# Build and deploy backend
+# 백엔드 빌드 및 배포
 cd backend
 gcloud run deploy backend --source .
 ```
 
-### 环境变量
+***
 
-```bash
-# Frontend (.env.local)
-NEXT_PUBLIC_API_URL=https://api.example.com
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+## 핵심 규칙 (Key Rules)
 
-# Backend (.env)
-DATABASE_URL=postgresql://...
-ANTHROPIC_API_KEY=sk-ant-...
-SUPABASE_URL=https://xxx.supabase.co
-SUPABASE_KEY=eyJ...
-```
+1. **이모지 사용 금지**: 코드, 주석, 문서 어디에도 이모지를 사용하지 마십시오.
+2. **불변성(Immutability)**: 객체나 배열을 직접 변경하지 마십시오.
+3. **테스트 주도 개발(TDD)**: 구현 전에 반드시 테스트를 먼저 작성하십시오.
+4. **최소 80% 커버리지**: 테스트 커버리지를 80% 이상 유지하십시오.
+5. **작은 파일 유지**: 일반적인 파일 크기는 200~400줄이며, 최대 800줄을 넘지 않아야 합니다.
+6. **console.log 금지**: 프로덕션 코드에 로그 출력문을 남기지 마십시오.
+7. **적절한 에러 처리**: 모든 예외 상황에 대해 try/catch를 사용하십시오.
+8. **입력값 검증**: Pydantic(백엔드) 또는 Zod(프런트엔드)를 사용해 모든 입력을 검증하십시오.
 
 ***
 
-## 关键规则
+## 관련 스킬
 
-1. 在代码、注释或文档中**不使用表情符号**
-2. **不可变性** - 永不改变对象或数组
-3. **测试驱动开发 (TDD)** - 在实现之前编写测试
-4. **最低 80% 覆盖率**
-5. **许多小文件** - 典型 200-400 行，最多 800 行
-6. 在生产代码中**不使用 console.log**
-7. 使用 try/catch 进行**适当的错误处理**
-8. 使用 Pydantic/Zod 进行**输入验证**
-
-***
-
-## 相关技能
-
-* `coding-standards.md` - 通用编码最佳实践
-* `backend-patterns.md` - API 和数据库模式
-* `frontend-patterns.md` - React 和 Next.js 模式
-* `tdd-workflow/` - 测试驱动开发方法论
+* `coding-standards.md` - 범용 코딩 베스트 프랙티스
+* `backend-patterns.md` - API 및 데이터베이스 패턴
+* `frontend-patterns.md` - React 및 Next.js 패턴
+* `tdd-workflow/` - 테스트 주도 개발 방법론

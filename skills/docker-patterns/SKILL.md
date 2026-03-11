@@ -1,364 +1,71 @@
 ---
 name: docker-patterns
-description: Docker and Docker Compose patterns for local development, container security, networking, volume strategies, and multi-service orchestration.
+description: 로컬 개발, 컨테이너 보안, 네트워킹, 볼륨 전략 및 다중 서비스 오케스트레이션을 위한 Docker 및 Docker Compose 패턴 가이드입니다.
 origin: ECC
 ---
 
-# Docker Patterns
-
-Docker and Docker Compose best practices for containerized development.
-
-## When to Activate
-
-- Setting up Docker Compose for local development
-- Designing multi-container architectures
-- Troubleshooting container networking or volume issues
-- Reviewing Dockerfiles for security and size
-- Migrating from local dev to containerized workflow
-
-## Docker Compose for Local Development
-
-### Standard Web App Stack
-
-```yaml
-# docker-compose.yml
-services:
-  app:
-    build:
-      context: .
-      target: dev                     # Use dev stage of multi-stage Dockerfile
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app                        # Bind mount for hot reload
-      - /app/node_modules             # Anonymous volume -- preserves container deps
-    environment:
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/app_dev
-      - REDIS_URL=redis://redis:6379/0
-      - NODE_ENV=development
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    command: npm run dev
-
-  db:
-    image: postgres:16-alpine
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: app_dev
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redisdata:/data
-
-  mailpit:                            # Local email testing
-    image: axllent/mailpit
-    ports:
-      - "8025:8025"                   # Web UI
-      - "1025:1025"                   # SMTP
-
-volumes:
-  pgdata:
-  redisdata:
-```
-
-### Development vs Production Dockerfile
-
-```dockerfile
-# Stage: dependencies
-FROM node:22-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-
-# Stage: dev (hot reload, debug tools)
-FROM node:22-alpine AS dev
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-EXPOSE 3000
-CMD ["npm", "run", "dev"]
-
-# Stage: build
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npm run build && npm prune --production
-
-# Stage: production (minimal image)
-FROM node:22-alpine AS production
-WORKDIR /app
-RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001
-USER appuser
-COPY --from=build --chown=appuser:appgroup /app/dist ./dist
-COPY --from=build --chown=appuser:appgroup /app/node_modules ./node_modules
-COPY --from=build --chown=appuser:appgroup /app/package.json ./
-ENV NODE_ENV=production
-EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/health || exit 1
-CMD ["node", "dist/server.js"]
-```
-
-### Override Files
-
-```yaml
-# docker-compose.override.yml (auto-loaded, dev-only settings)
-services:
-  app:
-    environment:
-      - DEBUG=app:*
-      - LOG_LEVEL=debug
-    ports:
-      - "9229:9229"                   # Node.js debugger
-
-# docker-compose.prod.yml (explicit for production)
-services:
-  app:
-    build:
-      target: production
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 512M
-```
-
-```bash
-# Development (auto-loads override)
-docker compose up
-
-# Production
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-```
-
-## Networking
-
-### Service Discovery
-
-Services in the same Compose network resolve by service name:
-```
-# From "app" container:
-postgres://postgres:postgres@db:5432/app_dev    # "db" resolves to the db container
-redis://redis:6379/0                             # "redis" resolves to the redis container
-```
-
-### Custom Networks
-
-```yaml
-services:
-  frontend:
-    networks:
-      - frontend-net
-
-  api:
-    networks:
-      - frontend-net
-      - backend-net
-
-  db:
-    networks:
-      - backend-net              # Only reachable from api, not frontend
-
-networks:
-  frontend-net:
-  backend-net:
-```
-
-### Exposing Only What's Needed
-
-```yaml
-services:
-  db:
-    ports:
-      - "127.0.0.1:5432:5432"   # Only accessible from host, not network
-    # Omit ports entirely in production -- accessible only within Docker network
-```
-
-## Volume Strategies
-
-```yaml
-volumes:
-  # Named volume: persists across container restarts, managed by Docker
-  pgdata:
-
-  # Bind mount: maps host directory into container (for development)
-  # - ./src:/app/src
-
-  # Anonymous volume: preserves container-generated content from bind mount override
-  # - /app/node_modules
-```
-
-### Common Patterns
-
-```yaml
-services:
-  app:
-    volumes:
-      - .:/app                   # Source code (bind mount for hot reload)
-      - /app/node_modules        # Protect container's node_modules from host
-      - /app/.next               # Protect build cache
-
-  db:
-    volumes:
-      - pgdata:/var/lib/postgresql/data          # Persistent data
-      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql  # Init scripts
-```
-
-## Container Security
-
-### Dockerfile Hardening
-
-```dockerfile
-# 1. Use specific tags (never :latest)
-FROM node:22.12-alpine3.20
-
-# 2. Run as non-root
-RUN addgroup -g 1001 -S app && adduser -S app -u 1001
-USER app
-
-# 3. Drop capabilities (in compose)
-# 4. Read-only root filesystem where possible
-# 5. No secrets in image layers
-```
-
-### Compose Security
-
-```yaml
-services:
-  app:
-    security_opt:
-      - no-new-privileges:true
-    read_only: true
-    tmpfs:
-      - /tmp
-      - /app/.cache
-    cap_drop:
-      - ALL
-    cap_add:
-      - NET_BIND_SERVICE          # Only if binding to ports < 1024
-```
-
-### Secret Management
-
-```yaml
-# GOOD: Use environment variables (injected at runtime)
-services:
-  app:
-    env_file:
-      - .env                     # Never commit .env to git
-    environment:
-      - API_KEY                  # Inherits from host environment
-
-# GOOD: Docker secrets (Swarm mode)
-secrets:
-  db_password:
-    file: ./secrets/db_password.txt
-
-services:
-  db:
-    secrets:
-      - db_password
-
-# BAD: Hardcoded in image
-# ENV API_KEY=sk-proj-xxxxx      # NEVER DO THIS
-```
-
-## .dockerignore
-
-```
-node_modules
-.git
-.env
-.env.*
-dist
-coverage
-*.log
-.next
-.cache
-docker-compose*.yml
-Dockerfile*
-README.md
-tests/
-```
-
-## Debugging
-
-### Common Commands
-
-```bash
-# View logs
-docker compose logs -f app           # Follow app logs
-docker compose logs --tail=50 db     # Last 50 lines from db
-
-# Execute commands in running container
-docker compose exec app sh           # Shell into app
-docker compose exec db psql -U postgres  # Connect to postgres
-
-# Inspect
-docker compose ps                     # Running services
-docker compose top                    # Processes in each container
-docker stats                          # Resource usage
-
-# Rebuild
-docker compose up --build             # Rebuild images
-docker compose build --no-cache app   # Force full rebuild
-
-# Clean up
-docker compose down                   # Stop and remove containers
-docker compose down -v                # Also remove volumes (DESTRUCTIVE)
-docker system prune                   # Remove unused images/containers
-```
-
-### Debugging Network Issues
-
-```bash
-# Check DNS resolution inside container
-docker compose exec app nslookup db
-
-# Check connectivity
-docker compose exec app wget -qO- http://api:3000/health
-
-# Inspect network
-docker network ls
-docker network inspect <project>_default
-```
-
-## Anti-Patterns
-
-```
-# BAD: Using docker compose in production without orchestration
-# Use Kubernetes, ECS, or Docker Swarm for production multi-container workloads
-
-# BAD: Storing data in containers without volumes
-# Containers are ephemeral -- all data lost on restart without volumes
-
-# BAD: Running as root
-# Always create and use a non-root user
-
-# BAD: Using :latest tag
-# Pin to specific versions for reproducible builds
-
-# BAD: One giant container with all services
-# Separate concerns: one process per container
-
-# BAD: Putting secrets in docker-compose.yml
-# Use .env files (gitignored) or Docker secrets
-```
+# Docker 패턴 (Docker Patterns)
+
+컨테이너 기반 개발을 위한 Docker 및 Docker Compose 최선 관행(Best practices)을 안내합니다.
+
+## 활성화 시점
+
+- 로컬 개발을 위한 Docker Compose 설정 시
+- 다중 컨테이너(Multi-container) 아키텍처 설계 시
+- 컨테이너 네트워크 또는 볼륨 문제 해결 시
+- 보안 및 이미지 크기 최적화를 위해 Dockerfile을 검토할 때
+- 로컬 개발 환경에서 컨테이너 기반 워크플로우로 전환할 때
+
+## 로컬 개발용 Docker Compose
+
+### 표준 웹 앱 스택 예시
+- **app**: 소스 코드 바인드 마운트(`.:/app`)와 익명 볼륨(`/app/node_modules`)을 조합하여 핫 리로드(Hot reload)와 컨테이너 내 의존성을 보호합니다.
+- **db**: 정기적인 헬스 체크(`pg_isready`)를 설정하고 데이터를 영구 보관하기 위한 볼륨(`pgdata`)을 사용합니다.
+- **redis**: 캐시 데이터를 위한 볼륨을 설정합니다.
+- **mailpit**: 로컬에서의 이메일 테스트를 위한 도구를 포함합니다.
+
+## 개발용 vs 상용 Dockerfile (멀티 스테이지)
+
+- **deps 스테이지**: 의존성 설치
+- **dev 스테이지**: 핫 리로드 및 디버깅 도구 포함
+- **build 스테이지**: 프로덕션용 빌드 및 불필요한 의존성 제거
+- **production 스테이지**: 최소 크기의 이미지 구성, 비-root 유저(`appuser`) 사용, 헬스 체크 설정
+
+## 네트워킹 (Networking)
+
+- **서비스 검색**: 동일한 Compose 네트워크 내의 서비스들은 서비스 이름(예: `db`, `redis`)으로 서로를 찾을 수 있습니다.
+- **커스텀 네트워크**: 프론트엔드와 백엔드 네트워크를 분리하여 프론트엔드에서 데이터베이스에 직접 접근하는 것을 차단할 수 있습니다.
+- **내부 노출**: 데이터베이스와 같은 민감한 서비스는 외부 포트를 열지 않거나 `127.0.0.1`로 제한하여 호스트에서만 접근 가능하게 하십시오.
+
+## 볼륨 전략 (Volumes)
+
+- **명명된 볼륨 (Named volume)**: `pgdata`와 같이 Docker가 관리하며 컨테이너 재시작 후에도 데이터를 보존합니다.
+- **바인드 마운트 (Bind mount)**: 호스트의 소스 코드를 컨테이너에 연결하여 실시간 수정 사항을 반영합니다 (개발용).
+- **익명 볼륨 (Anonymous volume)**: 호스트의 바인드 마운트가 컨테이너 내부의 특정 폴더(예: `node_modules`)를 덮어쓰지 않도록 보호합니다.
+
+## 컨테이너 보안
+
+- **비-root 실행**: 반드시 일반 사용자를 생성하여 애플리케이션을 실행하십시오.
+- **특정 태그 사용**: `:latest` 대신 구체적인 버전(예: `node:22-alpine`)을 사용하십시오.
+- **비밀 정보 관리**: 이미지 레이어에 비밀번호를 하드코딩하지 말고 환경 변수(`.env`, git 제외)나 Docker Secrets를 사용하십시오.
+
+## .dockerignore 작성
+
+이미지 빌드 시 불필요한 파일(`node_modules`, `.git`, `.env`, `tests`, `README.md` 등)이 포함되지 않도록 제외 목록을 작성하십시오.
+
+## 디버깅 명령어
+
+- `docker compose logs -f`: 실시간 로그 확인
+- `docker compose exec [서비스] sh`: 실행 중인 컨테이너 내부 셸 접속
+- `docker compose down -v`: 컨테이너 정지 및 볼륨 삭제 (주의: 데이터 소실)
+- `docker system prune`: 사용하지 않는 이미지/컨테이너 정리
+
+## 피해야 할 안티 패턴
+
+- 상용 환경에서 오케스트레이션 도구(K8s, ECS 등) 없이 단순 Compose만 사용하는 것
+- 볼륨 설정 없이 컨테이너 내부에만 데이터를 저장하는 것 (재시작 시 소실됨)
+- 하나의 거대한 컨테이너에 모든 서비스를 몰아넣는 것 (컨테이너당 하나의 프로세스 원칙 준수)
+- `docker-compose.yml` 파일에 비밀번호를 하드코딩하는 것
+
+**기억하십시오**: Docker는 개발과 운영 환경의 격차를 줄이는 강력한 도구입니다. 레이어링과 보안 원칙을 준수하여 가볍고 안전한 컨테이너를 구축하십시오.
+    

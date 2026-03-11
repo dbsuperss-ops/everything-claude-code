@@ -1,46 +1,46 @@
 ---
 name: continuous-agent-loop
-description: 具有质量门、评估和恢复控制的连续自主代理循环模式。
+description: 품질 게이트, 평가 및 복구 제어 기능이 포함된 지속적인 자율 에이전트 루프 패턴입니다.
 origin: ECC
 ---
 
-# 持续代理循环
+# 지속적 에이전트 루프 (Continuous Agent Loop)
 
-这是 v1.8+ 的规范循环技能名称。它在保持一个发布版本的兼容性的同时，取代了 `autonomous-loops`。
+이 스킬은 v1.8+ 버전의 표준 루프 스킬 명칭입니다. 한 번의 릴리스 주기 동안 호환성을 유지하면서 기존 `autonomous-loops`를 대체합니다.
 
-## 循环选择流程
+## 루프 선택 프로세스
 
 ```text
-Start
+시작
   |
-  +-- Need strict CI/PR control? -- yes --> continuous-pr
+  +-- 엄격한 CI/PR 제어가 필요한가? -- 예 --> continuous-pr
   |                                    
-  +-- Need RFC decomposition? -- yes --> rfc-dag
+  +-- RFC 분해가 필요한가? -- 예 --> rfc-dag
   |
-  +-- Need exploratory parallel generation? -- yes --> infinite
+  +-- 탐색적인 병렬 생성이 필요한가? -- 예 --> infinite
   |
-  +-- default --> sequential
+  +-- 기본값 --> sequential
 ```
 
-## 组合模式
+## 조합 패턴
 
-推荐的生产栈：
+권장되는 프로덕션 스택:
 
-1. RFC 分解 (`ralphinho-rfc-pipeline`)
-2. 质量门 (`plankton-code-quality` + `/quality-gate`)
-3. 评估循环 (`eval-harness`)
-4. 会话持久化 (`nanoclaw-repl`)
+1. RFC 분해 (`ralphinho-rfc-pipeline`)
+2. 품질 게이트 (`plankton-code-quality` + `/quality-gate`)
+3. 평가 루프 (`eval-harness`)
+4. 세션 유지 (`nanoclaw-repl`)
 
-## 故障模式
+## 실패 유형 (Failure Modes)
 
-* 循环空转，没有可衡量的进展
-* 因相同根本原因而重复重试
-* 合并队列停滞
-* 无限制升级导致的成本漂移
+* 측정 가능한 진전 없이 루프가 공회전함
+* 동일한 근본 원인으로 인해 반복적으로 재시도함
+* 병합 큐(Merge queue) 정체
+* 무제한 실행으로 인한 비용 급증
 
-## 恢复
+## 복구 방법
 
-* 冻结循环
-* 运行 `/harness-audit`
-* 将范围缩小到失败单元
-* 使用明确的验收标准重放
+* 루프를 일시 중지(Freeze)함
+* `/harness-audit` 실행
+* 실패한 단위로 범위를 좁힘
+* 명확한 인수 조건(Acceptance criteria)을 가지고 재시작

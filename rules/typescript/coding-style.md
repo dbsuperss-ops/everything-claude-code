@@ -5,22 +5,22 @@ paths:
   - "**/*.js"
   - "**/*.jsx"
 ---
-# TypeScript/JavaScript Coding Style
+# TypeScript/JavaScript 코딩 스타일 (TypeScript/JavaScript Coding Style)
 
-> This file extends [common/coding-style.md](../common/coding-style.md) with TypeScript/JavaScript specific content.
+> 이 파일은 [common/coding-style.md](../common/coding-style.md)을 TypeScript/JavaScript 전용 내용으로 확장합니다.
 
-## Immutability
+## 불변성 (Immutability)
 
-Use spread operator for immutable updates:
+불변 업데이트를 위해 스프레드(Spread) 연산자를 사용하십시오:
 
 ```typescript
-// WRONG: Mutation
+// 나쁨: 수정(Mutation)
 function updateUser(user, name) {
-  user.name = name  // MUTATION!
+  user.name = name  // 직접 수정!
   return user
 }
 
-// CORRECT: Immutability
+// 좋음: 불변성(Immutability)
 function updateUser(user, name) {
   return {
     ...user,
@@ -29,23 +29,23 @@ function updateUser(user, name) {
 }
 ```
 
-## Error Handling
+## 에러 처리
 
-Use async/await with try-catch:
+try-catch와 함께 async/await를 사용하십시오:
 
 ```typescript
 try {
   const result = await riskyOperation()
   return result
 } catch (error) {
-  console.error('Operation failed:', error)
-  throw new Error('Detailed user-friendly message')
+  console.error('작업 실패:', error)
+  throw new Error('사용자 친화적인 상세 메시지')
 }
 ```
 
-## Input Validation
+## 입력값 검증
 
-Use Zod for schema-based validation:
+스키마 기반 검증을 위해 Zod를 사용하십시오:
 
 ```typescript
 import { z } from 'zod'
@@ -60,6 +60,6 @@ const validated = schema.parse(input)
 
 ## Console.log
 
-- No `console.log` statements in production code
-- Use proper logging libraries instead
-- See hooks for automatic detection
+- 프로덕션 코드에 `console.log` 문을 남기지 마십시오.
+- 대신 적절한 로깅 라이브러리를 사용하십시오.
+- 자동 감지를 위해 훅(Hooks) 설정을 참조하십시오.

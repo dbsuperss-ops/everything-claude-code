@@ -1,69 +1,69 @@
-# Test Coverage
+# 테스트 커버리지 (Test Coverage)
 
-Analyze test coverage, identify gaps, and generate missing tests to reach 80%+ coverage.
+테스트 커버리지를 분석하고, 부족한 부분을 식별하며, 80% 이상의 커버리지를 달성하기 위해 누락된 테스트를 생성합니다.
 
-## Step 1: Detect Test Framework
+## 1단계: 테스트 프레임워크 감지
 
-| Indicator | Coverage Command |
+| 감지 지표 | 커버리지 명령어 |
 |-----------|-----------------|
-| `jest.config.*` or `package.json` jest | `npx jest --coverage --coverageReporters=json-summary` |
+| `jest.config.*` 또는 `package.json` jest | `npx jest --coverage --coverageReporters=json-summary` |
 | `vitest.config.*` | `npx vitest run --coverage` |
 | `pytest.ini` / `pyproject.toml` pytest | `pytest --cov=src --cov-report=json` |
 | `Cargo.toml` | `cargo llvm-cov --json` |
-| `pom.xml` with JaCoCo | `mvn test jacoco:report` |
+| JaCoCo가 포함된 `pom.xml` | `mvn test jacoco:report` |
 | `go.mod` | `go test -coverprofile=coverage.out ./...` |
 
-## Step 2: Analyze Coverage Report
+## 2단계: 커버리지 보고서 분석
 
-1. Run the coverage command
-2. Parse the output (JSON summary or terminal output)
-3. List files **below 80% coverage**, sorted worst-first
-4. For each under-covered file, identify:
-   - Untested functions or methods
-   - Missing branch coverage (if/else, switch, error paths)
-   - Dead code that inflates the denominator
+1. 커버리지 명령어를 실행합니다.
+2. 출력 결과(JSON 요약 또는 터미널 출력)를 파싱합니다.
+3. **커버리지가 80% 미만인 파일** 목록을 부족한 순서대로 나열합니다.
+4. 커버리지가 부족한 각 파일에 대해 다음을 식별합니다:
+   - 테스트되지 않은 함수 또는 메서드
+   - 누락된 분기 커버리지 (if/else, switch, 에러 경로)
+   - 분모를 늘리는 데드 코드(dead code)
 
-## Step 3: Generate Missing Tests
+## 3단계: 누락된 테스트 생성
 
-For each under-covered file, generate tests following this priority:
+커버리지가 부족한 각 파일에 대해 다음 우선순위에 따라 테스트를 생성합니다:
 
-1. **Happy path** — Core functionality with valid inputs
-2. **Error handling** — Invalid inputs, missing data, network failures
-3. **Edge cases** — Empty arrays, null/undefined, boundary values (0, -1, MAX_INT)
-4. **Branch coverage** — Each if/else, switch case, ternary
+1. **정상 경로(Happy path)** — 유효한 입력을 통한 핵심 기능 확인
+2. **에러 처리** — 잘못된 입력, 데이터 누락, 네트워크 실패 등 처리
+3. **엣지 케이스** — 빈 배열, null/undefined, 경계값(0, -1, MAX_INT) 등 처리
+4. **분기 커버리지** — 각 if/else, switch 케이스, 삼항 연산자 등 확인
 
-### Test Generation Rules
+### 테스트 생성 규칙
 
-- Place tests adjacent to source: `foo.ts` → `foo.test.ts` (or project convention)
-- Use existing test patterns from the project (import style, assertion library, mocking approach)
-- Mock external dependencies (database, APIs, file system)
-- Each test should be independent — no shared mutable state between tests
-- Name tests descriptively: `test_create_user_with_duplicate_email_returns_409`
+- 테스트 파일을 소스 파일 근처에 배치합니다: `foo.ts` → `foo.test.ts` (또는 프로젝트 컨벤션에 따름)
+- 프로젝트의 기존 테스트 패턴(임포트 스타일, 어설션 라이브러리, 모킹 방식 등)을 따릅니다.
+- 외부 의존성(데이터베이스, API, 파일 시스템 등)은 모킹(Mock) 처리합니다.
+- 각 테스트는 독립적이어야 합니다 — 테스트 간에 공유되는 가변 상태가 없어야 합니다.
+- 테스트 이름을 서술적으로 작성합니다: `test_create_user_with_duplicate_email_returns_409`
 
-## Step 4: Verify
+## 4단계: 검증
 
-1. Run the full test suite — all tests must pass
-2. Re-run coverage — verify improvement
-3. If still below 80%, repeat Step 3 for remaining gaps
+1. 전체 테스트 세트를 실행합니다 — 모든 테스트가 통과해야 합니다.
+2. 커버리지를 다시 실행하여 개선 여부를 확인합니다.
+3. 여전히 80% 미만인 경우, 남은 부분에 대해 3단계를 반복합니다.
 
-## Step 5: Report
+## 5단계: 결과 보고
 
-Show before/after comparison:
+전/후 비교를 표시합니다:
 
 ```
-Coverage Report
+테스트 커버리지 보고서
 ──────────────────────────────
-File                   Before  After
+파일                   이전    이후
 src/services/auth.ts   45%     88%
 src/utils/validation.ts 32%    82%
 ──────────────────────────────
-Overall:               67%     84%  ✅
+전체 커버리지:         67%     84%  ✅
 ```
 
-## Focus Areas
+## 주요 집중 영역
 
-- Functions with complex branching (high cyclomatic complexity)
-- Error handlers and catch blocks
-- Utility functions used across the codebase
-- API endpoint handlers (request → response flow)
-- Edge cases: null, undefined, empty string, empty array, zero, negative numbers
+- 복잡한 분기가 있는 함수 (높은 순환 복잡도)
+- 에러 핸들러 및 catch 블록
+- 코드베이스 전반에서 사용되는 유틸리티 함수
+- API 엔드포인트 핸들러 (요청 → 응답 흐름)
+- 엣지 케이스: null, undefined, 빈 문자열, 빈 배열, 0, 음수 등

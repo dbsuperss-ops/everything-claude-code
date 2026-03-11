@@ -1,59 +1,59 @@
-# Verification Command
+# 검증 명령어 (Verification Command)
 
-Run comprehensive verification on current codebase state.
+현재 코드베이스 상태에 대해 종합적인 검증을 실행합니다.
 
-## Instructions
+## 지침
 
-Execute verification in this exact order:
+다음 순서대로 검증을 실행하십시오:
 
-1. **Build Check**
-   - Run the build command for this project
-   - If it fails, report errors and STOP
+1. **빌드 체크 (Build Check)**
+   - 프로젝트의 빌드 명령어를 실행합니다.
+   - 실패할 경우 에러를 보고하고 중단(STOP)합니다.
 
-2. **Type Check**
-   - Run TypeScript/type checker
-   - Report all errors with file:line
+2. **타입 체크 (Type Check)**
+   - TypeScript 또는 언어별 타입 체커를 실행합니다.
+   - 모든 에러를 파일명:라인 번호 형식으로 보고합니다.
 
-3. **Lint Check**
-   - Run linter
-   - Report warnings and errors
+3. **린트 체크 (Lint Check)**
+   - 린터(Linter)를 실행합니다.
+   - 경고(warnings) 및 에러를 보고합니다.
 
-4. **Test Suite**
-   - Run all tests
-   - Report pass/fail count
-   - Report coverage percentage
+4. **테스트 세트 실행 (Test Suite)**
+   - 모든 테스트를 실행합니다.
+   - 통과/실패 횟수를 보고합니다.
+   - 커버리지 비율을 보고합니다.
 
-5. **Console.log Audit**
-   - Search for console.log in source files
-   - Report locations
+5. **Console.log 감사**
+   - 소스 파일에서 `console.log` 사용처를 검색합니다.
+   - 발견된 위치를 보고합니다.
 
-6. **Git Status**
-   - Show uncommitted changes
-   - Show files modified since last commit
+6. **Git 상태 확인**
+   - 커밋되지 않은 변경 사항을 표시합니다.
+   - 마지막 커밋 이후 수정된 파일을 표시합니다.
 
-## Output
+## 출력 형식
 
-Produce a concise verification report:
+간결한 검증 보고서를 생성합니다:
 
 ```
-VERIFICATION: [PASS/FAIL]
+검증 결과(VERIFICATION): [통과/실패]
 
-Build:    [OK/FAIL]
-Types:    [OK/X errors]
-Lint:     [OK/X issues]
-Tests:    [X/Y passed, Z% coverage]
-Secrets:  [OK/X found]
-Logs:     [OK/X console.logs]
+빌드:      [확인/실패]
+타입:      [확인/X개 에러]
+린트:      [확인/X개 이슈]
+테스트:    [X/Y 통과, Z% 커버리지]
+보안(비밀번호): [확인/X개 발견]
+로그:      [확인/X개 console.log 발견]
 
-Ready for PR: [YES/NO]
+PR 준비 완료: [예/아니오]
 ```
 
-If any critical issues, list them with fix suggestions.
+치명적인 이슈가 있는 경우, 수정 제안과 함께 목록을 나열합니다.
 
-## Arguments
+## 인자 (Arguments)
 
-$ARGUMENTS can be:
-- `quick` - Only build + types
-- `full` - All checks (default)
-- `pre-commit` - Checks relevant for commits
-- `pre-pr` - Full checks plus security scan
+$인자는 다음 중 하나가 될 수 있습니다:
+- `quick` - 빌드 및 타입 체크만 수행
+- `full` - 모든 체크 수행 (기본값)
+- `pre-commit` - 커밋과 관련된 체크 수행
+- `pre-pr` - 전체 체크 및 보안 스캔 수행

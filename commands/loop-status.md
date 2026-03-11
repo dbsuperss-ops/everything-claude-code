@@ -1,24 +1,24 @@
-# Loop Status Command
+# 루프 상태 명령어 (Loop Status Command)
 
-Inspect active loop state, progress, and failure signals.
+활성 루프의 상태, 진행 상황 및 실패 신호를 점검합니다.
 
-## Usage
+## 사용법
 
 `/loop-status [--watch]`
 
-## What to Report
+## 보고 항목
 
-- active loop pattern
-- current phase and last successful checkpoint
-- failing checks (if any)
-- estimated time/cost drift
-- recommended intervention (continue/pause/stop)
+- 활성화된 루프 패턴
+- 현재 단계 및 마지막 성공 체크포인트
+- 실패한 체크 항목 (있는 경우)
+- 예상 시간/비용 편차
+- 권장 조치 (계속/일시 중지/중단)
 
-## Watch Mode
+## 감시 모드 (Watch Mode)
 
-When `--watch` is present, refresh status periodically and surface state changes.
+`--watch` 인자가 있는 경우, 주기적으로 상태를 갱신하고 상태 변화를 표시합니다.
 
-## Arguments
+## 인자 (Arguments)
 
-$ARGUMENTS:
-- `--watch` optional
+$인자:
+- `--watch` (선택 사항)

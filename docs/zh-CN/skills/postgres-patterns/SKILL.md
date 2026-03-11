@@ -1,77 +1,72 @@
 ---
 name: postgres-patterns
-description: 用于查询优化、模式设计、索引和安全性的PostgreSQL数据库模式。基于Supabase最佳实践。
+description: 쿼리 최적화, 스키마 설계, 인덱싱 및 보안을 위한 PostgreSQL 데이터베이스 패턴 가이드입니다. Supabase의 베스트 프랙티스를 기반으로 합니다.
 origin: ECC
 ---
 
-# PostgreSQL 模式
+# PostgreSQL 패턴
 
-PostgreSQL 最佳实践快速参考。如需详细指导，请使用 `database-reviewer` 智能体。
+PostgreSQL 베스트 프랙티스 빠른 참조 가이드입니다. 상세한 가이드가 필요한 경우 `database-reviewer` 에이전트를 사용하십시오.
 
-## 何时激活
+## 적용 시점
 
-* 编写 SQL 查询或迁移时
-* 设计数据库模式时
-* 排查慢查询时
-* 实施行级安全性时
-* 设置连接池时
+* SQL 쿼리 작성 또는 마이그레이션 도구를 사용할 때
+* 데이터베이스 스키마를 설계할 때
+* 느린 쿼리(Slow query)를 문제 해결(Troubleshoot) 할 때
+* 행 수준 보안(RLS, Role Level Security) 정책을 구현할 때
+* 커넥션 풀(Connection pool) 설정을 튜닝할 때
 
-## 快速参考
+## 빠른 참조 (Quick Reference)
 
-### 索引速查表
+### 인덱스 치트 시트 (Index Cheat Sheet)
 
-| 查询模式 | 索引类型 | 示例 |
+| 쿼리 패턴 | 인덱스 타입 | 예시 |
 |--------------|------------|---------|
-| `WHERE col = value` | B-tree（默认） | `CREATE INDEX idx ON t (col)` |
+| `WHERE col = value` | B-tree (기본값) | `CREATE INDEX idx ON t (col)` |
 | `WHERE col > value` | B-tree | `CREATE INDEX idx ON t (col)` |
-| `WHERE a = x AND b > y` | 复合索引 | `CREATE INDEX idx ON t (a, b)` |
+| `WHERE a = x AND b > y` | 복합 인덱스 | `CREATE INDEX idx ON t (a, b)` |
 | `WHERE jsonb @> '{}'` | GIN | `CREATE INDEX idx ON t USING gin (col)` |
 | `WHERE tsv @@ query` | GIN | `CREATE INDEX idx ON t USING gin (col)` |
-| 时间序列范围查询 | BRIN | `CREATE INDEX idx ON t USING brin (col)` |
+| 시계열 범위 조회 | BRIN | `CREATE INDEX idx ON t USING brin (col)` |
 
-### 数据类型快速参考
+### 데이터 타입 가이드
 
-| 使用场景 | 正确类型 | 避免使用 |
+| 사용 사례 | 권장 타입 | 피해야 할 타입 |
 |----------|-------------|-------|
-| ID | `bigint` | `int`，随机 UUID |
-| 字符串 | `text` | `varchar(255)` |
-| 时间戳 | `timestamptz` | `timestamp` |
-| 货币 | `numeric(10,2)` | `float` |
-| 标志位 | `boolean` | `varchar`，`int` |
+| 식별자 (ID) | `bigint` | `int`, 랜덤 UUID |
+| 문자열 | `text` | `varchar(255)` |
+| 타임스탬프 | `timestamptz` | `timestamp` |
+| 통화/금액 | `numeric(10,2)` | `float` |
+| 플래그(여부) | `boolean` | `varchar`, `int` |
 
-### 常见模式
+### 주요 패턴
 
-**复合索引顺序：**
-
+**복합 인덱스 순서 (Composite Index Order):**
 ```sql
--- Equality columns first, then range columns
+-- 일치(Equality) 컬럼을 먼저 두고, 범위(Range) 컬럼을 뒤에 둡니다.
 CREATE INDEX idx ON orders (status, created_at);
--- Works for: WHERE status = 'pending' AND created_at > '2024-01-01'
+-- 효과적인 경우: WHERE status = 'pending' AND created_at > '2024-01-01'
 ```
 
-**覆盖索引：**
-
+**커버링 인덱스 (Covering Index):**
 ```sql
 CREATE INDEX idx ON users (email) INCLUDE (name, created_at);
--- Avoids table lookup for SELECT email, name, created_at
+-- SELECT email, name, created_at 조회 시 테이블 히트 없이 인덱스만으로 처리 가능
 ```
 
-**部分索引：**
-
+**부분 인덱스 (Partial Index):**
 ```sql
 CREATE INDEX idx ON users (email) WHERE deleted_at IS NULL;
--- Smaller index, only includes active users
+-- 인덱스 크기를 줄이고, 활성 사용자만 포함하여 성능 향상
 ```
 
-**RLS 策略（优化版）：**
-
+**RLS 정책 (최적화 버전):**
 ```sql
 CREATE POLICY policy ON orders
-  USING ((SELECT auth.uid()) = user_id);  -- Wrap in SELECT!
+  USING ((SELECT auth.uid()) = user_id);  -- SELECT로 감싸서 성능 최적화!
 ```
 
-**UPSERT：**
-
+**UPSERT (Insert or Update):**
 ```sql
 INSERT INTO settings (user_id, key, value)
 VALUES (123, 'theme', 'dark')
@@ -79,15 +74,13 @@ ON CONFLICT (user_id, key)
 DO UPDATE SET value = EXCLUDED.value;
 ```
 
-**游标分页：**
-
+**커서 기반 페이지네이션:**
 ```sql
 SELECT * FROM products WHERE id > $last_id ORDER BY id LIMIT 20;
--- O(1) vs OFFSET which is O(n)
+-- OFFSET 방식(O(n))보다 효율적인 O(1) 성능
 ```
 
-**队列处理：**
-
+**큐(Queue) 처리:**
 ```sql
 UPDATE jobs SET status = 'processing'
 WHERE id = (
@@ -97,10 +90,10 @@ WHERE id = (
 ) RETURNING *;
 ```
 
-### 反模式检测\*\*
+### 안티 패턴 감지 (Monitoring)
 
 ```sql
--- Find unindexed foreign keys
+-- 인덱스가 없는 외래 키 찾기
 SELECT conrelid::regclass, a.attname
 FROM pg_constraint c
 JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
@@ -110,45 +103,44 @@ WHERE c.contype = 'f'
     WHERE i.indrelid = c.conrelid AND a.attnum = ANY(i.indkey)
   );
 
--- Find slow queries
+-- 느린 쿼리 통계 확인
 SELECT query, mean_exec_time, calls
 FROM pg_stat_statements
 WHERE mean_exec_time > 100
 ORDER BY mean_exec_time DESC;
 
--- Check table bloat
+-- 테이블 데드 튜플(Bloat) 확인
 SELECT relname, n_dead_tup, last_vacuum
 FROM pg_stat_user_tables
 WHERE n_dead_tup > 1000
 ORDER BY n_dead_tup DESC;
 ```
 
-### 配置模板
+### 설정 템플릿 (Config)
 
 ```sql
--- Connection limits (adjust for RAM)
+-- 커넥션 제한 (RAM 용량에 따라 조절)
 ALTER SYSTEM SET max_connections = 100;
 ALTER SYSTEM SET work_mem = '8MB';
 
--- Timeouts
+-- 타임아웃 설정
 ALTER SYSTEM SET idle_in_transaction_session_timeout = '30s';
 ALTER SYSTEM SET statement_timeout = '30s';
 
--- Monitoring
+-- 모니터링 확장 도구
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
--- Security defaults
+-- 기본 보안 강화
 REVOKE ALL ON SCHEMA public FROM public;
 
 SELECT pg_reload_conf();
 ```
 
-## 相关
+## 관련 항목
 
-* 智能体：`database-reviewer` - 完整的数据库审查工作流
-* 技能：`clickhouse-io` - ClickHouse 分析模式
-* 技能：`backend-patterns` - API 和后端模式
+* 에이전트: `database-reviewer` - 전체 데이터베이스 리뷰 워크플로우
+* 스킬: `clickhouse-io` - ClickHouse 분석 패턴
+* 스킬: `backend-patterns` - API 및 백엔드 아키텍처 패턴
 
-***
-
-*基于 Supabase 代理技能（致谢：Supabase 团队）（MIT 许可证）*
+---
+*Supabase 에이전트 스킬 기반 (제작: Supabase 팀 / MIT 라이선스)*

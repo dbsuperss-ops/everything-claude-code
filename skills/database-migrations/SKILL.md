@@ -1,335 +1,65 @@
 ---
 name: database-migrations
-description: Database migration best practices for schema changes, data migrations, rollbacks, and zero-downtime deployments across PostgreSQL, MySQL, and common ORMs (Prisma, Drizzle, Django, TypeORM, golang-migrate).
+description: 스키마 변경, 데이터 마이그레이션, 롤백 및 무중단 배포를 위한 데이터베이스 마이그레이션 최선 관행(Best practices) 가이드입니다. PostgreSQL, MySQL 및 주요 ORM(Prisma, Drizzle, Django, TypeORM 등)을 다룹니다.
 origin: ECC
 ---
 
-# Database Migration Patterns
+# 데이터베이스 마이그레이션 패턴 (Database Migration Patterns)
 
-Safe, reversible database schema changes for production systems.
+운영 시스템을 위한 안전하고 가역적인 데이터베이스 스키마 변경 방법론입니다.
 
-## When to Activate
+## 활성화 시점
 
-- Creating or altering database tables
-- Adding/removing columns or indexes
-- Running data migrations (backfill, transform)
-- Planning zero-downtime schema changes
-- Setting up migration tooling for a new project
+- 데이터베이스 테이블 생성 또는 변경 시
+- 컬럼이나 인덱스 추가/삭제 시
+- 데이터 마이그레이션(데이터 채우기, 변환) 실행 시
+- 무중단(Zero-downtime) 스키마 변경 계획 수립 시
+- 새로운 프로젝트의 마이그레이션 도구 설정 시
 
-## Core Principles
+## 핵심 원칙
 
-1. **Every change is a migration** — never alter production databases manually
-2. **Migrations are forward-only in production** — rollbacks use new forward migrations
-3. **Schema and data migrations are separate** — never mix DDL and DML in one migration
-4. **Test migrations against production-sized data** — a migration that works on 100 rows may lock on 10M
-5. **Migrations are immutable once deployed** — never edit a migration that has run in production
+1. **모든 변경은 마이그레이션입니다** — 운영 데이터베이스를 수동으로 직접 수정하지 마십시오.
+2. **운영 환경의 마이그레이션은 전진(Forward-only) 방식입니다** — 롤백이 필요한 경우에도 새로운 '전진' 마이그레이션을 통해 수정하십시오.
+3. **스키마와 데이터 마이그레이션을 분리하십시오** — DDL(구조 변경)과 DML(데이터 변경)을 한 마이그레이션에 섞지 마십시오.
+4. **운영 규모의 데이터로 테스트하십시오** — 100행에서 작동하던 마이그레이션이 1,000만 행에서는 테이블을 잠글 수 있습니다.
+5. **배포된 마이그레이션은 불변(Immutable)입니다** — 이미 운영 환경에서 실행된 마이그레이션 파일을 수정하지 마십시오.
 
-## Migration Safety Checklist
+## 마이그레이션 안전 체크리스트
 
-Before applying any migration:
+명령 실행 전 확인 사항:
 
-- [ ] Migration has both UP and DOWN (or is explicitly marked irreversible)
-- [ ] No full table locks on large tables (use concurrent operations)
-- [ ] New columns have defaults or are nullable (never add NOT NULL without default)
-- [ ] Indexes created concurrently (not inline with CREATE TABLE for existing tables)
-- [ ] Data backfill is a separate migration from schema change
-- [ ] Tested against a copy of production data
-- [ ] Rollback plan documented
+- [ ] UP(적용)과 DOWN(취소) 과정이 모두 있는가? (또는 명시적으로 취소 불가능함이 표시되었는가?)
+- [ ] 대용량 테이블에 전체 잠금(Full table lock)을 걸지 않는가? (동시성 옵션 사용)
+- [ ] 새로운 컬럼이 Null 허용(Nullable)이거나 기본값(Default)을 가지고 있는가?
+- [ ] 인덱스가 다른 작업과 동시에(Concurrently) 생성되는가?
+- [ ] 데이터 채우기(Backfill)가 스키마 변경과 분리된 별도의 마이그레이션인가?
+- [ ] 운영 데이터 복사본에서 테스트를 거쳤는가?
+- [ ] 롤백 계획이 문서화되었는가?
 
-## PostgreSQL Patterns
+## PostgreSQL 패턴
 
-### Adding a Column Safely
+### 안전한 컬럼 추가
+- **좋음**: Null 허용 컬럼 추가 (잠금 없음)
+- **좋음**: 기본값이 있는 컬럼 추가 (Postgres 11+ 버전은 즉시 처리됨)
+- **나쁨**: 기존 테이블에 기본값 없는 NOT NULL 컬럼 추가 (테이블 전체를 재작성하며 락을 겁니다)
 
-```sql
--- GOOD: Nullable column, no lock
-ALTER TABLE users ADD COLUMN avatar_url TEXT;
+### 무중단 인덱스 추가
+`CREATE INDEX CONCURRENTLY`를 사용하여 쓰기 작업을 차단하지 않고 인덱스를 생성하십시오. (주의: 트랜잭션 블록 내에서 실행할 수 없습니다)
 
--- GOOD: Column with default (Postgres 11+ is instant, no rewrite)
-ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true;
+## 무중단(Zero-Downtime) 마이그레이션 전략: Expand-Contract 패턴
 
--- BAD: NOT NULL without default on existing table (requires full rewrite)
-ALTER TABLE users ADD COLUMN role TEXT NOT NULL;
--- This locks the table and rewrites every row
-```
+1. **내용 확장 (Expand)**: 새로운 컬럼/테이블을 추가하고, 애플리케이션이 구형과 신형 모두에 데이터를 쓰도록 배포합니다. 기존 데이터를 신형으로 채웁니다(Backfill).
+2. **이행 (Migrate)**: 애플리케이션이 신형에서 데이터를 읽고 양쪽 모두에 쓰는 상태로 배포하여 정합성을 확인합니다.
+3. **내용 축소 (Contract)**: 애플리케이션이 신형만 사용하도록 배포한 후, 구형 컬럼/테이블을 삭제하는 마이그레이션을 실행합니다.
 
-### Adding an Index Without Downtime
+## 피해야 할 안티 패턴
 
-```sql
--- BAD: Blocks writes on large tables
-CREATE INDEX idx_users_email ON users (email);
-
--- GOOD: Non-blocking, allows concurrent writes
-CREATE INDEX CONCURRENTLY idx_users_email ON users (email);
-
--- Note: CONCURRENTLY cannot run inside a transaction block
--- Most migration tools need special handling for this
-```
-
-### Renaming a Column (Zero-Downtime)
-
-Never rename directly in production. Use the expand-contract pattern:
-
-```sql
--- Step 1: Add new column (migration 001)
-ALTER TABLE users ADD COLUMN display_name TEXT;
-
--- Step 2: Backfill data (migration 002, data migration)
-UPDATE users SET display_name = username WHERE display_name IS NULL;
-
--- Step 3: Update application code to read/write both columns
--- Deploy application changes
-
--- Step 4: Stop writing to old column, drop it (migration 003)
-ALTER TABLE users DROP COLUMN username;
-```
-
-### Removing a Column Safely
-
-```sql
--- Step 1: Remove all application references to the column
--- Step 2: Deploy application without the column reference
--- Step 3: Drop column in next migration
-ALTER TABLE orders DROP COLUMN legacy_status;
-
--- For Django: use SeparateDatabaseAndState to remove from model
--- without generating DROP COLUMN (then drop in next migration)
-```
-
-### Large Data Migrations
-
-```sql
--- BAD: Updates all rows in one transaction (locks table)
-UPDATE users SET normalized_email = LOWER(email);
-
--- GOOD: Batch update with progress
-DO $$
-DECLARE
-  batch_size INT := 10000;
-  rows_updated INT;
-BEGIN
-  LOOP
-    UPDATE users
-    SET normalized_email = LOWER(email)
-    WHERE id IN (
-      SELECT id FROM users
-      WHERE normalized_email IS NULL
-      LIMIT batch_size
-      FOR UPDATE SKIP LOCKED
-    );
-    GET DIAGNOSTICS rows_updated = ROW_COUNT;
-    RAISE NOTICE 'Updated % rows', rows_updated;
-    EXIT WHEN rows_updated = 0;
-    COMMIT;
-  END LOOP;
-END $$;
-```
-
-## Prisma (TypeScript/Node.js)
-
-### Workflow
-
-```bash
-# Create migration from schema changes
-npx prisma migrate dev --name add_user_avatar
-
-# Apply pending migrations in production
-npx prisma migrate deploy
-
-# Reset database (dev only)
-npx prisma migrate reset
-
-# Generate client after schema changes
-npx prisma generate
-```
-
-### Schema Example
-
-```prisma
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  avatarUrl String?  @map("avatar_url")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  orders    Order[]
-
-  @@map("users")
-  @@index([email])
-}
-```
-
-### Custom SQL Migration
-
-For operations Prisma cannot express (concurrent indexes, data backfills):
-
-```bash
-# Create empty migration, then edit the SQL manually
-npx prisma migrate dev --create-only --name add_email_index
-```
-
-```sql
--- migrations/20240115_add_email_index/migration.sql
--- Prisma cannot generate CONCURRENTLY, so we write it manually
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_email ON users (email);
-```
-
-## Drizzle (TypeScript/Node.js)
-
-### Workflow
-
-```bash
-# Generate migration from schema changes
-npx drizzle-kit generate
-
-# Apply migrations
-npx drizzle-kit migrate
-
-# Push schema directly (dev only, no migration file)
-npx drizzle-kit push
-```
-
-### Schema Example
-
-```typescript
-import { pgTable, text, timestamp, uuid, boolean } from "drizzle-orm/pg-core";
-
-export const users = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  email: text("email").notNull().unique(),
-  name: text("name"),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-```
-
-## Django (Python)
-
-### Workflow
-
-```bash
-# Generate migration from model changes
-python manage.py makemigrations
-
-# Apply migrations
-python manage.py migrate
-
-# Show migration status
-python manage.py showmigrations
-
-# Generate empty migration for custom SQL
-python manage.py makemigrations --empty app_name -n description
-```
-
-### Data Migration
-
-```python
-from django.db import migrations
-
-def backfill_display_names(apps, schema_editor):
-    User = apps.get_model("accounts", "User")
-    batch_size = 5000
-    users = User.objects.filter(display_name="")
-    while users.exists():
-        batch = list(users[:batch_size])
-        for user in batch:
-            user.display_name = user.username
-        User.objects.bulk_update(batch, ["display_name"], batch_size=batch_size)
-
-def reverse_backfill(apps, schema_editor):
-    pass  # Data migration, no reverse needed
-
-class Migration(migrations.Migration):
-    dependencies = [("accounts", "0015_add_display_name")]
-
-    operations = [
-        migrations.RunPython(backfill_display_names, reverse_backfill),
-    ]
-```
-
-### SeparateDatabaseAndState
-
-Remove a column from the Django model without dropping it from the database immediately:
-
-```python
-class Migration(migrations.Migration):
-    operations = [
-        migrations.SeparateDatabaseAndState(
-            state_operations=[
-                migrations.RemoveField(model_name="user", name="legacy_field"),
-            ],
-            database_operations=[],  # Don't touch the DB yet
-        ),
-    ]
-```
-
-## golang-migrate (Go)
-
-### Workflow
-
-```bash
-# Create migration pair
-migrate create -ext sql -dir migrations -seq add_user_avatar
-
-# Apply all pending migrations
-migrate -path migrations -database "$DATABASE_URL" up
-
-# Rollback last migration
-migrate -path migrations -database "$DATABASE_URL" down 1
-
-# Force version (fix dirty state)
-migrate -path migrations -database "$DATABASE_URL" force VERSION
-```
-
-### Migration Files
-
-```sql
--- migrations/000003_add_user_avatar.up.sql
-ALTER TABLE users ADD COLUMN avatar_url TEXT;
-CREATE INDEX CONCURRENTLY idx_users_avatar ON users (avatar_url) WHERE avatar_url IS NOT NULL;
-
--- migrations/000003_add_user_avatar.down.sql
-DROP INDEX IF EXISTS idx_users_avatar;
-ALTER TABLE users DROP COLUMN IF EXISTS avatar_url;
-```
-
-## Zero-Downtime Migration Strategy
-
-For critical production changes, follow the expand-contract pattern:
-
-```
-Phase 1: EXPAND
-  - Add new column/table (nullable or with default)
-  - Deploy: app writes to BOTH old and new
-  - Backfill existing data
-
-Phase 2: MIGRATE
-  - Deploy: app reads from NEW, writes to BOTH
-  - Verify data consistency
-
-Phase 3: CONTRACT
-  - Deploy: app only uses NEW
-  - Drop old column/table in separate migration
-```
-
-### Timeline Example
-
-```
-Day 1: Migration adds new_status column (nullable)
-Day 1: Deploy app v2 — writes to both status and new_status
-Day 2: Run backfill migration for existing rows
-Day 3: Deploy app v3 — reads from new_status only
-Day 7: Migration drops old status column
-```
-
-## Anti-Patterns
-
-| Anti-Pattern | Why It Fails | Better Approach |
+| 안티 패턴 | 문제점 | 권장 접근 방식 |
 |-------------|-------------|-----------------|
-| Manual SQL in production | No audit trail, unrepeatable | Always use migration files |
-| Editing deployed migrations | Causes drift between environments | Create new migration instead |
-| NOT NULL without default | Locks table, rewrites all rows | Add nullable, backfill, then add constraint |
-| Inline index on large table | Blocks writes during build | CREATE INDEX CONCURRENTLY |
-| Schema + data in one migration | Hard to rollback, long transactions | Separate migrations |
-| Dropping column before removing code | Application errors on missing column | Remove code first, drop column next deploy |
+| 공식 배포 후 파일 수정 | 환경 간 불일치 발생 | 새로운 마이그레이션 파일 생성 |
+| 수동 SQL 실행 | 이력 추적 및 재현 불가 | 항상 마이그레이션 파일 사용 |
+| 대용량 테이블 인덱스 직접 생성 | 빌드 중 쓰기 차단 | `CONCURRENTLY` 옵션 사용 |
+| 코드 수정 전 컬럼 삭제 | 애플리케이션 에러 발생 | 코드에서 먼저 제거 후 다음 배포 시 삭제 |
+
+**기억하십시오**: 데이터베이스 마이그레이션은 시스템의 가용성과 직결됩니다. 항상 가역성을 고려하고 운영 환경과 유사한 조건에서 충분히 테스트하십시오.
+    

@@ -1,5 +1,6 @@
-# X Quote Draft - Eval Skills Post
+# X 인용 초안 - 평가 스킬(Eval Skills) 포스트
 
-Strong eval skills are now built deeper into ECC.
+평가 스킬(Eval kills)이 ECC에 깊이 있게 통합되었습니다.
 
-v1.8.0 expands eval-harness patterns, pass@k guidance, and release-level verification loops so teams can measure reliability, not guess it.
+v1.8.0은 평가 하네스 패턴, pass@k 가이드라인 및 릴리스 수준의 검증 루프를 확장하여, 팀들이 추측이 아닌 데이터로 신뢰성을 측정할 수 있도록 지원합니다.
+    

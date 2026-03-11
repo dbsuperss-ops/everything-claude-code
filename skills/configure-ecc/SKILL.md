@@ -1,326 +1,195 @@
 ---
 name: configure-ecc
-description: Interactive installer for Everything Claude Code — guides users through selecting and installing skills and rules to user-level or project-level directories, verifies paths, and optionally optimizes installed files.
+description: Everything Claude Code를 위한 인터랙티브 설치 프로그램입니다. 사용자가 스킬과 규칙을 선택하여 사용자 수준 또는 프로젝트 수준 디렉토리에 설치하도록 안내하고, 경로를 검증하며, 선택적으로 설치된 파일들을 최적화합니다.
 origin: ECC
 ---
 
-# Configure Everything Claude Code (ECC)
+# Everything Claude Code (ECC) 설정
 
-An interactive, step-by-step installation wizard for the Everything Claude Code project. Uses `AskUserQuestion` to guide users through selective installation of skills and rules, then verifies correctness and offers optimization.
+Everything Claude Code 프로젝트를 위한 대화형 단계별 설치 마법사입니다. `AskUserQuestion`을 사용하여 사용자가 스킬과 규칙을 선택적으로 설치하도록 안내하고, 정확성을 검증한 후 최적화 옵션을 제공합니다.
 
-## When to Activate
+## 활성화 시점
 
-- User says "configure ecc", "install ecc", "setup everything claude code", or similar
-- User wants to selectively install skills or rules from this project
-- User wants to verify or fix an existing ECC installation
-- User wants to optimize installed skills or rules for their project
+- 사용자가 "configure ecc", "install ecc", "setup everything claude code" 또는 이와 유사한 말을 할 때
+- 사용자가 이 프로젝트에서 특정 스킬이나 규칙을 선택적으로 설치하고 싶어 할 때
+- 사용자가 기존 ECC 설치 상태를 검증하거나 수정하고 싶어 할 때
+- 사용자가 자신의 프로젝트에 맞게 설치된 스킬이나 규칙을 최적화하고 싶어 할 때
 
-## Prerequisites
+## 사전 요구 사항
 
-This skill must be accessible to Claude Code before activation. Two ways to bootstrap:
-1. **Via Plugin**: `/plugin install everything-claude-code` — the plugin loads this skill automatically
-2. **Manual**: Copy only this skill to `~/.claude/skills/configure-ecc/SKILL.md`, then activate by saying "configure ecc"
+이 스킬은 활성화되기 전에 Claude Code에서 접근 가능해야 합니다. 부트스트랩 방법은 두 가지입니다:
+1. **플러그인 사용**: `/plugin install everything-claude-code` — 플러그인이 이 스킬을 자동으로 로드합니다.
+2. **수동 설치**: 이 스킬만 `~/.claude/skills/configure-ecc/SKILL.md` 경로에 복사한 후 "configure ecc"라고 말하여 활성화합니다.
 
 ---
 
-## Step 0: Clone ECC Repository
+## 0단계: ECC 저장소 클론
 
-Before any installation, clone the latest ECC source to `/tmp`:
+설치 전, 최신 ECC 소스를 `/tmp` 디렉토리에 클론합니다:
 
 ```bash
 rm -rf /tmp/everything-claude-code
 git clone https://github.com/affaan-m/everything-claude-code.git /tmp/everything-claude-code
 ```
 
-Set `ECC_ROOT=/tmp/everything-claude-code` as the source for all subsequent copy operations.
-
-If the clone fails (network issues, etc.), use `AskUserQuestion` to ask the user to provide a local path to an existing ECC clone.
+이후 모든 복사 작업의 소스 경로로 `ECC_ROOT=/tmp/everything-claude-code`를 설정합니다. 클론에 실패하면 `AskUserQuestion`을 통해 사용자에게 로컬 ECC 클론 경로를 물어보십시오.
 
 ---
 
-## Step 1: Choose Installation Level
+## 1단계: 설치 수준 선택
 
-Use `AskUserQuestion` to ask the user where to install:
+`AskUserQuestion`을 사용하여 설치 위치를 묻습니다:
 
 ```
-Question: "Where should ECC components be installed?"
-Options:
-  - "User-level (~/.claude/)" — "Applies to all your Claude Code projects"
-  - "Project-level (.claude/)" — "Applies only to the current project"
-  - "Both" — "Common/shared items user-level, project-specific items project-level"
+질문: "ECC 구성 요소를 어디에 설치할까요?"
+옵션:
+  - "사용자 수준 (~/.claude/)" — "모든 Claude Code 프로젝트에 적용됩니다."
+  - "프로젝트 수준 (.claude/)" — "현재 프로젝트에만 적용됩니다."
+  - "둘 다" — "공통 항목은 사용자 수준에, 프로젝트 전용 항목은 프로젝트 수준에 설치합니다."
 ```
 
-Store the choice as `INSTALL_LEVEL`. Set the target directory:
-- User-level: `TARGET=~/.claude`
-- Project-level: `TARGET=.claude` (relative to current project root)
-- Both: `TARGET_USER=~/.claude`, `TARGET_PROJECT=.claude`
-
-Create the target directories if they don't exist:
+사용자의 선택을 `INSTALL_LEVEL`에 저장하고 대상 디렉토리(`TARGET`)를 설정합니다. 디렉토리가 없으면 생성합니다:
 ```bash
 mkdir -p $TARGET/skills $TARGET/rules
 ```
 
 ---
 
-## Step 2: Select & Install Skills
+## 2단계: 스킬 선택 및 설치
 
-### 2a: Choose Scope (Core vs Niche)
+### 2a: 범위 선택 (핵심 vs 틈새 시장)
 
-Default to **Core (recommended for new users)** — copy `.agents/skills/*` plus `skills/search-first/` for research-first workflows. This bundle covers engineering, evals, verification, security, strategic compaction, frontend design, and Anthropic cross-functional skills (article-writing, content-engine, market-research, frontend-slides).
+기본적으로 **핵심(Core, 신규 사용자 권장)** 구성을 제안합니다. 여기에는 엔지니어링, 평가, 검증, 보안, 전략적 압축, 프론트엔드 디자인 및 Anthropic 교차 기능 스킬들이 포함됩니다.
 
-Use `AskUserQuestion` (single select):
+`AskUserQuestion`을 사용하십시오:
 ```
-Question: "Install core skills only, or include niche/framework packs?"
-Options:
-  - "Core only (recommended)" — "tdd, e2e, evals, verification, research-first, security, frontend patterns, compacting, cross-functional Anthropic skills"
-  - "Core + selected niche" — "Add framework/domain-specific skills after core"
-  - "Niche only" — "Skip core, install specific framework/domain skills"
-Default: Core only
-```
-
-If the user chooses niche or core + niche, continue to category selection below and only include those niche skills they pick.
-
-### 2b: Choose Skill Categories
-
-There are 27 skills organized into 4 categories. Use `AskUserQuestion` with `multiSelect: true`:
-
-```
-Question: "Which skill categories do you want to install?"
-Options:
-  - "Framework & Language" — "Django, Spring Boot, Go, Python, Java, Frontend, Backend patterns"
-  - "Database" — "PostgreSQL, ClickHouse, JPA/Hibernate patterns"
-  - "Workflow & Quality" — "TDD, verification, learning, security review, compaction"
-  - "All skills" — "Install every available skill"
+질문: "핵심 스킬만 설치할까요, 아니면 특정 프레임워크 팩을 포함할까요?"
+옵션:
+  - "핵심 스킬만 (권장)" — "tdd, e2e, 평가, 검증, 리서치 우선, 보안, 프론트엔드 패턴, 압축, Anthropic 교차 기능 스킬"
+  - "핵심 + 선택한 프레임워크" — "핵심 스킬에 더해 특정 프레임워크/도메인 스킬 추가"
+  - "특정 프레임워크만" — "핵심을 건너뛰고 특정 프레임워크/도메인 스킬만 설치"
+기본값: 핵심 스킬만
 ```
 
-### 2c: Confirm Individual Skills
+### 2b: 스킬 카테고리 선택
 
-For each selected category, print the full list of skills below and ask the user to confirm or deselect specific ones. If the list exceeds 4 items, print the list as text and use `AskUserQuestion` with an "Install all listed" option plus "Other" for the user to paste specific names.
+총 27개의 스킬이 4개 카테고리로 구성되어 있습니다. `multiSelect: true`로 질문하십시오:
 
-**Category: Framework & Language (17 skills)**
+```
+질문: "어떤 스킬 카테고리를 설치하시겠습니까?"
+옵션:
+  - "프레임워크 및 언어" — "Django, Spring Boot, Go, Python, Java, 프론트엔드, 백엔드 패턴"
+  - "데이터베이스" — "PostgreSQL, ClickHouse, JPA/Hibernate 패턴"
+  - "워크플로우 및 품질" — "TDD, 검증, 학습, 보안 리뷰, 압축"
+  - "모든 스킬" — "사용 가능한 모든 스킬 설치"
+```
 
-| Skill | Description |
-|-------|-------------|
-| `backend-patterns` | Backend architecture, API design, server-side best practices for Node.js/Express/Next.js |
-| `coding-standards` | Universal coding standards for TypeScript, JavaScript, React, Node.js |
-| `django-patterns` | Django architecture, REST API with DRF, ORM, caching, signals, middleware |
-| `django-security` | Django security: auth, CSRF, SQL injection, XSS prevention |
-| `django-tdd` | Django testing with pytest-django, factory_boy, mocking, coverage |
-| `django-verification` | Django verification loop: migrations, linting, tests, security scans |
-| `frontend-patterns` | React, Next.js, state management, performance, UI patterns |
-| `frontend-slides` | Zero-dependency HTML presentations, style previews, and PPTX-to-web conversion |
-| `golang-patterns` | Idiomatic Go patterns, conventions for robust Go applications |
-| `golang-testing` | Go testing: table-driven tests, subtests, benchmarks, fuzzing |
-| `java-coding-standards` | Java coding standards for Spring Boot: naming, immutability, Optional, streams |
-| `python-patterns` | Pythonic idioms, PEP 8, type hints, best practices |
-| `python-testing` | Python testing with pytest, TDD, fixtures, mocking, parametrization |
-| `springboot-patterns` | Spring Boot architecture, REST API, layered services, caching, async |
-| `springboot-security` | Spring Security: authn/authz, validation, CSRF, secrets, rate limiting |
-| `springboot-tdd` | Spring Boot TDD with JUnit 5, Mockito, MockMvc, Testcontainers |
-| `springboot-verification` | Spring Boot verification: build, static analysis, tests, security scans |
+### 2c: 개별 스킬 확인
 
-**Category: Database (3 skills)**
+사용자가 선택한 카테고리에 대해 전체 목록을 보여주고 특정 스킬을 제외할지 묻습니다. 목록이 길면 "나열된 모든 항목 설치" 옵션과 함께 사용자가 이름을 직접 입력할 수 있는 "기타" 옵션을 제공하십시오.
 
-| Skill | Description |
-|-------|-------------|
-| `clickhouse-io` | ClickHouse patterns, query optimization, analytics, data engineering |
-| `jpa-patterns` | JPA/Hibernate entity design, relationships, query optimization, transactions |
-| `postgres-patterns` | PostgreSQL query optimization, schema design, indexing, security |
+### 2d: 설치 실행
 
-**Category: Workflow & Quality (8 skills)**
-
-| Skill | Description |
-|-------|-------------|
-| `continuous-learning` | Auto-extract reusable patterns from sessions as learned skills |
-| `continuous-learning-v2` | Instinct-based learning with confidence scoring, evolves into skills/commands/agents |
-| `eval-harness` | Formal evaluation framework for eval-driven development (EDD) |
-| `iterative-retrieval` | Progressive context refinement for subagent context problem |
-| `security-review` | Security checklist: auth, input, secrets, API, payment features |
-| `strategic-compact` | Suggests manual context compaction at logical intervals |
-| `tdd-workflow` | Enforces TDD with 80%+ coverage: unit, integration, E2E |
-| `verification-loop` | Verification and quality loop patterns |
-
-**Category: Business & Content (5 skills)**
-
-| Skill | Description |
-|-------|-------------|
-| `article-writing` | Long-form writing in a supplied voice using notes, examples, or source docs |
-| `content-engine` | Multi-platform social content, scripts, and repurposing workflows |
-| `market-research` | Source-attributed market, competitor, fund, and technology research |
-| `investor-materials` | Pitch decks, one-pagers, investor memos, and financial models |
-| `investor-outreach` | Personalized investor cold emails, warm intros, and follow-ups |
-
-**Standalone**
-
-| Skill | Description |
-|-------|-------------|
-| `project-guidelines-example` | Template for creating project-specific skills |
-
-### 2d: Execute Installation
-
-For each selected skill, copy the entire skill directory:
+선택한 각 스킬에 대해 전체 디렉토리를 복사합니다:
 ```bash
 cp -r $ECC_ROOT/skills/<skill-name> $TARGET/skills/
 ```
 
-Note: `continuous-learning` and `continuous-learning-v2` have extra files (config.json, hooks, scripts) — ensure the entire directory is copied, not just SKILL.md.
-
 ---
 
-## Step 3: Select & Install Rules
+## 3단계: 규칙(Rules) 선택 및 설치
 
-Use `AskUserQuestion` with `multiSelect: true`:
+`multiSelect: true`를 사용하여 질문하십시오:
 
 ```
-Question: "Which rule sets do you want to install?"
-Options:
-  - "Common rules (Recommended)" — "Language-agnostic principles: coding style, git workflow, testing, security, etc. (8 files)"
-  - "TypeScript/JavaScript" — "TS/JS patterns, hooks, testing with Playwright (5 files)"
-  - "Python" — "Python patterns, pytest, black/ruff formatting (5 files)"
-  - "Go" — "Go patterns, table-driven tests, gofmt/staticcheck (5 files)"
+질문: "어떤 규칙 세트를 설치하시겠습니까?"
+옵션:
+  - "공통 규칙 (권장)" — "언어 중립적 원칙: 코딩 스타일, git 워크플로우, 테스트, 보안 등 (8개 파일)"
+  - "TypeScript/JavaScript" — "TS/JS 패턴, 훅, Playwright 테스트 등 (5개 파일)"
+  - "Python" — "Python 패턴, pytest, black/ruff 포맷팅 등 (5개 파일)"
+  - "Go" — "Go 패턴, 테이블 주도 테스트, gofmt/staticcheck 등 (5개 파일)"
 ```
 
-Execute installation:
+설치 실행:
 ```bash
-# Common rules (flat copy into rules/)
+# 공통 규칙 (rules/ 디렉토리에 직접 복사)
 cp -r $ECC_ROOT/rules/common/* $TARGET/rules/
 
-# Language-specific rules (flat copy into rules/)
-cp -r $ECC_ROOT/rules/typescript/* $TARGET/rules/   # if selected
-cp -r $ECC_ROOT/rules/python/* $TARGET/rules/        # if selected
-cp -r $ECC_ROOT/rules/golang/* $TARGET/rules/        # if selected
+# 언어별 규칙 (선택된 경우 rules/ 디렉토리에 직접 복사)
+cp -r $ECC_ROOT/rules/typescript/* $TARGET/rules/
+cp -r $ECC_ROOT/rules/python/* $TARGET/rules/
+cp -r $ECC_ROOT/rules/golang/* $TARGET/rules/
 ```
-
-**Important**: If the user selects any language-specific rules but NOT common rules, warn them:
-> "Language-specific rules extend the common rules. Installing without common rules may result in incomplete coverage. Install common rules too?"
 
 ---
 
-## Step 4: Post-Installation Verification
+## 4단계: 설치 후 검증
 
-After installation, perform these automated checks:
+설치 후 다음의 자동 체크를 수행합니다:
 
-### 4a: Verify File Existence
+1. **파일 존재 여부 확인**: 대상 위치에 파일들이 정상적으로 복사되었는지 나열합니다.
+2. **경로 참조 확인**: 설치된 `.md` 파일에서 `~/.claude/` 또는 타 스킬/규칙 참조 경로가 유효한지 스캔합니다. 프로젝트 수준 설치 시 `~/.claude/` 참조가 있으면 플래그를 표시합니다.
+3. **스킬 간 교차 참조 확인**: 의존성이 있는 스킬(예: `django-tdd`와 `django-patterns`)이 함께 설치되었는지 확인합니다.
 
-List all installed files and confirm they exist at the target location:
-```bash
-ls -la $TARGET/skills/
-ls -la $TARGET/rules/
-```
-
-### 4b: Check Path References
-
-Scan all installed `.md` files for path references:
-```bash
-grep -rn "~/.claude/" $TARGET/skills/ $TARGET/rules/
-grep -rn "../common/" $TARGET/rules/
-grep -rn "skills/" $TARGET/skills/
-```
-
-**For project-level installs**, flag any references to `~/.claude/` paths:
-- If a skill references `~/.claude/settings.json` — this is usually fine (settings are always user-level)
-- If a skill references `~/.claude/skills/` or `~/.claude/rules/` — this may be broken if installed only at project level
-- If a skill references another skill by name — check that the referenced skill was also installed
-
-### 4c: Check Cross-References Between Skills
-
-Some skills reference others. Verify these dependencies:
-- `django-tdd` may reference `django-patterns`
-- `springboot-tdd` may reference `springboot-patterns`
-- `continuous-learning-v2` references `~/.claude/homunculus/` directory
-- `python-testing` may reference `python-patterns`
-- `golang-testing` may reference `golang-patterns`
-- Language-specific rules reference `common/` counterparts
-
-### 4d: Report Issues
-
-For each issue found, report:
-1. **File**: The file containing the problematic reference
-2. **Line**: The line number
-3. **Issue**: What's wrong (e.g., "references ~/.claude/skills/python-patterns but python-patterns was not installed")
-4. **Suggested fix**: What to do (e.g., "install python-patterns skill" or "update path to .claude/skills/")
+문제 발견 시 **파일, 라인, 이슈 내용, 권장 수정 사항**을 보고하십시오.
 
 ---
 
-## Step 5: Optimize Installed Files (Optional)
+## 5단계: 설치된 파일 최적화 (선택 사항)
 
-Use `AskUserQuestion`:
+`AskUserQuestion`을 사용하십시오:
 
 ```
-Question: "Would you like to optimize the installed files for your project?"
-Options:
-  - "Optimize skills" — "Remove irrelevant sections, adjust paths, tailor to your tech stack"
-  - "Optimize rules" — "Adjust coverage targets, add project-specific patterns, customize tool configs"
-  - "Optimize both" — "Full optimization of all installed files"
-  - "Skip" — "Keep everything as-is"
+질문: "설치된 파일들을 프로젝트에 맞게 최적화하시겠습니까?"
+옵션:
+  - "스킬 최적화" — "불필요한 섹션 제거, 경로 조정, 기술 스택에 맞게 수정"
+  - "규칙 최적화" — "테스트 커버리지 목표 조정, 프로젝트 전용 패턴 추가 등"
+  - "둘 다 최적화" — "모든 설치 파일의 전체 최적화"
+  - "건너뛰기" — "그대로 유지"
 ```
 
-### If optimizing skills:
-1. Read each installed SKILL.md
-2. Ask the user what their project's tech stack is (if not already known)
-3. For each skill, suggest removals of irrelevant sections
-4. Edit the SKILL.md files in-place at the installation target (NOT the source repo)
-5. Fix any path issues found in Step 4
-
-### If optimizing rules:
-1. Read each installed rule .md file
-2. Ask the user about their preferences:
-   - Test coverage target (default 80%)
-   - Preferred formatting tools
-   - Git workflow conventions
-   - Security requirements
-3. Edit the rule files in-place at the installation target
-
-**Critical**: Only modify files in the installation target (`$TARGET/`), NEVER modify files in the source ECC repository (`$ECC_ROOT/`).
+최적화 시 설치 대상 경로(`$TARGET/`)의 파일만 수정해야 하며, 소스 저장소 파일은 절대 수정하지 마십시오.
 
 ---
 
-## Step 6: Installation Summary
+## 6단계: 설치 요약
 
-Clean up the cloned repository from `/tmp`:
-
-```bash
-rm -rf /tmp/everything-claude-code
-```
-
-Then print a summary report:
+클론한 임시 저장소를 삭제하고 요약 보고서를 출력합니다:
 
 ```
-## ECC Installation Complete
+## ECC 설치 완료
 
-### Installation Target
-- Level: [user-level / project-level / both]
-- Path: [target path]
+### 설치 대상
+- 레벨: [사용자 수준 / 프로젝트 수준 / 둘 다]
+- 경로: [설치 경로]
 
-### Skills Installed ([count])
-- skill-1, skill-2, skill-3, ...
+### 설치된 스킬 ([개수])
+- 스킬-1, 스킬-2, 스킬-3, ...
 
-### Rules Installed ([count])
-- common (8 files)
-- typescript (5 files)
+### 설치된 규칙 ([개수])
+- 공통 (8개 파일)
+- typescript (5개 파일)
 - ...
 
-### Verification Results
-- [count] issues found, [count] fixed
-- [list any remaining issues]
+### 검증 결과
+- [개수]개 이슈 발견, [개수]개 수정됨
+- [남은 이슈 목록]
 
-### Optimizations Applied
-- [list changes made, or "None"]
+### 적용된 최적화
+- [변경된 내용 목록 또는 "없음"]
 ```
 
 ---
 
-## Troubleshooting
+## 문제 해결 (Troubleshooting)
 
-### "Skills not being picked up by Claude Code"
-- Verify the skill directory contains a `SKILL.md` file (not just loose .md files)
-- For user-level: check `~/.claude/skills/<skill-name>/SKILL.md` exists
-- For project-level: check `.claude/skills/<skill-name>/SKILL.md` exists
+### "Claude Code가 스킬을 인식하지 못함"
+- 스킬 디렉토리에 `SKILL.md` 파일이 있는지 확인하십시오. (단순한 .md 파일이 아닌 디렉토리 구조여야 함)
 
-### "Rules not working"
-- Rules are flat files, not in subdirectories: `$TARGET/rules/coding-style.md` (correct) vs `$TARGET/rules/common/coding-style.md` (incorrect for flat install)
-- Restart Claude Code after installing rules
+### "규칙이 작동하지 않음"
+- 규칙은 하위 디렉토리가 아닌 `rules/` 바로 아래에 있어야 합니다. (예: `rules/coding-style.md`가 맞음)
+- 규칙 설치 후 Claude Code를 재시작하십시오.
 
-### "Path reference errors after project-level install"
-- Some skills assume `~/.claude/` paths. Run Step 4 verification to find and fix these.
-- For `continuous-learning-v2`, the `~/.claude/homunculus/` directory is always user-level — this is expected and not an error.
+### "프로젝트 수준 설치 후 경로 참조 에러 발생"
+- 일부 스킬은 `~/.claude/` 경로를 가정합니다. 4단계 검증을 통해 이를 찾아 수정하십시오.
+    

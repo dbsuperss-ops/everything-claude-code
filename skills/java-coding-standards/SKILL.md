@@ -1,147 +1,67 @@
 ---
 name: java-coding-standards
-description: "Java coding standards for Spring Boot services: naming, immutability, Optional usage, streams, exceptions, generics, and project layout."
+description: Spring Boot 서비스를 위한 Java 코딩 표준 가이드입니다. 명명 규칙, 불변성, Optional 사용법, 스트림, 예외 처리, 제네릭 및 프로젝트 구조를 다룹니다.
 origin: ECC
 ---
 
-# Java Coding Standards
+# Java 코딩 표준 (Java Coding Standards)
 
-Standards for readable, maintainable Java (17+) code in Spring Boot services.
+Spring Boot 서비스에서 읽기 쉽고 유지보수가 용이한 Java(17+) 코드를 작성하기 위한 표준입니다.
 
-## When to Activate
+## 활성화 시점
 
-- Writing or reviewing Java code in Spring Boot projects
-- Enforcing naming, immutability, or exception handling conventions
-- Working with records, sealed classes, or pattern matching (Java 17+)
-- Reviewing use of Optional, streams, or generics
-- Structuring packages and project layout
+- Spring Boot 프로젝트에서 Java 코드를 작성하거나 검토할 때
+- 명명 규칙, 불변성 공식, 또는 예외 처리 규칙을 적용할 때
+- 레코드(Records), 실드 클래스(Sealed classes), 패턴 매칭 등 Java 17+ 기능을 사용할 때
+- `Optional`, 스트림, 또는 제네릭 사용법을 검토할 때
+- 패키지 구조 및 프로젝트 레이아웃을 구성할 때
 
-## Core Principles
+## 핵심 원칙
 
-- Prefer clarity over cleverness
-- Immutable by default; minimize shared mutable state
-- Fail fast with meaningful exceptions
-- Consistent naming and package structure
+- 기교(Cleverness)보다 명확성(Clarity)을 지향하십시오.
+- 기본적으로 불변성(Immutable)을 유지하고 공유된 가변 상태를 최소화하십시오.
+- 의미 있는 예외와 함께 "Fail Fast" 원칙을 지키십시오.
+- 일관된 명명 규칙과 패키지 구조를 유지하십시오.
 
-## Naming
+## 명명 규칙 (Naming)
 
-```java
-// ✅ Classes/Records: PascalCase
-public class MarketService {}
-public record Money(BigDecimal amount, Currency currency) {}
+- **클래스/레코드**: PascalCase (예: `MarketService`, `Money`)
+- **메서드/필드**: camelCase (예: `marketRepository.findBySlug`)
+- **상수**: UPPER_SNAKE_CASE (예: `MAX_PAGE_SIZE`)
 
-// ✅ Methods/fields: camelCase
-private final MarketRepository marketRepository;
-public Market findBySlug(String slug) {}
+## 불변성 (Immutability)
 
-// ✅ Constants: UPPER_SNAKE_CASE
-private static final int MAX_PAGE_SIZE = 100;
-```
+- 레코드(Records)와 `final` 필드를 적극 활용하십시오.
+- Getter만 제공하고 Setter는 가급적 만들지 마십시오.
 
-## Immutability
+## Optional 사용법
 
-```java
-// ✅ Favor records and final fields
-public record MarketDto(Long id, String name, MarketStatus status) {}
+- `find*` 계열의 메서드는 `Optional`을 반환하십시오.
+- `.get()` 대신 `.map()`, `.flatMap()`, `.orElseThrow()` 등을 사용하여 안전하게 처리하십시오.
 
-public class Market {
-  private final Long id;
-  private final String name;
-  // getters only, no setters
-}
-```
+## 스트림(Streams) 최선 관행
 
-## Optional Usage
+- 변환(Transformation) 작업에 스트림을 사용하되, 파이프라인을 너무 길게 만들지 마십시오.
+- 복잡하게 중첩된 스트림은 가독성을 위해 루프로 교체하는 것을 고려하십시오.
 
-```java
-// ✅ Return Optional from find* methods
-Optional<Market> market = marketRepository.findBySlug(slug);
+## 예외 처리 (Exceptions)
 
-// ✅ Map/flatMap instead of get()
-return market
-    .map(MarketResponse::from)
-    .orElseThrow(() -> new EntityNotFoundException("Market not found"));
-```
+- 도메인 에러에는 언체크(Unchecked) 예외를 사용하고, 기술적인 예외는 문맥과 함께 감싸서 다시 던지십시오.
+- 도메인 특화 예외(예: `MarketNotFoundException`)를 생성하십시오.
+- 무분별한 `catch (Exception ex)`를 피하십시오.
 
-## Streams Best Practices
+## 프로젝트 구조 (Maven/Gradle)
 
-```java
-// ✅ Use streams for transformations, keep pipelines short
-List<String> names = markets.stream()
-    .map(Market::name)
-    .filter(Objects::nonNull)
-    .toList();
+- `controller`, `service`, `repository`, `domain`, `dto`, `config`, `util` 등으로 패키지를 분리하십시오.
 
-// ❌ Avoid complex nested streams; prefer loops for clarity
-```
+## 로깅 (Logging)
 
-## Exceptions
+- `SLF4J`를 사용하여 로그를 기록하십시오. (예: `log.info("fetch_market slug={}", slug);`)
 
-- Use unchecked exceptions for domain errors; wrap technical exceptions with context
-- Create domain-specific exceptions (e.g., `MarketNotFoundException`)
-- Avoid broad `catch (Exception ex)` unless rethrowing/logging centrally
+## 기타
 
-```java
-throw new MarketNotFoundException(slug);
-```
+- **성능**: 마이크로 최적화보다 유지보수성을 우선하십시오. 필요성이 입증된 경우에만 최적화하십시오.
+- **테스트**: JUnit 5와 AssertJ를 사용하여 읽기 쉬운 단언문(Assertion)을 작성하십시오. 모킹에는 Mockito를 사용하십시오.
 
-## Generics and Type Safety
-
-- Avoid raw types; declare generic parameters
-- Prefer bounded generics for reusable utilities
-
-```java
-public <T extends Identifiable> Map<Long, T> indexById(Collection<T> items) { ... }
-```
-
-## Project Structure (Maven/Gradle)
-
-```
-src/main/java/com/example/app/
-  config/
-  controller/
-  service/
-  repository/
-  domain/
-  dto/
-  util/
-src/main/resources/
-  application.yml
-src/test/java/... (mirrors main)
-```
-
-## Formatting and Style
-
-- Use 2 or 4 spaces consistently (project standard)
-- One public top-level type per file
-- Keep methods short and focused; extract helpers
-- Order members: constants, fields, constructors, public methods, protected, private
-
-## Code Smells to Avoid
-
-- Long parameter lists → use DTO/builders
-- Deep nesting → early returns
-- Magic numbers → named constants
-- Static mutable state → prefer dependency injection
-- Silent catch blocks → log and act or rethrow
-
-## Logging
-
-```java
-private static final Logger log = LoggerFactory.getLogger(MarketService.class);
-log.info("fetch_market slug={}", slug);
-log.error("failed_fetch_market slug={}", slug, ex);
-```
-
-## Null Handling
-
-- Accept `@Nullable` only when unavoidable; otherwise use `@NonNull`
-- Use Bean Validation (`@NotNull`, `@NotBlank`) on inputs
-
-## Testing Expectations
-
-- JUnit 5 + AssertJ for fluent assertions
-- Mockito for mocking; avoid partial mocks where possible
-- Favor deterministic tests; no hidden sleeps
-
-**Remember**: Keep code intentional, typed, and observable. Optimize for maintainability over micro-optimizations unless proven necessary.
+**기억하십시오**: 코드는 의도가 명확해야 하며, 타입 안전성을 보장하고 관찰 가능해야 합니다.
+    

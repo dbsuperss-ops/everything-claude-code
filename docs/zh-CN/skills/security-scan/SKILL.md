@@ -1,172 +1,94 @@
 ---
 name: security-scan
-description: 使用AgentShield扫描您的Claude代码配置（.claude/目录），以发现安全漏洞、配置错误和注入风险。检查CLAUDE.md、settings.json、MCP服务器、钩子和代理定义。
+description: AgentShield를 사용하여 Claude Code 설정(.claude/ 디렉터리)을 스캔하고 보안 취약점, 설정 오류 및 인젝션 위험을 발견합니다. CLAUDE.md, settings.json, MCP 서버, 훅(Hooks), 에이전트 정의를 점검합니다.
 origin: ECC
 ---
 
-# 安全扫描技能
+# 보안 스캔 스킬 (Security Scan)
 
-使用 [AgentShield](https://github.com/affaan-m/agentshield) 审计您的 Claude Code 配置中的安全问题。
+[AgentShield](https://github.com/affaan-m/agentshield)를 사용하여 Claude Code 설정의 보안 문제를 감사하십시오.
 
-## 何时激活
+## 적용 시점
 
-* 设置新的 Claude Code 项目时
-* 修改 `.claude/settings.json`、`CLAUDE.md` 或 MCP 配置后
-* 提交配置更改前
-* 加入具有现有 Claude Code 配置的新代码库时
-* 定期进行安全卫生检查时
+* 새로운 Claude Code 프로젝트를 시작할 때
+* `.claude/settings.json`, `CLAUDE.md` 또는 MCP 설정을 변경한 후
+* 설정 변경을 커밋하기 전
+* 기존 Claude Code 설정이 있는 새로운 코드베이스를 맡았을 때
+* 정기적인 보안 상태 점검 시
 
-## 扫描内容
+## 스캔 대상 항목
 
-| 文件 | 检查项 |
+| 파일/경로 | 주요 점검 내용 |
 |------|--------|
-| `CLAUDE.md` | 硬编码的密钥、自动运行指令、提示词注入模式 |
-| `settings.json` | 过于宽松的允许列表、缺失的拒绝列表、危险的绕过标志 |
-| `mcp.json` | 有风险的 MCP 服务器、硬编码的环境变量密钥、npx 供应链风险 |
-| `hooks/` | 通过 `${file}` 插值导致的命令注入、数据泄露、静默错误抑制 |
-| `agents/*.md` | 无限制的工具访问、提示词注入攻击面、缺失的模型规格 |
+| `CLAUDE.md` | 하드코딩된 비밀 정보, 자동 실행 명령, 프롬프트 인젝션 패턴 |
+| `settings.json` | 너무 관대한 허용 목록, 누락된 거부 목록, 위험한 우회 플래그 |
+| `mcp.json` | 위험한 MCP 서버, 환경 변수 내 비밀 정보, npx 공급망 리스크 |
+| `hooks/` | `${file}` 보간법을 통한 커맨드 인젝션, 데이터 유출, 자동 오류 무시 |
+| `agents/*.md` | 무제한 도구 접근, 프롬프트 인젝션 노출면, 모델 사양 누락 |
 
-## 先决条件
+## 사전 준비 (AgentShield 설치)
 
-必须安装 AgentShield。检查并在需要时安装：
+AgentShield가 설치되어 있어야 합니다. 필요 시 설치하십시오:
 
 ```bash
-# Check if installed
-npx ecc-agentshield --version
-
-# Install globally (recommended)
-npm install -g ecc-agentshield
-
-# Or run directly via npx (no install needed)
+# 직접 실행 (설정 없이 npx로 실행 가능)
 npx ecc-agentshield scan .
 ```
 
-## 使用方法
+## 사용 방법
 
-### 基础扫描
-
-针对当前项目的 `.claude/` 目录运行：
+### 1. 기본 스캔
+현재 프로젝트의 `.claude/` 디렉터리를 대상으로 실행합니다:
 
 ```bash
-# Scan current project
+# 현재 프로젝트 스캔
 npx ecc-agentshield scan
 
-# Scan a specific path
+# 특정 경로 스캔
 npx ecc-agentshield scan --path /path/to/.claude
 
-# Scan with minimum severity filter
+# 최소 심각도 필터 적용 (예: medium 이상)
 npx ecc-agentshield scan --min-severity medium
 ```
 
-### 输出格式
-
+### 2. 출력 형식 선택
 ```bash
-# Terminal output (default) — colored report with grade
+# 터미널 컬러 리포트 (기본값)
 npx ecc-agentshield scan
 
-# JSON — for CI/CD integration
+# JSON 형식 (CI/CD 통합용)
 npx ecc-agentshield scan --format json
 
-# Markdown — for documentation
+# Markdown 형식 (문서화용)
 npx ecc-agentshield scan --format markdown
 
-# HTML — self-contained dark-theme report
+# HTML 형식 (다크 테마 리포트 파일 생성)
 npx ecc-agentshield scan --format html > security-report.html
 ```
 
-### 自动修复
-
-自动应用安全的修复（仅修复标记为可自动修复的问题）：
+### 3. 자동 수정 (Auto-fix)
+자동 수정이 가능한 문제들을 즉시 반영합니다:
 
 ```bash
 npx ecc-agentshield scan --fix
 ```
+* 하드코딩된 비밀 정보를 환경 변수 참조로 교체합니다.
+* 와일드카드(`*`) 권한을 구체적인 범위로 좁힙니다.
 
-这将：
+## 주요 등급 및 지표
 
-* 用环境变量引用替换硬编码的密钥
-* 将通配符权限收紧为作用域明确的替代方案
-* 绝不修改仅限手动修复的建议
-
-### Opus 4.6 深度分析
-
-运行对抗性的三智能体流程以进行更深入的分析：
-
-```bash
-# Requires ANTHROPIC_API_KEY
-export ANTHROPIC_API_KEY=your-key
-npx ecc-agentshield scan --opus --stream
-```
-
-这将运行：
-
-1. **攻击者（红队）** — 寻找攻击向量
-2. **防御者（蓝队）** — 建议加固措施
-3. **审计员（最终裁决）** — 综合双方观点
-
-### 初始化安全配置
-
-从头开始搭建一个新的安全 `.claude/` 配置：
-
-```bash
-npx ecc-agentshield init
-```
-
-创建：
-
-* 具有作用域权限和拒绝列表的 `settings.json`
-* 遵循安全最佳实践的 `CLAUDE.md`
-* `mcp.json` 占位符
-
-### GitHub Action
-
-添加到您的 CI 流水线中：
-
-```yaml
-- uses: affaan-m/agentshield@v1
-  with:
-    path: '.'
-    min-severity: 'medium'
-    fail-on-findings: true
-```
-
-## 严重性等级
-
-| 等级 | 分数 | 含义 |
+| 등급 | 점수 | 의미 |
 |-------|-------|---------|
-| A | 90-100 | 安全配置 |
-| B | 75-89 | 轻微问题 |
-| C | 60-74 | 需要注意 |
-| D | 40-59 | 显著风险 |
-| F | 0-39 | 严重漏洞 |
+| A | 90-100 | 보안 설정 우수 |
+| B | 75-89 | 경미한 문제 발견 |
+| C | 60-74 | 주의 필요 |
+| D | 40-59 | 상당한 위험 존재 |
+| F | 0-39 | 심각한 보안 취약점 |
 
-## 结果解读
+### 🚨 즉시 수정해야 할 주요 발견 사항
+* 설정 파일 내 하드코딩된 API 키 또는 토큰
+* 허용 목록의 `Bash(*)` (제한 없는 쉘 접근 권한)
+* 훅(Hooks) 내 `${file}` 보간을 통한 커맨드 인젝션 취약점
+* 쉘을 직접 실행하는 MCP 서버 설정
 
-### 关键发现（立即修复）
-
-* 配置文件中硬编码的 API 密钥或令牌
-* 允许列表中存在 `Bash(*)`（无限制的 shell 访问）
-* 钩子中通过 `${file}` 插值导致的命令注入
-* 运行 shell 的 MCP 服务器
-
-### 高优先级发现（生产前修复）
-
-* CLAUDE.md 中的自动运行指令（提示词注入向量）
-* 权限配置中缺少拒绝列表
-* 具有不必要 Bash 访问权限的代理
-
-### 中优先级发现（建议修复）
-
-* 钩子中的静默错误抑制（`2>/dev/null`、`|| true`）
-* 缺少 PreToolUse 安全钩子
-* MCP 服务器配置中的 `npx -y` 自动安装
-
-### 信息性发现（了解情况）
-
-* MCP 服务器缺少描述信息
-* 正确标记为良好实践的限制性指令
-
-## 链接
-
-* **GitHub**: [github.com/affaan-m/agentshield](https://github.com/affaan-m/agentshield)
-* **npm**: [npmjs.com/package/ecc-agentshield](https://www.npmjs.com/package/ecc-agentshield)
+**핵심**: 보안 스캔을 통해 Claude Code를 더욱 안전하게 사용하십시오. 자동화된 도구를 활용하여 설정 단계에서의 실수와 취약점을 사전에 방어하십시오.

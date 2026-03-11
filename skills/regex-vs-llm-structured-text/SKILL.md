@@ -1,220 +1,48 @@
 ---
 name: regex-vs-llm-structured-text
-description: Decision framework for choosing between regex and LLM when parsing structured text — start with regex, add LLM only for low-confidence edge cases.
+description: 구조화된 텍스트 파싱 시 정규표현식(Regex)과 LLM 중 무엇을 선택할지에 대한 결정 프레임워크 — 정규표현식으로 시작하고, 신뢰도가 낮은 엣지 케이스에만 LLM을 추가합니다.
 origin: ECC
 ---
 
-# Regex vs LLM for Structured Text Parsing
+# 구조화된 텍스트 파싱: 정규표현식 vs LLM
 
-A practical decision framework for parsing structured text (quizzes, forms, invoices, documents). The key insight: regex handles 95-98% of cases cheaply and deterministically. Reserve expensive LLM calls for the remaining edge cases.
+퀴즈, 폼, 인보이스, 문서 등 구조화된 텍스트를 파싱하기 위한 실용적인 결정 프레임워크입니다. 핵심 인사이트는 정규표현식이 95-98%의 케이스를 저렴하고 결정론적으로 처리할 수 있다는 것입니다. 비용이 많이 드는 LLM 호출은 나머지 엣지 케이스를 위해 남겨두십시오.
 
-## When to Activate
+## 활성화 시점
 
-- Parsing structured text with repeating patterns (questions, forms, tables)
-- Deciding between regex and LLM for text extraction
-- Building hybrid pipelines that combine both approaches
-- Optimizing cost/accuracy tradeoffs in text processing
+- 규칙적인 패턴(질문, 폼, 테이블 등)이 있는 구조화된 텍스트를 파싱할 때
+- 텍스트 추출을 위해 정규표현식과 LLM 중 무엇을 쓸지 고민될 때
+- 두 방식을 결합한 하이브리드 파이프라인을 구축할 때
+- 텍스트 처리의 비용과 정확도 사이의 트레이드오프를 최적화하고 싶을 때
 
-## Decision Framework
+## 결정 프레임워크 (Decision Framework)
 
-```
-Is the text format consistent and repeating?
-├── Yes (>90% follows a pattern) → Start with Regex
-│   ├── Regex handles 95%+ → Done, no LLM needed
-│   └── Regex handles <95% → Add LLM for edge cases only
-└── No (free-form, highly variable) → Use LLM directly
-```
+- **텍스트 형식이 일관되고 반복되는가?**
+  - **예 (>90%가 패턴을 따름)**: 정규표현식으로 시작하십시오.
+    - 정규표현식이 95% 이상 처리 가능 → 완료, LLM 불필요.
+    - 정규표현식이 95% 미만 처리 → 엣지 케이스에만 LLM 추가.
+  - **아니오 (자유 형식, 변동성 매우 큼)**: 처음부터 LLM을 사용하십시오.
 
-## Architecture Pattern
+## 아키텍처 패턴
 
-```
-Source Text
-    │
-    ▼
-[Regex Parser] ─── Extracts structure (95-98% accuracy)
-    │
-    ▼
-[Text Cleaner] ─── Removes noise (markers, page numbers, artifacts)
-    │
-    ▼
-[Confidence Scorer] ─── Flags low-confidence extractions
-    │
-    ├── High confidence (≥0.95) → Direct output
-    │
-    └── Low confidence (<0.95) → [LLM Validator] → Output
-```
+1. **Regex 파서**: 대다수의 구조를 추출 (95-98% 정확도).
+2. **텍스트 클리너**: 노이즈(페이지 번호, 특수 기호 등) 제거.
+3. **신뢰도 평가기 (Confidence Scorer)**: 추출 결과의 신뢰도를 점수화하여 낮게 나온 항목에 플래그를 설정합니다.
+4. **결과 처리**: 신뢰도가 높으면 즉시 출력하고, 낮으면 **LLM 검증기**로 보내 수정한 뒤 출력합니다.
 
-## Implementation
+## 구현 전략
 
-### 1. Regex Parser (Handles the Majority)
+- **Regex 파서**: `re.compile`과 그룹화(named groups)를 사용하여 구조를 추출합니다.
+- **신뢰도 평가기**: 선택지 개수 부족, 정답 누락, 텍스트 길이 미달 등을 기준으로 점수를 깎아 LLM 리뷰 대상을 식별합니다.
+- **LLM 검증기**: `Claude Haiku`와 같이 저렴한 모델을 사용하여 플래그가 설정된 엣지 케이스만 수정하게 합니다.
 
-```python
-import re
-from dataclasses import dataclass
+## 최선 관행 (Best Practices)
 
-@dataclass(frozen=True)
-class ParsedItem:
-    id: str
-    text: str
-    choices: tuple[str, ...]
-    answer: str
-    confidence: float = 1.0
+- **정규표현식으로 시작하십시오**: 완벽하지 않더라도 개선을 위한 기준점(Baseline)이 됩니다.
+- **신뢰도 점수제를 도입하십시오**: 어떤 항목이 LLM의 도움이 필요한지 프로그램 방식으로 식별하십시오.
+- **검증에는 가장 저렴한 LLM을 쓰십시오**: Haiku급 모델로도 충분합니다.
+- **불변성 유지**: 파싱된 객체를 직접 수정하지 말고, 검증 단계에서 새로운 인스턴스를 반환하십시오.
+- **메트릭 기록**: 정규표현식 성공률, LLM 호출 횟수 등을 기록하여 파이프라인 상태를 추적하십시오.
 
-def parse_structured_text(content: str) -> list[ParsedItem]:
-    """Parse structured text using regex patterns."""
-    pattern = re.compile(
-        r"(?P<id>\d+)\.\s*(?P<text>.+?)\n"
-        r"(?P<choices>(?:[A-D]\..+?\n)+)"
-        r"Answer:\s*(?P<answer>[A-D])",
-        re.MULTILINE | re.DOTALL,
-    )
-    items = []
-    for match in pattern.finditer(content):
-        choices = tuple(
-            c.strip() for c in re.findall(r"[A-D]\.\s*(.+)", match.group("choices"))
-        )
-        items.append(ParsedItem(
-            id=match.group("id"),
-            text=match.group("text").strip(),
-            choices=choices,
-            answer=match.group("answer"),
-        ))
-    return items
-```
-
-### 2. Confidence Scoring
-
-Flag items that may need LLM review:
-
-```python
-@dataclass(frozen=True)
-class ConfidenceFlag:
-    item_id: str
-    score: float
-    reasons: tuple[str, ...]
-
-def score_confidence(item: ParsedItem) -> ConfidenceFlag:
-    """Score extraction confidence and flag issues."""
-    reasons = []
-    score = 1.0
-
-    if len(item.choices) < 3:
-        reasons.append("few_choices")
-        score -= 0.3
-
-    if not item.answer:
-        reasons.append("missing_answer")
-        score -= 0.5
-
-    if len(item.text) < 10:
-        reasons.append("short_text")
-        score -= 0.2
-
-    return ConfidenceFlag(
-        item_id=item.id,
-        score=max(0.0, score),
-        reasons=tuple(reasons),
-    )
-
-def identify_low_confidence(
-    items: list[ParsedItem],
-    threshold: float = 0.95,
-) -> list[ConfidenceFlag]:
-    """Return items below confidence threshold."""
-    flags = [score_confidence(item) for item in items]
-    return [f for f in flags if f.score < threshold]
-```
-
-### 3. LLM Validator (Edge Cases Only)
-
-```python
-def validate_with_llm(
-    item: ParsedItem,
-    original_text: str,
-    client,
-) -> ParsedItem:
-    """Use LLM to fix low-confidence extractions."""
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",  # Cheapest model for validation
-        max_tokens=500,
-        messages=[{
-            "role": "user",
-            "content": (
-                f"Extract the question, choices, and answer from this text.\n\n"
-                f"Text: {original_text}\n\n"
-                f"Current extraction: {item}\n\n"
-                f"Return corrected JSON if needed, or 'CORRECT' if accurate."
-            ),
-        }],
-    )
-    # Parse LLM response and return corrected item...
-    return corrected_item
-```
-
-### 4. Hybrid Pipeline
-
-```python
-def process_document(
-    content: str,
-    *,
-    llm_client=None,
-    confidence_threshold: float = 0.95,
-) -> list[ParsedItem]:
-    """Full pipeline: regex -> confidence check -> LLM for edge cases."""
-    # Step 1: Regex extraction (handles 95-98%)
-    items = parse_structured_text(content)
-
-    # Step 2: Confidence scoring
-    low_confidence = identify_low_confidence(items, confidence_threshold)
-
-    if not low_confidence or llm_client is None:
-        return items
-
-    # Step 3: LLM validation (only for flagged items)
-    low_conf_ids = {f.item_id for f in low_confidence}
-    result = []
-    for item in items:
-        if item.id in low_conf_ids:
-            result.append(validate_with_llm(item, content, llm_client))
-        else:
-            result.append(item)
-
-    return result
-```
-
-## Real-World Metrics
-
-From a production quiz parsing pipeline (410 items):
-
-| Metric | Value |
-|--------|-------|
-| Regex success rate | 98.0% |
-| Low confidence items | 8 (2.0%) |
-| LLM calls needed | ~5 |
-| Cost savings vs all-LLM | ~95% |
-| Test coverage | 93% |
-
-## Best Practices
-
-- **Start with regex** — even imperfect regex gives you a baseline to improve
-- **Use confidence scoring** to programmatically identify what needs LLM help
-- **Use the cheapest LLM** for validation (Haiku-class models are sufficient)
-- **Never mutate** parsed items — return new instances from cleaning/validation steps
-- **TDD works well** for parsers — write tests for known patterns first, then edge cases
-- **Log metrics** (regex success rate, LLM call count) to track pipeline health
-
-## Anti-Patterns to Avoid
-
-- Sending all text to an LLM when regex handles 95%+ of cases (expensive and slow)
-- Using regex for free-form, highly variable text (LLM is better here)
-- Skipping confidence scoring and hoping regex "just works"
-- Mutating parsed objects during cleaning/validation steps
-- Not testing edge cases (malformed input, missing fields, encoding issues)
-
-## When to Use
-
-- Quiz/exam question parsing
-- Form data extraction
-- Invoice/receipt processing
-- Document structure parsing (headers, sections, tables)
-- Any structured text with repeating patterns where cost matters
+**기억하십시오**: 모든 텍스트를 LLM으로 보내는 것은 비싸고 느립니다. 정규표현식으로 대부분을 처리하고 LLM으로 완성도를 높이는 하이브리드 전략이 가장 효율적입니다.
+    

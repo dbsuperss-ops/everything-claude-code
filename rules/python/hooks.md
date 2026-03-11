@@ -3,17 +3,17 @@ paths:
   - "**/*.py"
   - "**/*.pyi"
 ---
-# Python Hooks
+# Python 훅 (Python Hooks)
 
-> This file extends [common/hooks.md](../common/hooks.md) with Python specific content.
+> 이 파일은 [common/hooks.md](../common/hooks.md)을 Python 전용 내용으로 확장합니다.
 
-## PostToolUse Hooks
+## PostToolUse 훅
 
-Configure in `~/.claude/settings.json`:
+`~/.claude/settings.json`에서 설정하십시오:
 
-- **black/ruff**: Auto-format `.py` files after edit
-- **mypy/pyright**: Run type checking after editing `.py` files
+- **black/ruff**: `.py` 파일 수정 후 자동 포맷팅
+- **mypy/pyright**: `.py` 파일 수정 후 타입 체크 실행
 
-## Warnings
+## 경고
 
-- Warn about `print()` statements in edited files (use `logging` module instead)
+- 수정된 파일에 `print()` 문이 있는지 경고하십시오. (대신 `logging` 모듈 사용)

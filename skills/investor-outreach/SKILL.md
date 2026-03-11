@@ -1,76 +1,56 @@
 ---
 name: investor-outreach
-description: Draft cold emails, warm intro blurbs, follow-ups, update emails, and investor communications for fundraising. Use when the user wants outreach to angels, VCs, strategic investors, or accelerators and needs concise, personalized, investor-facing messaging.
+description: 콜드 메일, 엔젤/VC 및 전략적 투자자용 메시지, 팔로업, 업데이트 메일 및 펀드레이징을 위한 투자자들과의 소통 문구를 작성합니다.
 origin: ECC
 ---
 
-# Investor Outreach
+# 투자자 아웃리치 (Investor Outreach)
 
-Write investor communication that is short, personalized, and easy to act on.
+투자자들이 읽기 쉽고, 개인화되어 있으며, 행동으로 이어지기 쉬운 간결한 소통 문구를 작성합니다.
 
-## When to Activate
+## 활성화 시점
 
-- writing a cold email to an investor
-- drafting a warm intro request
-- sending follow-ups after a meeting or no response
-- writing investor updates during a process
-- tailoring outreach based on fund thesis or partner fit
+- 투자자에게 콜드 메일(Cold email)을 보낼 때
+- 지인을 통한 소개(Warm intro) 요청 문구를 작성할 때
+- 미팅 후 또는 무응답 시 팔로업 메일을 보낼 때
+- 투자 유치 과정 중 투자자 업데이트를 보낼 때
+- 펀드의 투자 테마나 파트너의 성향에 맞춰 메시지를 맞춤화할 때
 
-## Core Rules
+## 핵심 규칙
 
-1. Personalize every outbound message.
-2. Keep the ask low-friction.
-3. Use proof, not adjectives.
-4. Stay concise.
-5. Never send generic copy that could go to any investor.
+1. 모든 아웃바운드 메시지는 개인화되어야 합니다.
+2. 상대방의 부담(Ask)을 최소화하십시오.
+3. 형용사가 아닌 **증거(Proof)**를 사용하십시오.
+4. 간결함을 유지하십시오.
+5. 아무에게나 보낼 수 있는 범용 문구는 절대 보내지 마십시오.
 
-## Cold Email Structure
+## 메시지 구조
 
-1. subject line: short and specific
-2. opener: why this investor specifically
-3. pitch: what the company does, why now, what proof matters
-4. ask: one concrete next step
-5. sign-off: name, role, one credibility anchor if needed
+- **제목**: 짧고 구체적이어야 합니다.
+- **오프닝**: 왜 하필 이 투자자인지를 언급하십시오. (관련 포트폴리오, 공개된 글/발언 등 참고)
+- **피치**: 회사가 하는 일, 왜 지금인지, 결정적인 성과 데이터(Proof)를 포함하십시오.
+- **요청 (Ask)**: 구체적인 다음 단계(예: 15분 미팅)를 제안하십시오.
 
-## Personalization Sources
+## 팔로업 주기 (Follow-Up Cadence)
 
-Reference one or more of:
-- relevant portfolio companies
-- a public thesis, talk, post, or article
-- a mutual connection
-- a clear market or product fit with the investor's focus
+- **0일차**: 최초 발송
+- **4-5일차**: 새로운 데이터 포인트(성과) 하나를 포함한 짧은 팔로업
+- **10-12일차**: 깔끔한 마무리 인사와 함께 마지막 팔로업
 
-If that context is missing, ask for it or state that the draft is a template awaiting personalization.
+그 이후에는 상대방의 응답이 없을 경우 더 이상 재촉하지 않는 것을 원칙으로 합니다.
 
-## Follow-Up Cadence
+## 소개 요청 (Warm Intro Requests)
 
-Default:
-- day 0: initial outbound
-- day 4-5: short follow-up with one new data point
-- day 10-12: final follow-up with a clean close
+소개해주는 사람이 편하도록 만드십시오:
+- 소개가 왜 적절한지 설명하십시오.
+- 그대로 전달(Forward)할 수 있는 100단어 이내의 짧은 소개 문구를 포함하십시오.
 
-Do not keep nudging after that unless the user wants a longer sequence.
+## 품질 확인 사항
 
-## Warm Intro Requests
+- 메시지가 해당 투자자에게 맞춤화되었는가?
+- 요청 사항(Ask)이 명시적인가?
+- 불필요한 수식어(Fluff)나 구걸하는 표현이 없는가?
+- 수치나 데이터(Proof)가 구체적인가?
 
-Make life easy for the connector:
-- explain why the intro is a fit
-- include a forwardable blurb
-- keep the forwardable blurb under 100 words
-
-## Post-Meeting Updates
-
-Include:
-- the specific thing discussed
-- the answer or update promised
-- one new proof point if available
-- the next step
-
-## Quality Gate
-
-Before delivering:
-- message is personalized
-- the ask is explicit
-- there is no fluff or begging language
-- the proof point is concrete
-- word count stays tight
+**기억하십시오**: 투자자들은 매일 수천 통의 메일을 받습니다. 그들의 시간을 존중하고, 짧고 강렬한 데이터로 왜 당신의 팀에 투자해야 하는지를 증명하십시오.
+    

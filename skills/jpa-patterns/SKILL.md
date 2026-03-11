@@ -1,151 +1,60 @@
 ---
 name: jpa-patterns
-description: JPA/Hibernate patterns for entity design, relationships, query optimization, transactions, auditing, indexing, pagination, and pooling in Spring Boot.
+description: Spring Boot에서의 엔티티 설계, 연관관계, 쿼리 최적화, 트랜잭션, 감사(Auditing), 인덱싱 및 페이지네이션을 위한 JPA/Hibernate 패턴 가이드입니다.
 origin: ECC
 ---
 
-# JPA/Hibernate Patterns
+# JPA/Hibernate 패턴 (JPA/Hibernate Patterns)
 
-Use for data modeling, repositories, and performance tuning in Spring Boot.
+Spring Boot에서 데이터 모델링, 리포지토리 구성 및 성능 튜닝을 위해 이 패턴을 사용하십시오.
 
-## When to Activate
+## 활성화 시점
 
-- Designing JPA entities and table mappings
-- Defining relationships (@OneToMany, @ManyToOne, @ManyToMany)
-- Optimizing queries (N+1 prevention, fetch strategies, projections)
-- Configuring transactions, auditing, or soft deletes
-- Setting up pagination, sorting, or custom repository methods
-- Tuning connection pooling (HikariCP) or second-level caching
+- JPA 엔티티 설계 및 테이블 매핑 시
+- 연관관계(@OneToMany, @ManyToOne, @ManyToMany)를 정의할 때
+- 쿼리 최적화(N+1 방지, 페치 전략, 프로젝션)가 필요할 때
+- 트랜잭션, 감사(Auditing), 또는 소프트 딜리트(Soft delete) 설정 시
+- 페이징, 정렬, 또는 커스텀 리포지토리 메서드 구현 시
+- 커넥션 풀(HikariCP) 튜닝이나 2차 캐시 설정 시
 
-## Entity Design
+## 엔티티 설계 (Entity Design)
 
-```java
-@Entity
-@Table(name = "markets", indexes = {
-  @Index(name = "idx_markets_slug", columnList = "slug", unique = true)
-})
-@EntityListeners(AuditingEntityListener.class)
-public class MarketEntity {
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+- `@Entity`, `@Table`(인덱스 포함), `@EntityListeners(AuditingEntityListener.class)`를 기본으로 사용하십시오.
+- `@CreatedDate`, `@LastModifiedDate`를 사용하여 생성/수정 시간을 자동 관리하십시오.
+- `@EnableJpaAuditing` 설정을 잊지 마십시오.
 
-  @Column(nullable = false, length = 200)
-  private String name;
+## 연관관계 및 N+1 문제 방지
 
-  @Column(nullable = false, unique = true, length = 120)
-  private String slug;
+- 기본적으로 **지연 로딩(Lazy Loading)**을 사용하십시오.
+- 컬렉션에 `EAGER`를 반환하지 마십시오. 성능 저하의 주원인입니다.
+- 필요한 경우 JPQL에서 `JOIN FETCH`를 사용하거나 DTO 프로젝션을 활용하여 N+1 문제를 방지하십시오.
 
-  @Enumerated(EnumType.STRING)
-  private MarketStatus status = MarketStatus.ACTIVE;
+## 리포지토리 패턴 (Repository Patterns)
 
-  @CreatedDate private Instant createdAt;
-  @LastModifiedDate private Instant updatedAt;
-}
-```
+- `JpaRepository`를 상속받아 표준 메서드를 활용하십시오.
+- 가벼운 조회 작업을 위해 **인터페이스 기반 프로젝션**을 사용하여 필요한 컬럼만 조회하십시오.
 
-Enable auditing:
-```java
-@Configuration
-@EnableJpaAuditing
-class JpaConfig {}
-```
+## 트랜잭션 (Transactions)
 
-## Relationships and N+1 Prevention
+- 서비스 메서드에 `@Transactional`을 선언하십시오.
+- 단순 조회 메서드에는 `@Transactional(readOnly = true)`를 사용하여 최적화하십시오.
+- 트랜잭션의 범위를 너무 길게 잡지 마십시오.
 
-```java
-@OneToMany(mappedBy = "market", cascade = CascadeType.ALL, orphanRemoval = true)
-private List<PositionEntity> positions = new ArrayList<>();
-```
+## 커넥션 풀 및 인덱싱
 
-- Default to lazy loading; use `JOIN FETCH` in queries when needed
-- Avoid `EAGER` on collections; use DTO projections for read paths
+- **인덱스**: 필터링(`status`, `slug`)이나 외래 키에 인덱스를 추가하십시오. 복합 인덱스는 쿼리 패턴에 맞춰 설계하십시오.
+- **HikariCP**: 최대 풀 사이즈, 타임아웃 등 세부 속성을 환경에 맞춰 설정하십시오.
+- **배치 처리**: 대량 쓰기 시 `saveAll`을 사용하고 `hibernate.jdbc.batch_size` 설정을 고려하십시오.
 
-```java
-@Query("select m from MarketEntity m left join fetch m.positions where m.id = :id")
-Optional<MarketEntity> findWithPositions(@Param("id") Long id);
-```
+## 마이그레이션
 
-## Repository Patterns
+- 운영 환경에서 Hibernate의 자동 DDL(`ddl-auto: update` 등)을 절대 사용하지 마십시오.
+- **Flyway**나 **Liquibase**와 같은 전용 마이그레이션 도구를 사용하십시오.
 
-```java
-public interface MarketRepository extends JpaRepository<MarketEntity, Long> {
-  Optional<MarketEntity> findBySlug(String slug);
+## 테스트
 
-  @Query("select m from MarketEntity m where m.status = :status")
-  Page<MarketEntity> findByStatus(@Param("status") MarketStatus status, Pageable pageable);
-}
-```
+- `@DataJpaTest`와 **Testcontainers**를 함께 사용하여 실제 운영 환경과 유사한 DB 환경에서 테스트하십시오.
+- 로그(`org.hibernate.SQL=DEBUG`)를 통해 실행되는 SQL의 효율성을 주기적으로 점검하십시오.
 
-- Use projections for lightweight queries:
-```java
-public interface MarketSummary {
-  Long getId();
-  String getName();
-  MarketStatus getStatus();
-}
-Page<MarketSummary> findAllBy(Pageable pageable);
-```
-
-## Transactions
-
-- Annotate service methods with `@Transactional`
-- Use `@Transactional(readOnly = true)` for read paths to optimize
-- Choose propagation carefully; avoid long-running transactions
-
-```java
-@Transactional
-public Market updateStatus(Long id, MarketStatus status) {
-  MarketEntity entity = repo.findById(id)
-      .orElseThrow(() -> new EntityNotFoundException("Market"));
-  entity.setStatus(status);
-  return Market.from(entity);
-}
-```
-
-## Pagination
-
-```java
-PageRequest page = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").descending());
-Page<MarketEntity> markets = repo.findByStatus(MarketStatus.ACTIVE, page);
-```
-
-For cursor-like pagination, include `id > :lastId` in JPQL with ordering.
-
-## Indexing and Performance
-
-- Add indexes for common filters (`status`, `slug`, foreign keys)
-- Use composite indexes matching query patterns (`status, created_at`)
-- Avoid `select *`; project only needed columns
-- Batch writes with `saveAll` and `hibernate.jdbc.batch_size`
-
-## Connection Pooling (HikariCP)
-
-Recommended properties:
-```
-spring.datasource.hikari.maximum-pool-size=20
-spring.datasource.hikari.minimum-idle=5
-spring.datasource.hikari.connection-timeout=30000
-spring.datasource.hikari.validation-timeout=5000
-```
-
-For PostgreSQL LOB handling, add:
-```
-spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
-```
-
-## Caching
-
-- 1st-level cache is per EntityManager; avoid keeping entities across transactions
-- For read-heavy entities, consider second-level cache cautiously; validate eviction strategy
-
-## Migrations
-
-- Use Flyway or Liquibase; never rely on Hibernate auto DDL in production
-- Keep migrations idempotent and additive; avoid dropping columns without plan
-
-## Testing Data Access
-
-- Prefer `@DataJpaTest` with Testcontainers to mirror production
-- Assert SQL efficiency using logs: set `logging.level.org.hibernate.SQL=DEBUG` and `logging.level.org.hibernate.orm.jdbc.bind=TRACE` for parameter values
-
-**Remember**: Keep entities lean, queries intentional, and transactions short. Prevent N+1 with fetch strategies and projections, and index for your read/write paths.
+**기억하십시오**: 엔티티는 가볍게, 쿼리는 의도적으로, 트랜잭션은 짧게 유지하십시오. N+1 문제는 페치 전략과 프로젝션으로 해결하고, 조회/쓰기 경로에 맞춰 인덱싱하십시오.
+    

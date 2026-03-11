@@ -1,62 +1,62 @@
-# Build and Fix
+# 빌드 및 수정 (Build and Fix)
 
-Incrementally fix build and type errors with minimal, safe changes.
+최소한의 안전한 변경을 통해 빌드 및 타입 에러를 점진적으로 수정합니다.
 
-## Step 1: Detect Build System
+## 1단계: 빌드 시스템 감지
 
-Identify the project's build tool and run the build:
+프로젝트의 빌드 도구를 식별하고 빌드를 실행합니다:
 
-| Indicator | Build Command |
+| 식별자 | 빌드 명령어 |
 |-----------|---------------|
-| `package.json` with `build` script | `npm run build` or `pnpm build` |
-| `tsconfig.json` (TypeScript only) | `npx tsc --noEmit` |
+| `build` 스크립트가 포함된 `package.json` | `npm run build` 또는 `pnpm build` |
+| `tsconfig.json` (TypeScript 전용) | `npx tsc --noEmit` |
 | `Cargo.toml` | `cargo build 2>&1` |
 | `pom.xml` | `mvn compile` |
 | `build.gradle` | `./gradlew compileJava` |
 | `go.mod` | `go build ./...` |
-| `pyproject.toml` | `python -m py_compile` or `mypy .` |
+| `pyproject.toml` | `python -m py_compile` 또는 `mypy .` |
 
-## Step 2: Parse and Group Errors
+## 2단계: 에러 파싱 및 그룹화
 
-1. Run the build command and capture stderr
-2. Group errors by file path
-3. Sort by dependency order (fix imports/types before logic errors)
-4. Count total errors for progress tracking
+1. 빌드 명령어를 실행하고 stderr를 캡처합니다.
+2. 에러를 파일 경로별로 그룹화합니다.
+3. 의존 관계 순서대로 정렬합니다 (로직 에러 전에 임포트/타입부터 수정).
+4. 진행 상황 추적을 위해 전체 에러 개수를 파악합니다.
 
-## Step 3: Fix Loop (One Error at a Time)
+## 3단계: 수정 루프 (한 번에 에러 하나씩)
 
-For each error:
+각 에러에 대해:
 
-1. **Read the file** — Use Read tool to see error context (10 lines around the error)
-2. **Diagnose** — Identify root cause (missing import, wrong type, syntax error)
-3. **Fix minimally** — Use Edit tool for the smallest change that resolves the error
-4. **Re-run build** — Verify the error is gone and no new errors introduced
-5. **Move to next** — Continue with remaining errors
+1. **파일 읽기** — Read 도구를 사용하여 에러 컨텍스트(에러 발생 지점 주변 10라인)를 확인합니다.
+2. **진단** — 근본 원인(누락된 임포트, 잘못된 타입, 구문 에러 등)을 식별합니다.
+3. **최소 수정** — 에러를 해결하는 가장 작은 변경 사항을 위해 Edit 도구를 사용합니다.
+4. **빌드 재실행** — 에러가 사라졌는지, 새로운 에러가 발생하지 않았는지 확인합니다.
+5. **다음으로 이동** — 남은 에러에 대해 과정을 반복합니다.
 
-## Step 4: Guardrails
+## 4단계: 가드레일 (Guardrails)
 
-Stop and ask the user if:
-- A fix introduces **more errors than it resolves**
-- The **same error persists after 3 attempts** (likely a deeper issue)
-- The fix requires **architectural changes** (not just a build fix)
-- Build errors stem from **missing dependencies** (need `npm install`, `cargo add`, etc.)
+다음과 같은 경우 중단하고 사용자에게 문의하십시오:
+- 수정 사항이 해결하는 에러보다 **더 많은 에러를 유발**할 때
+- **3회 시도 후에도 동일한 에러가 지속**될 때 (더 깊은 문제일 가능성)
+- 수정에 **아키텍처 변경**이 필요할 때 (단순 빌드 수정이 아님)
+- 빌드 에러가 **누락된 의존성**에서 기인할 때 (`npm install`, `cargo add` 등이 필요함)
 
-## Step 5: Summary
+## 5단계: 요약
 
-Show results:
-- Errors fixed (with file paths)
-- Errors remaining (if any)
-- New errors introduced (should be zero)
-- Suggested next steps for unresolved issues
+결과 표시:
+- 수정된 에러 (파일 경로 포함)
+- 남은 에러 (있는 경우)
+- 새로 발생한 에러 (0개여야 함)
+- 미해결 이슈에 대한 차후 단계 제안
 
-## Recovery Strategies
+## 복구 전략 (Recovery Strategies)
 
-| Situation | Action |
+| 상황 | 조치 |
 |-----------|--------|
-| Missing module/import | Check if package is installed; suggest install command |
-| Type mismatch | Read both type definitions; fix the narrower type |
-| Circular dependency | Identify cycle with import graph; suggest extraction |
-| Version conflict | Check `package.json` / `Cargo.toml` for version constraints |
-| Build tool misconfiguration | Read config file; compare with working defaults |
+| 모듈/임포트 누락 | 패키지 설치 여부 확인, 설치 명령어 제안 |
+| 타입 불일치 | 두 타입 정의를 모두 읽고, 더 좁은 범위를 수정 |
+| 순환 참조 | 임포트 그래프로 순환 고리 식별, 추출/분리 제안 |
+| 버전 충돌 | `package.json` / `Cargo.toml`의 버전 제약 사항 확인 |
+| 빌드 도구 설정 오류 | 설정 파일 읽기, 정상 동작하는 기본값과 비교 |
 
-Fix one error at a time for safety. Prefer minimal diffs over refactoring.
+안전을 위해 한 번에 하나의 에러만 수정하십시오. 리팩토링보다 최소한의 디프(diff)를 선호하십시오.

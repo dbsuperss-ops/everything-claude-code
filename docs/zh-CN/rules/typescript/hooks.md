@@ -6,18 +6,18 @@ paths:
   - "**/*.jsx"
 ---
 
-# TypeScript/JavaScript 钩子
+# TypeScript/JavaScript 후크 (Hooks)
 
-> 此文件扩展了 [common/hooks.md](../common/hooks.md)，并添加了 TypeScript/JavaScript 特有的内容。
+> 이 문서는 [common/hooks.md](../common/hooks.md)의 내용을 바탕으로 TypeScript/JavaScript에 특화된 내용을 확장합니다.
 
-## PostToolUse 钩子
+## PostToolUse 후크
 
-在 `~/.claude/settings.json` 中配置：
+`~/.claude/settings.json` 파일에 다음 항목을 구성하십시오:
 
-* **Prettier**：编辑后自动格式化 JS/TS 文件
-* **TypeScript 检查**：编辑 `.ts`/`.tsx` 文件后运行 `tsc`
-* **console.log 警告**：警告编辑过的文件中存在 `console.log`
+* **Prettier**: JS/TS 파일 편집 후 자동으로 포매팅을 수행합니다.
+* **TypeScript 검사**: `.ts`/`.tsx` 파일 편집 후 `tsc`를 실행하여 타입을 점검합니다.
+* **console.log 경고**: 수정된 파일 내에 `console.log`가 포함되어 있으면 경고를 표시합니다.
 
-## Stop 钩子
+## Stop 후크
 
-* **console.log 审计**：在会话结束前，检查所有修改过的文件中是否存在 `console.log`
+* **console.log 감사(Audit)**: 세션 종료 전, 모든 수정된 파일 에 `console.log`가 남아있는지 최종 확인합니다.

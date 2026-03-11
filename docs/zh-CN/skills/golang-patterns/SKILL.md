@@ -1,28 +1,27 @@
 ---
 name: golang-patterns
-description: 用于构建健壮、高效且可维护的Go应用程序的惯用Go模式、最佳实践和约定。
+description: 견고하고 효율적이며 유지보수가 용이한 Go 애플리케이션 구축을 위한 관용적인(Idiomatic) Go 패턴, 베스트 프랙티스 및 규칙 가이드입니다.
 origin: ECC
 ---
 
-# Go 开发模式
+# Go 개발 패턴
 
-用于构建健壮、高效和可维护应用程序的惯用 Go 模式与最佳实践。
+견고하고 효율적이며 유지보수가 용이한 애플리케이션을 구축하기 위한 관용적인(Idiomatic) Go 패턴과 베스트 프랙티스입니다.
 
-## 何时激活
+## 적용 시점
 
-* 编写新的 Go 代码时
-* 审查 Go 代码时
-* 重构现有 Go 代码时
-* 设计 Go 包/模块时
+* 새로운 Go 코드를 작성할 때
+* Go 코드 리뷰를 수행할 때
+* 기존 Go 코드를 리팩토링할 때
+* Go 패키지나 모듈을 설계할 때
 
-## 核心原则
+## 핵심 원칙
 
-### 1. 简洁与清晰
-
-Go 推崇简洁而非精巧。代码应该显而易见且易于阅读。
+### 1. 단순함과 명확함 (Simplicity and Clarity)
+Go는 기교보다 단순함을 지향합니다. 코드는 읽기 쉽고 의도가 명확해야 합니다.
 
 ```go
-// Good: Clear and direct
+// ✅ 권장: 명확하고 직접적인 방식
 func GetUser(id string) (*User, error) {
     user, err := db.FindUser(id)
     if err != nil {
@@ -31,7 +30,7 @@ func GetUser(id string) (*User, error) {
     return user, nil
 }
 
-// Bad: Overly clever
+// ❌ 나쁨: 불필요하게 복잡한 방식
 func GetUser(id string) (*User, error) {
     return func() (*User, error) {
         if u, e := db.FindUser(id); e == nil {
@@ -43,15 +42,14 @@ func GetUser(id string) (*User, error) {
 }
 ```
 
-### 2. 让零值变得有用
-
-设计类型时，应使其零值无需初始化即可立即使用。
+### 2. 제로 값(Zero Value)을 유용하게 만들기
+타입을 설계할 때 별도의 초기화 없이도 기본값(Zero value) 상태에서 즉시 사용 가능하도록 만드십시오.
 
 ```go
-// Good: Zero value is useful
+// ✅ 권장: 기본값이 유용함
 type Counter struct {
     mu    sync.Mutex
-    count int // zero value is 0, ready to use
+    count int // 기본값 0, 즉시 사용 가능
 }
 
 func (c *Counter) Inc() {
@@ -60,22 +58,16 @@ func (c *Counter) Inc() {
     c.mu.Unlock()
 }
 
-// Good: bytes.Buffer works with zero value
+// sync.Mutex나 bytes.Buffer 등은 선언만으로 즉시 사용 가능하도록 설계됨
 var buf bytes.Buffer
 buf.WriteString("hello")
-
-// Bad: Requires initialization
-type BadCounter struct {
-    counts map[string]int // nil map will panic
-}
 ```
 
-### 3. 接受接口，返回结构体
-
-函数应该接受接口参数并返回具体类型。
+### 3. 인터페이스로 받고 구조체로 반환하기 (Accept interface, Return struct)
+함수는 인터페이스를 매개변수로 받고, 구체적인 타입(구조체 포인터 등)을 반환하는 것이 좋습니다.
 
 ```go
-// Good: Accepts interface, returns concrete type
+// ✅ 권장: 인터페이스를 받고 구체 타입을 반환
 func ProcessData(r io.Reader) (*Result, error) {
     data, err := io.ReadAll(r)
     if err != nil {
@@ -83,102 +75,43 @@ func ProcessData(r io.Reader) (*Result, error) {
     }
     return &Result{Data: data}, nil
 }
+```
 
-// Bad: Returns interface (hides implementation details unnecessarily)
-func ProcessData(r io.Reader) (io.Reader, error) {
+## 에러 처리 패턴
+
+### 컨텍스트를 포함한 에러 래핑 (Error Wrapping)
+`fmt.Errorf`와 `%w`를 사용하여 에러 발생 지점의 문맥을 함께 전달하십시오.
+
+```go
+func LoadConfig(path string) (*Config, error) {
+    data, err := os.ReadFile(path)
+    if err != nil {
+        return nil, fmt.Errorf("config 파일 로드 실패 (%s): %w", path, err)
+    }
     // ...
 }
 ```
 
-## 错误处理模式
-
-### 带上下文的错误包装
+### errors.Is 및 errors.As 활용
+에러의 원인을 확인하거나 특정 에러 타입으로 변환할 때 사용합니다.
 
 ```go
-// Good: Wrap errors with context
-func LoadConfig(path string) (*Config, error) {
-    data, err := os.ReadFile(path)
-    if err != nil {
-        return nil, fmt.Errorf("load config %s: %w", path, err)
-    }
+if errors.Is(err, sql.ErrNoRows) {
+    // 결과 없음 처리
+}
 
-    var cfg Config
-    if err := json.Unmarshal(data, &cfg); err != nil {
-        return nil, fmt.Errorf("parse config %s: %w", path, err)
-    }
-
-    return &cfg, nil
+var valErr *ValidationError
+if errors.As(err, &valErr) {
+    // 유효성 검사 에러 상세 처리
 }
 ```
 
-### 自定义错误类型
+## 동시성 패턴 (Concurrency)
 
-```go
-// Define domain-specific errors
-type ValidationError struct {
-    Field   string
-    Message string
-}
-
-func (e *ValidationError) Error() string {
-    return fmt.Sprintf("validation failed on %s: %s", e.Field, e.Message)
-}
-
-// Sentinel errors for common cases
-var (
-    ErrNotFound     = errors.New("resource not found")
-    ErrUnauthorized = errors.New("unauthorized")
-    ErrInvalidInput = errors.New("invalid input")
-)
-```
-
-### 使用 errors.Is 和 errors.As 检查错误
-
-```go
-func HandleError(err error) {
-    // Check for specific error
-    if errors.Is(err, sql.ErrNoRows) {
-        log.Println("No records found")
-        return
-    }
-
-    // Check for error type
-    var validationErr *ValidationError
-    if errors.As(err, &validationErr) {
-        log.Printf("Validation error on field %s: %s",
-            validationErr.Field, validationErr.Message)
-        return
-    }
-
-    // Unknown error
-    log.Printf("Unexpected error: %v", err)
-}
-```
-
-### 永不忽略错误
-
-```go
-// Bad: Ignoring error with blank identifier
-result, _ := doSomething()
-
-// Good: Handle or explicitly document why it's safe to ignore
-result, err := doSomething()
-if err != nil {
-    return err
-}
-
-// Acceptable: When error truly doesn't matter (rare)
-_ = writer.Close() // Best-effort cleanup, error logged elsewhere
-```
-
-## 并发模式
-
-### 工作池
-
+### 워커 풀 (Worker Pool)
 ```go
 func WorkerPool(jobs <-chan Job, results chan<- Result, numWorkers int) {
     var wg sync.WaitGroup
-
     for i := 0; i < numWorkers; i++ {
         wg.Add(1)
         go func() {
@@ -188,487 +121,56 @@ func WorkerPool(jobs <-chan Job, results chan<- Result, numWorkers int) {
             }
         }()
     }
-
     wg.Wait()
     close(results)
 }
 ```
 
-### 用于取消和超时的 Context
-
+### 취소 및 타임아웃을 위한 Context 활용
 ```go
 func FetchWithTimeout(ctx context.Context, url string) ([]byte, error) {
     ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
     defer cancel()
-
-    req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-    if err != nil {
-        return nil, fmt.Errorf("create request: %w", err)
-    }
-
-    resp, err := http.DefaultClient.Do(req)
-    if err != nil {
-        return nil, fmt.Errorf("fetch %s: %w", url, err)
-    }
-    defer resp.Body.Close()
-
-    return io.ReadAll(resp.Body)
+    // ctx를 지원하는 네트워크 요청 실행
 }
 ```
 
-### 优雅关闭
+### 고루틴 누수(Leak) 방지
+컨텍스트가 취소되었을 때 고루틴이 영원히 차단되지 않도록 `select` 문을 적절히 사용하십시오.
 
-```go
-func GracefulShutdown(server *http.Server) {
-    quit := make(chan os.Signal, 1)
-    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+## 인터페이스 설계
 
-    <-quit
-    log.Println("Shutting down server...")
+* **작고 집중된 인터페이스**: `io.Reader`, `io.Writer`처럼 메서드 1-2개짜리 인터페이스가 강력합니다.
+* **사용자 쪽에서 인터페이스 정의**: 패키지 제공자가 아닌, 해당 기능을 사용하는 곳(Consumer)에서 필요한 메서드만 추려 인터페이스를 정의하십시오. (Duck Typing 활용)
 
-    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-    defer cancel()
+## 패키지 조직 및 명명 규칙
 
-    if err := server.Shutdown(ctx); err != nil {
-        log.Fatalf("Server forced to shutdown: %v", err)
-    }
+* **표준 레이아웃**: `cmd/`(실행 파일), `internal/`(비공개 로직), `pkg/`(공개 라이브러리) 구분을 따르십시오.
+* **패키지 이름**: 짧고 소문자이며 언더바(`_`)가 없는 이름을 사용하십시오 (예: `http`, `json`, `user`).
+* **패키지 레벨 상태 지양**: 전역 변수나 `init()` 함수를 통한 상태 공유보다는 의존성 주입(Dependency Injection)을 선호하십시오.
 
-    log.Println("Server exited")
-}
-```
+## 메모리 및 성능 최적화
 
-### 用于协调 Goroutine 的 errgroup
+* **슬라이스 미리 할당**: 크기를 알 수 있다면 `make([]T, 0, capacity)`로 미리 메모리를 확보하여 재할당 오버헤드를 줄이십시오.
+* **sync.Pool 활용**: 빈번하게 생성되고 해제되는 객체(예: 버퍼)는 풀에 담아 재사용하십시오.
+* **strings.Builder 사용**: 루프 안에서 문자열을 합칠 때는 `+` 연산자 대신 `strings.Builder`를 사용하십시오.
 
-```go
-import "golang.org/x/sync/errgroup"
+## 빠른 참조: Go의 관용구(Idioms)
 
-func FetchAll(ctx context.Context, urls []string) ([][]byte, error) {
-    g, ctx := errgroup.WithContext(ctx)
-    results := make([][]byte, len(urls))
-
-    for i, url := range urls {
-        i, url := i, url // Capture loop variables
-        g.Go(func() error {
-            data, err := FetchWithTimeout(ctx, url)
-            if err != nil {
-                return err
-            }
-            results[i] = data
-            return nil
-        })
-    }
-
-    if err := g.Wait(); err != nil {
-        return nil, err
-    }
-    return results, nil
-}
-```
-
-### 避免 Goroutine 泄漏
-
-```go
-// Bad: Goroutine leak if context is cancelled
-func leakyFetch(ctx context.Context, url string) <-chan []byte {
-    ch := make(chan []byte)
-    go func() {
-        data, _ := fetch(url)
-        ch <- data // Blocks forever if no receiver
-    }()
-    return ch
-}
-
-// Good: Properly handles cancellation
-func safeFetch(ctx context.Context, url string) <-chan []byte {
-    ch := make(chan []byte, 1) // Buffered channel
-    go func() {
-        data, err := fetch(url)
-        if err != nil {
-            return
-        }
-        select {
-        case ch <- data:
-        case <-ctx.Done():
-        }
-    }()
-    return ch
-}
-```
-
-## 接口设计
-
-### 小而专注的接口
-
-```go
-// Good: Single-method interfaces
-type Reader interface {
-    Read(p []byte) (n int, err error)
-}
-
-type Writer interface {
-    Write(p []byte) (n int, err error)
-}
-
-type Closer interface {
-    Close() error
-}
-
-// Compose interfaces as needed
-type ReadWriteCloser interface {
-    Reader
-    Writer
-    Closer
-}
-```
-
-### 在接口使用处定义接口
-
-```go
-// In the consumer package, not the provider
-package service
-
-// UserStore defines what this service needs
-type UserStore interface {
-    GetUser(id string) (*User, error)
-    SaveUser(user *User) error
-}
-
-type Service struct {
-    store UserStore
-}
-
-// Concrete implementation can be in another package
-// It doesn't need to know about this interface
-```
-
-### 使用类型断言实现可选行为
-
-```go
-type Flusher interface {
-    Flush() error
-}
-
-func WriteAndFlush(w io.Writer, data []byte) error {
-    if _, err := w.Write(data); err != nil {
-        return err
-    }
-
-    // Flush if supported
-    if f, ok := w.(Flusher); ok {
-        return f.Flush()
-    }
-    return nil
-}
-```
-
-## 包组织
-
-### 标准项目布局
-
-```text
-myproject/
-├── cmd/
-│   └── myapp/
-│       └── main.go           # Entry point
-├── internal/
-│   ├── handler/              # HTTP handlers
-│   ├── service/              # Business logic
-│   ├── repository/           # Data access
-│   └── config/               # Configuration
-├── pkg/
-│   └── client/               # Public API client
-├── api/
-│   └── v1/                   # API definitions (proto, OpenAPI)
-├── testdata/                 # Test fixtures
-├── go.mod
-├── go.sum
-└── Makefile
-```
-
-### 包命名
-
-```go
-// Good: Short, lowercase, no underscores
-package http
-package json
-package user
-
-// Bad: Verbose, mixed case, or redundant
-package httpHandler
-package json_parser
-package userService // Redundant 'Service' suffix
-```
-
-### 避免包级状态
-
-```go
-// Bad: Global mutable state
-var db *sql.DB
-
-func init() {
-    db, _ = sql.Open("postgres", os.Getenv("DATABASE_URL"))
-}
-
-// Good: Dependency injection
-type Server struct {
-    db *sql.DB
-}
-
-func NewServer(db *sql.DB) *Server {
-    return &Server{db: db}
-}
-```
-
-## 结构体设计
-
-### 函数式选项模式
-
-```go
-type Server struct {
-    addr    string
-    timeout time.Duration
-    logger  *log.Logger
-}
-
-type Option func(*Server)
-
-func WithTimeout(d time.Duration) Option {
-    return func(s *Server) {
-        s.timeout = d
-    }
-}
-
-func WithLogger(l *log.Logger) Option {
-    return func(s *Server) {
-        s.logger = l
-    }
-}
-
-func NewServer(addr string, opts ...Option) *Server {
-    s := &Server{
-        addr:    addr,
-        timeout: 30 * time.Second, // default
-        logger:  log.Default(),    // default
-    }
-    for _, opt := range opts {
-        opt(s)
-    }
-    return s
-}
-
-// Usage
-server := NewServer(":8080",
-    WithTimeout(60*time.Second),
-    WithLogger(customLogger),
-)
-```
-
-### 使用嵌入实现组合
-
-```go
-type Logger struct {
-    prefix string
-}
-
-func (l *Logger) Log(msg string) {
-    fmt.Printf("[%s] %s\n", l.prefix, msg)
-}
-
-type Server struct {
-    *Logger // Embedding - Server gets Log method
-    addr    string
-}
-
-func NewServer(addr string) *Server {
-    return &Server{
-        Logger: &Logger{prefix: "SERVER"},
-        addr:   addr,
-    }
-}
-
-// Usage
-s := NewServer(":8080")
-s.Log("Starting...") // Calls embedded Logger.Log
-```
-
-## 内存与性能
-
-### 当大小已知时预分配切片
-
-```go
-// Bad: Grows slice multiple times
-func processItems(items []Item) []Result {
-    var results []Result
-    for _, item := range items {
-        results = append(results, process(item))
-    }
-    return results
-}
-
-// Good: Single allocation
-func processItems(items []Item) []Result {
-    results := make([]Result, 0, len(items))
-    for _, item := range items {
-        results = append(results, process(item))
-    }
-    return results
-}
-```
-
-### 为频繁分配使用 sync.Pool
-
-```go
-var bufferPool = sync.Pool{
-    New: func() interface{} {
-        return new(bytes.Buffer)
-    },
-}
-
-func ProcessRequest(data []byte) []byte {
-    buf := bufferPool.Get().(*bytes.Buffer)
-    defer func() {
-        buf.Reset()
-        bufferPool.Put(buf)
-    }()
-
-    buf.Write(data)
-    // Process...
-    return buf.Bytes()
-}
-```
-
-### 避免在循环中进行字符串拼接
-
-```go
-// Bad: Creates many string allocations
-func join(parts []string) string {
-    var result string
-    for _, p := range parts {
-        result += p + ","
-    }
-    return result
-}
-
-// Good: Single allocation with strings.Builder
-func join(parts []string) string {
-    var sb strings.Builder
-    for i, p := range parts {
-        if i > 0 {
-            sb.WriteString(",")
-        }
-        sb.WriteString(p)
-    }
-    return sb.String()
-}
-
-// Best: Use standard library
-func join(parts []string) string {
-    return strings.Join(parts, ",")
-}
-```
-
-## Go 工具集成
-
-### 基本命令
-
-```bash
-# Build and run
-go build ./...
-go run ./cmd/myapp
-
-# Testing
-go test ./...
-go test -race ./...
-go test -cover ./...
-
-# Static analysis
-go vet ./...
-staticcheck ./...
-golangci-lint run
-
-# Module management
-go mod tidy
-go mod verify
-
-# Formatting
-gofmt -w .
-goimports -w .
-```
-
-### 推荐的 Linter 配置 (.golangci.yml)
-
-```yaml
-linters:
-  enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-    - gofmt
-    - goimports
-    - misspell
-    - unconvert
-    - unparam
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-  govet:
-    check-shadowing: true
-
-issues:
-  exclude-use-default: false
-```
-
-## 快速参考：Go 惯用法
-
-| 惯用法 | 描述 |
+| 관용구 | 설명 |
 |-------|-------------|
-| 接受接口，返回结构体 | 函数接受接口参数，返回具体类型 |
-| 错误即值 | 将错误视为一等值，而非异常 |
-| 不要通过共享内存来通信 | 使用通道在 goroutine 之间进行协调 |
-| 让零值变得有用 | 类型应无需显式初始化即可工作 |
-| 少量复制优于少量依赖 | 避免不必要的外部依赖 |
-| 清晰优于精巧 | 优先考虑可读性而非精巧性 |
-| gofmt 虽非最爱，但却是每个人的朋友 | 始终使用 gofmt/goimports 格式化代码 |
-| 提前返回 | 先处理错误，保持主逻辑路径无缩进 |
+| **Accept Interface, Return Struct** | 입력은 유연하게(인터페이스), 출력은 명확하게(구조체) |
+| **Error as Value** | 에러를 예외(Exception)가 아닌 일반적인 값으로 취급 |
+| **Share memory by communicating** | 고루틴 간 협력 시 채널을 사용 |
+| **Effective Zero Value** | 초기화 없이도 동작하는 타입 설계 |
+| **Early Return** | 에러를 먼저 처리하여 코드 깊이(Indentation) 축소 |
+| **Gofmt is Friend** | 항상 `gofmt` 또는 `goimports`로 포맷을 통일 |
 
-## 应避免的反模式
+## 피해야 할 안티 패턴
 
-```go
-// Bad: Naked returns in long functions
-func process() (result int, err error) {
-    // ... 50 lines ...
-    return // What is being returned?
-}
+* **Naked Returns**: 긴 함수에서 반환값 이름을 명시하지 않는 `return`은 가독성을 해칩니다.
+* **제어 흐름으로 Panic 사용**: 복구 가능한 상황에서는 항상 `error`를 반환하십시오.
+* **구조체 내부에 Context 포함**: 컨텍스트는 항상 함수의 첫 번째 매개변수로 전달되어야 합니다.
+* **포인터와 값 리시버 혼용**: 한 타입에 대해서는 일관성 있게 하나만 선택하십시오.
 
-// Bad: Using panic for control flow
-func GetUser(id string) *User {
-    user, err := db.Find(id)
-    if err != nil {
-        panic(err) // Don't do this
-    }
-    return user
-}
-
-// Bad: Passing context in struct
-type Request struct {
-    ctx context.Context // Context should be first param
-    ID  string
-}
-
-// Good: Context as first parameter
-func ProcessRequest(ctx context.Context, id string) error {
-    // ...
-}
-
-// Bad: Mixing value and pointer receivers
-type Counter struct{ n int }
-func (c Counter) Value() int { return c.n }    // Value receiver
-func (c *Counter) Increment() { c.n++ }        // Pointer receiver
-// Pick one style and be consistent
-```
-
-**记住**：Go 代码应该以最好的方式显得“乏味”——可预测、一致且易于理解。如有疑问，保持简单。
+**기억하십시오**: Go 코드는 "지루할 정도로" 예측 가능하고 일관되며 이해하기 쉬워야 합니다. 의구심이 들 때는 단순한 길을 선택하십시오.

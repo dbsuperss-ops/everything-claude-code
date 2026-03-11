@@ -1,107 +1,94 @@
 ---
 name: database-migrations
-description: 数据库迁移最佳实践，涵盖模式变更、数据迁移、回滚以及零停机部署，适用于PostgreSQL、MySQL及常用ORM（Prisma、Drizzle、Django、TypeORM、golang-migrate）。
+description: 데이터베이스 마이그레이션 베스트 프랙티스입니다. 스키마 변경, 데이터 이관, 롤백 및 무중단 배포 전략을 포함하며 PostgreSQL, MySQL 및 주요 ORM(Prisma, Drizzle, Django, TypeORM, golang-migrate)을 다룹니다.
 origin: ECC
 ---
 
-# 数据库迁移模式
+# 데이터베이스 마이그레이션 패턴
 
-为生产系统提供安全、可逆的数据库模式变更。
+운영 시스템을 위한 안전하고 가역적인(Reversible) 데이터베이스 스키마 변경 전략을 제공합니다.
 
-## 何时激活
+## 적용 시점
 
-* 创建或修改数据库表
-* 添加/删除列或索引
-* 运行数据迁移（回填、转换）
-* 计划零停机模式变更
-* 为新项目设置迁移工具
+* 데이터베이스 테이블을 생성하거나 수정할 때
+* 컬럼이나 인덱스를 추가/삭제할 때
+* 데이터 이관(Data migration), 데이터 백필(Backfill), 데이터 변환 작업을 수행할 때
+* 무중단(Zero-downtime) 스키마 변경을 계획할 때
+* 새 프로젝트에 마이그레이션 도구를 설정할 때
 
-## 核心原则
+## 핵심 원칙
 
-1. **每个变更都是一次迁移** — 切勿手动更改生产数据库
-2. **迁移在生产环境中是只进不退的** — 回滚使用新的前向迁移
-3. **模式迁移和数据迁移是分开的** — 切勿在一个迁移中混合 DDL 和 DML
-4. **针对生产规模的数据测试迁移** — 适用于 100 行的迁移可能在 1000 万行时锁定
-5. **迁移一旦部署就是不可变的** — 切勿编辑已在生产中运行的迁移
+1. **모든 변경은 마이그레이션으로 관리** — 운영 데이터베이스를 수동으로 직접 수정하지 마십시오.
+2. **운영 환경에서는 전진(Forward) 마이그레이션만 수행** — 롤백이 필요한 경우에도 새로운 전진 마이그레이션을 통해 복구하십시오.
+3. **스키마와 데이터 마이그레이션 분리** — 하나의 마이그레이션 파일에 DDL(스키마 변경)과 DML(데이터 조작)을 섞지 마십시오.
+4. **운영 환경 수준의 데이터로 테스트** — 100행 규모에서 성공한 마이그레이션이 1,000만 행 규모에서는 테이블 락(Lock)을 유발할 수 있습니다.
+5. **배포된 마이그레이션은 불변(Immutable)** — 이미 운영 환경에 적용된 마이그레이션 파일을 수정하지 마십시오.
 
-## 迁移安全检查清单
+## 마이그레이션 안전 체크리스트
 
-应用任何迁移之前：
+마이그레이션 적용 전 확인 사항:
 
-* \[ ] 迁移同时包含 UP 和 DOWN（或明确标记为不可逆）
-* \[ ] 对大表没有全表锁（使用并发操作）
-* \[ ] 新列有默认值或可为空（切勿添加没有默认值的 NOT NULL）
-* \[ ] 索引是并发创建的（对于现有表，不与 CREATE TABLE 内联创建）
-* \[ ] 数据回填是与模式变更分开的迁移
-* \[ ] 已针对生产数据副本进行测试
-* \[ ] 回滚计划已记录
+* [ ] UP(적용)과 DOWN(취소) 로직이 모두 포함되었는가(또는 명시적으로 취소 불가로 표시했는가).
+* [ ] 대규모 테이블에 전체 테이블 락(Full table lock)을 걸지 않는가(동시성 옵션 사용 등).
+* [ ] 새로운 컬럼에 기본값(Default)이 있거나 Null 허용(Nullable)인가(기존 데이터가 있는 경우 기본값 없는 NOT NULL 추가 금지).
+* [ ] 인덱스를 동시성 모드(`CONCURRENTLY`)로 생성하는가(기존 테이블의 경우 `CREATE TABLE` 내에 인덱스를 포함하지 말 것).
+* [ ] 데이터 백필 작업이 스키마 변경과 별도의 마이그레이션으로 분리되었는가.
+* [ ] 운영 데이터의 복사본(Staging 등)에서 테스트를 완료했는가.
+* [ ] 롤백 계획이 문서화되어 있는가.
 
-## PostgreSQL 模式
+## PostgreSQL 패턴
 
-### 安全地添加列
+### 안전한 컬럼 추가
 
 ```sql
--- GOOD: Nullable column, no lock
+-- 좋음: Null 허용 컬럼 추가, 락 발생 없음
 ALTER TABLE users ADD COLUMN avatar_url TEXT;
 
--- GOOD: Column with default (Postgres 11+ is instant, no rewrite)
+-- 좋음: 기본값이 있는 컬럼 추가 (Postgres 11+ 버전은 즉시 반영되며 테이블 재작성이 없음)
 ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true;
 
--- BAD: NOT NULL without default on existing table (requires full rewrite)
+-- 나쁨: 기존 데이터가 있는 테이블에 기본값 없이 NOT NULL 컬럼 추가 (전체 재작성 필요)
 ALTER TABLE users ADD COLUMN role TEXT NOT NULL;
--- This locks the table and rewrites every row
+-- 이는 테이블 전체에 락을 걸고 모든 행을 재작성합니다.
 ```
 
-### 无停机添加索引
+### 무중단 인덱스 추가
 
 ```sql
--- BAD: Blocks writes on large tables
+-- 나쁨: 대규모 테이블에서 쓰기 작업을 차단함
 CREATE INDEX idx_users_email ON users (email);
 
--- GOOD: Non-blocking, allows concurrent writes
+-- 좋음: 논블로킹(Non-blocking) 방식, 동시 쓰기 허용
 CREATE INDEX CONCURRENTLY idx_users_email ON users (email);
 
--- Note: CONCURRENTLY cannot run inside a transaction block
--- Most migration tools need special handling for this
+-- 참고: CONCURRENTLY 옵션은 트랜잭션 블록 내에서 실행될 수 없습니다.
+-- 대부분의 마이그레이션 도구에서 이를 위해 별도의 처리가 필요합니다.
 ```
 
-### 重命名列（零停机）
+### 컬럼 이름 변경 (무중단 전략)
+운영 중인 DB에서 컬럼명을 직접 바꾸지 마십시오. '확장-축소(Expand-Contract)' 패턴을 사용합니다:
 
-切勿在生产中直接重命名。使用扩展-收缩模式：
+1. **새 컬럼 추가** (마이그레이션 001): `display_name` 추가
+2. **데이터 백필** (마이그레이션 002, 데이터 마이그레이션): `username` 값을 `display_name`으로 복사
+3. **애플리케이션 코드 업데이트**: 두 컬럼 모두에 읽기/쓰기를 수행하도록 수정하여 배포
+4. **이전 컬럼 삭제** (마이그레이션 003): 애플리케이션에서 더 이상 사용하지 않는 `username` 삭제
 
-```sql
--- Step 1: Add new column (migration 001)
-ALTER TABLE users ADD COLUMN display_name TEXT;
+### 안전한 컬럼 삭제
+1. 애플리케이션 코드에서 해당 컬럼에 대한 모든 참조를 제거합니다.
+2. 해당 코드를 배포합니다.
+3. 다음 마이그레이션에서 컬럼을 삭제합니다:
+   ```sql
+   ALTER TABLE orders DROP COLUMN legacy_status;
+   ```
+   *Django의 경우: `SeparateDatabaseAndState`를 사용하여 DB에서 먼저 비활성화한 후 다음 마이그레이션에서 삭제하는 방식을 권장합니다.*
 
--- Step 2: Backfill data (migration 002, data migration)
-UPDATE users SET display_name = username WHERE display_name IS NULL;
-
--- Step 3: Update application code to read/write both columns
--- Deploy application changes
-
--- Step 4: Stop writing to old column, drop it (migration 003)
-ALTER TABLE users DROP COLUMN username;
-```
-
-### 安全地删除列
-
-```sql
--- Step 1: Remove all application references to the column
--- Step 2: Deploy application without the column reference
--- Step 3: Drop column in next migration
-ALTER TABLE orders DROP COLUMN legacy_status;
-
--- For Django: use SeparateDatabaseAndState to remove from model
--- without generating DROP COLUMN (then drop in next migration)
-```
-
-### 大型数据迁移
+### 대규모 데이터 마이그레이션 (Batch Update)
 
 ```sql
--- BAD: Updates all rows in one transaction (locks table)
+-- 나쁨: 하나의 트랜잭션에서 모든 행 수정 (테이블 락 유발)
 UPDATE users SET normalized_email = LOWER(email);
 
--- GOOD: Batch update with progress
+-- 좋음: 배치 처리를 통한 점진적 업데이트
 DO $$
 DECLARE
   batch_size INT := 10000;
@@ -117,7 +104,7 @@ BEGIN
       FOR UPDATE SKIP LOCKED
     );
     GET DIAGNOSTICS rows_updated = ROW_COUNT;
-    RAISE NOTICE 'Updated % rows', rows_updated;
+    RAISE NOTICE '업데이트된 행 수: %', rows_updated;
     EXIT WHEN rows_updated = 0;
     COMMIT;
   END LOOP;
@@ -126,24 +113,22 @@ END $$;
 
 ## Prisma (TypeScript/Node.js)
 
-### 工作流
-
+### 워크플로우
 ```bash
-# Create migration from schema changes
+# 스키마 변경사항으로부터 마이그레이션 생성
 npx prisma migrate dev --name add_user_avatar
 
-# Apply pending migrations in production
+# 운영 환경에 대기 중인 마이그레이션 적용
 npx prisma migrate deploy
 
-# Reset database (dev only)
+# 데이터베이스 초기화 (개발 환경 전용)
 npx prisma migrate reset
 
-# Generate client after schema changes
+# 스키마 변경 후 클라이언트 생성
 npx prisma generate
 ```
 
-### 模式示例
-
+### 모델 예시
 ```prisma
 model User {
   id        String   @id @default(cuid())
@@ -159,71 +144,51 @@ model User {
 }
 ```
 
-### 自定义 SQL 迁移
-
-对于 Prisma 无法表达的操作（并发索引、数据回填）：
-
+### 커스텀 SQL 마이그레이션
+Prisma로 직접 표현하기 어려운 작업(CONCURRENT 인덱스, 데이터 백필 등)의 경우:
 ```bash
-# Create empty migration, then edit the SQL manually
+# 파일만 생성하고 SQL은 수동으로 편집
 npx prisma migrate dev --create-only --name add_email_index
 ```
 
 ```sql
 -- migrations/20240115_add_email_index/migration.sql
--- Prisma cannot generate CONCURRENTLY, so we write it manually
+-- Prisma는 CONCURRENTLY를 직접 생성하지 못하므로 수동으로 작성합니다.
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_email ON users (email);
 ```
 
 ## Drizzle (TypeScript/Node.js)
 
-### 工作流
-
+### 워크플로우
 ```bash
-# Generate migration from schema changes
+# 스키마 변경사항으로부터 마이그레이션 생성
 npx drizzle-kit generate
 
-# Apply migrations
+# 마이그레이션 적용
 npx drizzle-kit migrate
 
-# Push schema directly (dev only, no migration file)
+# 스키마를 즉시 푸시 (개발 환경 전용, 마이그레이션 파일 없음)
 npx drizzle-kit push
-```
-
-### 模式示例
-
-```typescript
-import { pgTable, text, timestamp, uuid, boolean } from "drizzle-orm/pg-core";
-
-export const users = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  email: text("email").notNull().unique(),
-  name: text("name"),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
 ```
 
 ## Django (Python)
 
-### 工作流
-
+### 워크플로우
 ```bash
-# Generate migration from model changes
+# 모델 변경사항으로부터 마이그레이션 생성
 python manage.py makemigrations
 
-# Apply migrations
+# 마이그레이션 적용
 python manage.py migrate
 
-# Show migration status
+# 상태 확인
 python manage.py showmigrations
 
-# Generate empty migration for custom SQL
+# 커스텀 SQL용 빈 마이그레이션 생성
 python manage.py makemigrations --empty app_name -n description
 ```
 
-### 数据迁移
-
+### 데이터 마이그레이션 예시
 ```python
 from django.db import migrations
 
@@ -238,7 +203,7 @@ def backfill_display_names(apps, schema_editor):
         User.objects.bulk_update(batch, ["display_name"], batch_size=batch_size)
 
 def reverse_backfill(apps, schema_editor):
-    pass  # Data migration, no reverse needed
+    pass  # 데이터 마이그레이션의 경우 되돌리기가 필요 없으면 비워둠
 
 class Migration(migrations.Migration):
     dependencies = [("accounts", "0015_add_display_name")]
@@ -248,88 +213,47 @@ class Migration(migrations.Migration):
     ]
 ```
 
-### SeparateDatabaseAndState
-
-从 Django 模型中删除列，而不立即从数据库中删除：
-
-```python
-class Migration(migrations.Migration):
-    operations = [
-        migrations.SeparateDatabaseAndState(
-            state_operations=[
-                migrations.RemoveField(model_name="user", name="legacy_field"),
-            ],
-            database_operations=[],  # Don't touch the DB yet
-        ),
-    ]
-```
-
 ## golang-migrate (Go)
 
-### 工作流
-
+### 워크플로우
 ```bash
-# Create migration pair
+# 마이그레이션 파일 쌍(UP/DOWN) 생성
 migrate create -ext sql -dir migrations -seq add_user_avatar
 
-# Apply all pending migrations
+# 모든 마이그레이션 적용
 migrate -path migrations -database "$DATABASE_URL" up
 
-# Rollback last migration
+# 마지막 마이그레이션 취소
 migrate -path migrations -database "$DATABASE_URL" down 1
 
-# Force version (fix dirty state)
-migrate -path migrations -database "$DATABASE_URL" force VERSION
+# 버전 강제 지정 (Dirty 상태 복구용)
+migrate -path migrations -database "$DATABASE_URL" force VERSION_NUMBER
 ```
 
-### 迁移文件
+## 무중단 마이그레이션 전략 (Expand-Contract)
 
-```sql
--- migrations/000003_add_user_avatar.up.sql
-ALTER TABLE users ADD COLUMN avatar_url TEXT;
-CREATE INDEX CONCURRENTLY idx_users_avatar ON users (avatar_url) WHERE avatar_url IS NOT NULL;
+주요 운영 환경 변경 시 다음 단계를 준수하십시오:
 
--- migrations/000003_add_user_avatar.down.sql
-DROP INDEX IF EXISTS idx_users_avatar;
-ALTER TABLE users DROP COLUMN IF EXISTS avatar_url;
-```
+1. **확장(EXPAND)** 단계:
+   - 새로운 컬럼이나 테이블을 추가합니다(Null 허용 혹은 기본값 설정).
+   - 배포: 애플리케이션이 이전 컬럼과 새 컬럼 **모두**에 데이터를 기록하도록 합니다.
+   - 기존 데이터를 새 컬럼으로 백필합니다.
 
-## 零停机迁移策略
+2. **이관(MIGRATE)** 단계:
+   - 배포: 애플리케이션이 데이터를 읽을 때는 **새 컬럼**을 사용하고, 쓸 때는 여전히 **두 곳 모두**에 기록합니다.
+   - 데이터 일관성을 최종 확인합니다.
 
-对于关键的生产变更，遵循扩展-收缩模式：
+3. **축소(CONTRACT)** 단계:
+   - 배포: 애플리케이션이 **새 컬럼만** 사용하도록 수정합니다.
+   - 별도의 마이그레이션을 통해 더 이상 쓰지 않는 이전 컬럼/테이블을 삭제합니다.
 
-```
-Phase 1: EXPAND
-  - Add new column/table (nullable or with default)
-  - Deploy: app writes to BOTH old and new
-  - Backfill existing data
+## 피해야 할 안티 패턴
 
-Phase 2: MIGRATE
-  - Deploy: app reads from NEW, writes to BOTH
-  - Verify data consistency
-
-Phase 3: CONTRACT
-  - Deploy: app only uses NEW
-  - Drop old column/table in separate migration
-```
-
-### 时间线示例
-
-```
-Day 1: Migration adds new_status column (nullable)
-Day 1: Deploy app v2 — writes to both status and new_status
-Day 2: Run backfill migration for existing rows
-Day 3: Deploy app v3 — reads from new_status only
-Day 7: Migration drops old status column
-```
-
-## 反模式
-
-| 反模式 | 为何会失败 | 更好的方法 |
+| 안티 패턴 | 문제점 | 해결 방법 |
 |-------------|-------------|-----------------|
-| 在生产中手动执行 SQL | 没有审计追踪，不可重复 | 始终使用迁移文件 |
-| 编辑已部署的迁移 | 导致环境间出现差异 | 改为创建新迁移 |
-| 没有默认值的 NOT NULL | 锁定表，重写所有行 | 添加可为空列，回填数据，然后添加约束 |
-| 在大表上内联创建索引 | 在构建期间阻塞写入 | 使用 CREATE INDEX CONCURRENTLY |
-| 在一个迁移中混合模式和数据的变更 | 难以回滚，事务时间长 | 分开的迁移 |
-| 在移除代码之前删除列 | 应用程序在缺失列时出错 | 先移除代码，下一次部署再删除列 |
+| 운영 DB 직접 수정 | 이력 관리가 안 되고 재현 불가능함 | 항상 마이그레이션 파일을 통해 실행 |
+| 배포된 마이그레이션 수정 | 환경 간 데이터베이스 상태 불일치 발생 | 새로운 마이그레이션 파일을 작성 |
+| 기본값 없는 NOT NULL 추가 | 테이블 락 발생 및 모든 행 재작성 유발 | Null 허용으로 추가 후 데이터 백필, 그 다음 제약 조건 추가 |
+| 대규모 테이블에 단일 인덱스 생성 | 인덱스 생성 중 쓰기 작업 차단 | `CREATE INDEX CONCURRENTLY` 사용 |
+| 스키마와 데이터 변경을 섞음 | 롤백이 어렵고 트랜잭션 시간이 길어짐 | 스키마 변경과 데이터 변경 마이그레이션 분리 |
+| 코드 수정 전 데이터 삭제 | 컬럼 부재로 인한 애플리케이션 런타임 에러 | 코드에서 먼저 제거하고 다음 배포 때 DB 컬럼 삭제 |

@@ -1,314 +1,57 @@
 ---
 name: springboot-patterns
-description: Spring Boot architecture patterns, REST API design, layered services, data access, caching, async processing, and logging. Use for Java Spring Boot backend work.
+description: Spring Boot 아키텍처 패턴, REST API 설계, 계층형 서비스, 데이터 액세스, 캐싱, 비동기 처리 및 로깅 가이드입니다. Java Spring Boot 백엔드 작업에 사용하십시오.
 origin: ECC
 ---
 
-# Spring Boot Development Patterns
+# Spring Boot 개발 패턴 (Spring Boot Development Patterns)
 
-Spring Boot architecture and API patterns for scalable, production-grade services.
+확장 가능하고 운영 환경에 적합한 서비스를 구축하기 위한 Spring Boot 아키텍처 및 API 패턴을 안내합니다.
 
-## When to Activate
+## 활성화 시점
 
-- Building REST APIs with Spring MVC or WebFlux
-- Structuring controller → service → repository layers
-- Configuring Spring Data JPA, caching, or async processing
-- Adding validation, exception handling, or pagination
-- Setting up profiles for dev/staging/production environments
-- Implementing event-driven patterns with Spring Events or Kafka
+- Spring MVC 또는 WebFlux를 사용하여 REST API를 구축할 때
+- Controller → Service → Repository 계층 구조를 설계할 때
+- Spring Data JPA, 캐싱, 또는 비동기 처리를 설정할 때
+- 데이터 검증(Validation), 예외 처리, 또는 페이지네이션을 추가할 때
+- 개발/스테이징/운영 환경별 프로파일(Profiles)을 설정할 때
+- Spring Events나 Kafka를 사용한 이벤트 기반 패턴을 구현할 때
 
-## REST API Structure
+## REST API 구조
 
-```java
-@RestController
-@RequestMapping("/api/markets")
-@Validated
-class MarketController {
-  private final MarketService marketService;
+- `@RestController`와 `@RequestMapping`을 사용하여 엔드포인트를 정의하십시오.
+- `@Valid`와 `@RequestBody`를 조합하여 입력 데이터를 검증하십시오.
+- `ResponseEntity`를 반환하여 상태 코드와 본문을 명시적으로 제어하십시오.
 
-  MarketController(MarketService marketService) {
-    this.marketService = marketService;
-  }
+## 서비스 계층 및 트랜잭션
 
-  @GetMapping
-  ResponseEntity<Page<MarketResponse>> list(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size) {
-    Page<Market> markets = marketService.list(PageRequest.of(page, size));
-    return ResponseEntity.ok(markets.map(MarketResponse::from));
-  }
+- 비즈니스 로직은 `@Service` 계층에 작성하십시오.
+- 데이터 변경 작업에는 `@Transactional`을 사용하고, 단순 조회에는 `@Transactional(readOnly = true)`를 사용하여 최적화하십시오.
 
-  @PostMapping
-  ResponseEntity<MarketResponse> create(@Valid @RequestBody CreateMarketRequest request) {
-    Market market = marketService.create(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(MarketResponse.from(market));
-  }
-}
-```
+## DTO 및 데이터 검증
 
-## Repository Pattern (Spring Data JPA)
+- Java 14+의 `record`를 사용하여 불변 DTO를 정의하십시오.
+- `@NotBlank`, `@Size`, `@NotNull`, `@FutureOrPresent` 등 Bean Validation 어노테이션을 활용하십시오.
 
-```java
-public interface MarketRepository extends JpaRepository<MarketEntity, Long> {
-  @Query("select m from MarketEntity m where m.status = :status order by m.volume desc")
-  List<MarketEntity> findActive(@Param("status") MarketStatus status, Pageable pageable);
-}
-```
+## 예외 처리 (Global Exception Handling)
 
-## Service Layer with Transactions
+- `@ControllerAdvice` 또는 `@RestControllerAdvice`를 사용하여 애플리케이션 전역의 예외를 공통된 형식(예: `ApiError`)으로 처리하십시오.
 
-```java
-@Service
-public class MarketService {
-  private final MarketRepository repo;
+## 캐싱 및 비동기 처리
 
-  public MarketService(MarketRepository repo) {
-    this.repo = repo;
-  }
+- `@EnableCaching`과 `@Cacheable`, `@CacheEvict`를 사용하여 반복적인 조회 성능을 개선하십시오.
+- `@EnableAsync`와 `@Async`를 사용하여 이메일 발송 등 시간이 걸리는 작업을 별도 스레드에서 처리하십시오.
 
-  @Transactional
-  public Market create(CreateMarketRequest request) {
-    MarketEntity entity = MarketEntity.from(request);
-    MarketEntity saved = repo.save(entity);
-    return Market.from(saved);
-  }
-}
-```
+## 로깅 및 미들웨어
 
-## DTOs and Validation
+- SLF4J(`Logger`)를 사용하여 정보와 에러를 기록하십시오.
+- `OncePerRequestFilter`를 상속받아 요청 로깅, 속도 제한(Rate Limiting) 등의 공통 로직을 처리하십시오.
 
-```java
-public record CreateMarketRequest(
-    @NotBlank @Size(max = 200) String name,
-    @NotBlank @Size(max = 2000) String description,
-    @NotNull @FutureOrPresent Instant endDate,
-    @NotEmpty List<@NotBlank String> categories) {}
+## 운영 환경 고려 사항
 
-public record MarketResponse(Long id, String name, MarketStatus status) {
-  static MarketResponse from(Market market) {
-    return new MarketResponse(market.id(), market.name(), market.status());
-  }
-}
-```
+- **의존성 주입**: 필드 주입보다 생성자 주입을 권장합니다.
+- **오브저버빌리티(Observability)**: Micrometer, Prometheus 등을 사용하여 메트릭과 트레이싱을 설정하십시오.
+- **안정성**: 외부 API 호출 시 재시도(Retry) 로직과 타임아웃을 설정하여 장애 전파를 방지하십시오.
 
-## Exception Handling
-
-```java
-@ControllerAdvice
-class GlobalExceptionHandler {
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
-    String message = ex.getBindingResult().getFieldErrors().stream()
-        .map(e -> e.getField() + ": " + e.getDefaultMessage())
-        .collect(Collectors.joining(", "));
-    return ResponseEntity.badRequest().body(ApiError.validation(message));
-  }
-
-  @ExceptionHandler(AccessDeniedException.class)
-  ResponseEntity<ApiError> handleAccessDenied() {
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiError.of("Forbidden"));
-  }
-
-  @ExceptionHandler(Exception.class)
-  ResponseEntity<ApiError> handleGeneric(Exception ex) {
-    // Log unexpected errors with stack traces
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ApiError.of("Internal server error"));
-  }
-}
-```
-
-## Caching
-
-Requires `@EnableCaching` on a configuration class.
-
-```java
-@Service
-public class MarketCacheService {
-  private final MarketRepository repo;
-
-  public MarketCacheService(MarketRepository repo) {
-    this.repo = repo;
-  }
-
-  @Cacheable(value = "market", key = "#id")
-  public Market getById(Long id) {
-    return repo.findById(id)
-        .map(Market::from)
-        .orElseThrow(() -> new EntityNotFoundException("Market not found"));
-  }
-
-  @CacheEvict(value = "market", key = "#id")
-  public void evict(Long id) {}
-}
-```
-
-## Async Processing
-
-Requires `@EnableAsync` on a configuration class.
-
-```java
-@Service
-public class NotificationService {
-  @Async
-  public CompletableFuture<Void> sendAsync(Notification notification) {
-    // send email/SMS
-    return CompletableFuture.completedFuture(null);
-  }
-}
-```
-
-## Logging (SLF4J)
-
-```java
-@Service
-public class ReportService {
-  private static final Logger log = LoggerFactory.getLogger(ReportService.class);
-
-  public Report generate(Long marketId) {
-    log.info("generate_report marketId={}", marketId);
-    try {
-      // logic
-    } catch (Exception ex) {
-      log.error("generate_report_failed marketId={}", marketId, ex);
-      throw ex;
-    }
-    return new Report();
-  }
-}
-```
-
-## Middleware / Filters
-
-```java
-@Component
-public class RequestLoggingFilter extends OncePerRequestFilter {
-  private static final Logger log = LoggerFactory.getLogger(RequestLoggingFilter.class);
-
-  @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
-    long start = System.currentTimeMillis();
-    try {
-      filterChain.doFilter(request, response);
-    } finally {
-      long duration = System.currentTimeMillis() - start;
-      log.info("req method={} uri={} status={} durationMs={}",
-          request.getMethod(), request.getRequestURI(), response.getStatus(), duration);
-    }
-  }
-}
-```
-
-## Pagination and Sorting
-
-```java
-PageRequest page = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").descending());
-Page<Market> results = marketService.list(page);
-```
-
-## Error-Resilient External Calls
-
-```java
-public <T> T withRetry(Supplier<T> supplier, int maxRetries) {
-  int attempts = 0;
-  while (true) {
-    try {
-      return supplier.get();
-    } catch (Exception ex) {
-      attempts++;
-      if (attempts >= maxRetries) {
-        throw ex;
-      }
-      try {
-        Thread.sleep((long) Math.pow(2, attempts) * 100L);
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-        throw ex;
-      }
-    }
-  }
-}
-```
-
-## Rate Limiting (Filter + Bucket4j)
-
-**Security Note**: The `X-Forwarded-For` header is untrusted by default because clients can spoof it.
-Only use forwarded headers when:
-1. Your app is behind a trusted reverse proxy (nginx, AWS ALB, etc.)
-2. You have registered `ForwardedHeaderFilter` as a bean
-3. You have configured `server.forward-headers-strategy=NATIVE` or `FRAMEWORK` in application properties
-4. Your proxy is configured to overwrite (not append to) the `X-Forwarded-For` header
-
-When `ForwardedHeaderFilter` is properly configured, `request.getRemoteAddr()` will automatically
-return the correct client IP from the forwarded headers. Without this configuration, use
-`request.getRemoteAddr()` directly—it returns the immediate connection IP, which is the only
-trustworthy value.
-
-```java
-@Component
-public class RateLimitFilter extends OncePerRequestFilter {
-  private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
-
-  /*
-   * SECURITY: This filter uses request.getRemoteAddr() to identify clients for rate limiting.
-   *
-   * If your application is behind a reverse proxy (nginx, AWS ALB, etc.), you MUST configure
-   * Spring to handle forwarded headers properly for accurate client IP detection:
-   *
-   * 1. Set server.forward-headers-strategy=NATIVE (for cloud platforms) or FRAMEWORK in
-   *    application.properties/yaml
-   * 2. If using FRAMEWORK strategy, register ForwardedHeaderFilter:
-   *
-   *    @Bean
-   *    ForwardedHeaderFilter forwardedHeaderFilter() {
-   *        return new ForwardedHeaderFilter();
-   *    }
-   *
-   * 3. Ensure your proxy overwrites (not appends) the X-Forwarded-For header to prevent spoofing
-   * 4. Configure server.tomcat.remoteip.trusted-proxies or equivalent for your container
-   *
-   * Without this configuration, request.getRemoteAddr() returns the proxy IP, not the client IP.
-   * Do NOT read X-Forwarded-For directly—it is trivially spoofable without trusted proxy handling.
-   */
-  @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
-    // Use getRemoteAddr() which returns the correct client IP when ForwardedHeaderFilter
-    // is configured, or the direct connection IP otherwise. Never trust X-Forwarded-For
-    // headers directly without proper proxy configuration.
-    String clientIp = request.getRemoteAddr();
-
-    Bucket bucket = buckets.computeIfAbsent(clientIp,
-        k -> Bucket.builder()
-            .addLimit(Bandwidth.classic(100, Refill.greedy(100, Duration.ofMinutes(1))))
-            .build());
-
-    if (bucket.tryConsume(1)) {
-      filterChain.doFilter(request, response);
-    } else {
-      response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-    }
-  }
-}
-```
-
-## Background Jobs
-
-Use Spring’s `@Scheduled` or integrate with queues (e.g., Kafka, SQS, RabbitMQ). Keep handlers idempotent and observable.
-
-## Observability
-
-- Structured logging (JSON) via Logback encoder
-- Metrics: Micrometer + Prometheus/OTel
-- Tracing: Micrometer Tracing with OpenTelemetry or Brave backend
-
-## Production Defaults
-
-- Prefer constructor injection, avoid field injection
-- Enable `spring.mvc.problemdetails.enabled=true` for RFC 7807 errors (Spring Boot 3+)
-- Configure HikariCP pool sizes for workload, set timeouts
-- Use `@Transactional(readOnly = true)` for queries
-- Enforce null-safety via `@NonNull` and `Optional` where appropriate
-
-**Remember**: Keep controllers thin, services focused, repositories simple, and errors handled centrally. Optimize for maintainability and testability.
+**기억하십시오**: 컨트롤러는 얇게(Thin), 서비스는 비즈니스 로직에 집중(Focused), 리포지토리는 단순하게 유지하며, 모든 에러는 중앙에서 일관되게 처리하십시오. 유지보수성과 테스트 용이성을 최우선으로 고려하십시오.
+    

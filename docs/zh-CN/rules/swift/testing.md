@@ -4,16 +4,16 @@ paths:
   - "**/Package.swift"
 ---
 
-# Swift 测试
+# Swift 테스트 (Testing)
 
-> 本文档在 [common/testing.md](../common/testing.md) 的基础上扩展了 Swift 特定的内容。
+> 이 문서는 [common/testing.md](../common/testing.md)의 내용을 바탕으로 Swift에 특화된 내용을 확장합니다.
 
-## 框架
+## 프레임워크
 
-对于新测试，使用 **Swift Testing** (`import Testing`)。使用 `@Test` 和 `#expect`：
+새로운 테스트 작성 시 **Swift Testing**(`import Testing`) 프레임워크를 사용하십시오. `@Test` 매크로와 `#expect` 구문을 활용합니다:
 
 ```swift
-@Test("User creation validates email")
+@Test("사용자 생성 시 이메일 유효성 검사")
 func userCreationValidatesEmail() throws {
     #expect(throws: ValidationError.invalidEmail) {
         try User(email: "not-an-email")
@@ -21,26 +21,26 @@ func userCreationValidatesEmail() throws {
 }
 ```
 
-## 测试隔离
+## 테스트 격리 (Isolation)
 
-每个测试都会获得一个全新的实例 —— 在 `init` 中设置，在 `deinit` 中拆卸。测试之间没有共享的可变状态。
+각 테스트는 독립된 인스턴스를 보장받습니다. `init`에서 설정(Set up)하고 `deinit`에서 해제(Teardown)하십시오. 테스트 간에 공유되는 가변 상태가 없어야 합니다.
 
-## 参数化测试
+## 파라미터화 테스트 (Parameterized Tests)
 
 ```swift
-@Test("Validates formats", arguments: ["json", "xml", "csv"])
+@Test("포맷 유효성 검사", arguments: ["json", "xml", "csv"])
 func validatesFormat(format: String) throws {
     let parser = try Parser(format: format)
     #expect(parser.isValid)
 }
 ```
 
-## 覆盖率
+## 커버리지
 
 ```bash
 swift test --enable-code-coverage
 ```
 
-## 参考
+## 참고 자료
 
-关于基于协议的依赖注入和 Swift Testing 的模拟模式，请参阅技能：`swift-protocol-di-testing`。
+프로토콜 기반의 의존성 주입과 Swift Testing의 모의 객체 패턴에 대해서는 `swift-protocol-di-testing` 스킬을 참조하십시오.

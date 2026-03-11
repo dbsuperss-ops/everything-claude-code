@@ -1,23 +1,23 @@
 ---
 name: jpa-patterns
-description: Spring Boot中的JPA/Hibernate模式，用于实体设计、关系处理、查询优化、事务管理、审计、索引、分页和连接池。
+description: Spring Boot에서의 JPA/Hibernate 패턴 가이드입니다. 엔티티 설계, 연관 관계 처리, 쿼리 최적화, 트랜잭션 관리, 감사(Auditing), 인덱싱, 페이지네이션 및 커넥션 풀 설정을 다룹니다.
 origin: ECC
 ---
 
-# JPA/Hibernate 模式
+# JPA/Hibernate 패턴
 
-用于 Spring Boot 中的数据建模、存储库和性能调优。
+Spring Boot에서의 데이터 모델링, 리포지토리(Repository) 구현 및 성능 최적화를 위한 가이드입니다.
 
-## 何时激活
+## 적용 시점
 
-* 设计 JPA 实体和表映射时
-* 定义关系时 (@OneToMany, @ManyToOne, @ManyToMany)
-* 优化查询时 (N+1 问题预防、获取策略、投影)
-* 配置事务、审计或软删除时
-* 设置分页、排序或自定义存储库方法时
-* 调整连接池 (HikariCP) 或二级缓存时
+* JPA 엔티티와 테이블 매핑을 설계할 때
+* 연관 관계(@OneToMany, @ManyToOne, @ManyToMany)를 정의할 때
+* 쿼리 성능을 최적화할 때 (N+1 문제 방지, 페치 전략, 프로젝션 활용)
+* 트랜잭션, 감사(Auditing) 또는 소프트 삭제(Soft delete)를 설정할 때
+* 페이지네이션, 정렬 또는 사용자 정의 리포지토리 메서드를 구현할 때
+* 커넥션 풀(HikariCP)이나 2차 캐시를 튜닝할 때
 
-## 实体设计
+## 엔티티 설계 (Entity Design)
 
 ```java
 @Entity
@@ -43,7 +43,7 @@ public class MarketEntity {
 }
 ```
 
-启用审计：
+감사(Auditing) 활성화 설정:
 
 ```java
 @Configuration
@@ -51,22 +51,22 @@ public class MarketEntity {
 class JpaConfig {}
 ```
 
-## 关联关系和 N+1 预防
+## 연관 관계 및 N+1 방지
 
 ```java
 @OneToMany(mappedBy = "market", cascade = CascadeType.ALL, orphanRemoval = true)
 private List<PositionEntity> positions = new ArrayList<>();
 ```
 
-* 默认使用延迟加载；需要时在查询中使用 `JOIN FETCH`
-* 避免在集合上使用 `EAGER`；对于读取路径使用 DTO 投影
+* 기본적으로 지연 로딩(LAZY)을 사용하십시오. 필요한 경우에만 쿼리에서 `JOIN FETCH`를 사용합니다.
+* 컬렉션에 `EAGER` 전략을 사용하는 것을 피하십시오. 조회 경로에는 DTO 프로젝션을 활용하십시오.
 
 ```java
 @Query("select m from MarketEntity m left join fetch m.positions where m.id = :id")
 Optional<MarketEntity> findWithPositions(@Param("id") Long id);
 ```
 
-## 存储库模式
+## 리포지토리 패턴 (Repository)
 
 ```java
 public interface MarketRepository extends JpaRepository<MarketEntity, Long> {
@@ -77,7 +77,7 @@ public interface MarketRepository extends JpaRepository<MarketEntity, Long> {
 }
 ```
 
-* 使用投影进行轻量级查询：
+* 가벼운 조회를 위해 인터페이스 기반 프로젝션을 사용하십시오:
 
 ```java
 public interface MarketSummary {
@@ -88,68 +88,68 @@ public interface MarketSummary {
 Page<MarketSummary> findAllBy(Pageable pageable);
 ```
 
-## 事务
+## 트랜잭션 관리 (Transactions)
 
-* 使用 `@Transactional` 注解服务方法
-* 对读取路径使用 `@Transactional(readOnly = true)` 以进行优化
-* 谨慎选择传播行为；避免长时间运行的事务
+* 서비스 메서드에 `@Transactional` 어노테이션을 사용하십시오.
+* 단순 조회 경로에는 최적화를 위해 `@Transactional(readOnly = true)`를 사용하십시오.
+* 전파(Propagation) 동작을 신중히 선택하고, 장시간 실행되는 트랜잭션은 피하십시오.
 
 ```java
 @Transactional
 public Market updateStatus(Long id, MarketStatus status) {
   MarketEntity entity = repo.findById(id)
-      .orElseThrow(() -> new EntityNotFoundException("Market"));
+      .orElseThrow(() -> new EntityNotFoundException("마켓을 찾을 수 없습니다: " + id));
   entity.setStatus(status);
   return Market.from(entity);
 }
 ```
 
-## 分页
+## 페이지네이션 (Pagination)
 
 ```java
 PageRequest page = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").descending());
 Page<MarketEntity> markets = repo.findByStatus(MarketStatus.ACTIVE, page);
 ```
 
-对于类似游标的分页，在 JPQL 中包含 `id > :lastId` 并配合排序。
+커서 기반 페이지네이션의 경우, JPQL에서 정렬과 함께 `id > :lastId` 조건을 포함하십시오.
 
-## 索引和性能
+## 인덱스 및 성능
 
-* 为常用过滤器添加索引（`status`、`slug`、外键）
-* 使用与查询模式匹配的复合索引（`status, created_at`）
-* 避免 `select *`；仅投影需要的列
-* 使用 `saveAll` 和 `hibernate.jdbc.batch_size` 进行批量写入
+* 자주 사용되는 필터(`status`, `slug`, 외래 키)에 인덱스를 추가하십시오.
+* 쿼리 패턴과 일치하는 복합 인덱스(`status, created_at`)를 사용하십시오.
+* `select *`를 피하고 필요한 컬럼만 프로젝션하십시오.
+* 대량 쓰기 작업 시 `saveAll`과 `hibernate.jdbc.batch_size` 설정을 활용하십시오.
 
-## 连接池 (HikariCP)
+## 커넥션 풀 (HikariCP)
 
-推荐属性：
+권장 속성 예시:
 
-```
+```properties
 spring.datasource.hikari.maximum-pool-size=20
 spring.datasource.hikari.minimum-idle=5
 spring.datasource.hikari.connection-timeout=30000
 spring.datasource.hikari.validation-timeout=5000
 ```
 
-对于 PostgreSQL LOB 处理，添加：
+PostgreSQL LOB 처리를 위한 추가 설정:
 
-```
+```properties
 spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
 ```
 
-## 缓存
+## 캐싱 전략
 
-* 一级缓存是每个 EntityManager 的；避免在事务之间保持实体
-* 对于读取频繁的实体，谨慎考虑二级缓存；验证驱逐策略
+* 1차 캐시는 `EntityManager` 단위입니다. 트랜잭션 간에 엔티티를 유지하지 마십시오.
+* 조회가 빈번한 엔티티에 대해서는 2차 캐시를 신중하게 고려하십시오. 만료(Eviction) 정책을 검증해야 합니다.
 
-## 迁移
+## 데이터베이스 마이그레이션
 
-* 使用 Flyway 或 Liquibase；切勿在生产中依赖 Hibernate 自动 DDL
-* 保持迁移的幂等性和可添加性；避免无计划地删除列
+* Flyway나 Liquibase를 사용하십시오. 운영 환경에서 Hibernate의 자동 DDL 생성(`ddl-auto`)에 의존해서는 절대 안 됩니다.
+* 마이그레이션은 멱등성(Idempotent)을 유지하고 점진적으로(Additive) 구성하십시오. 계획 없는 컬럼 삭제는 피하십시오.
 
-## 测试数据访问
+## 테스트 데이터 액세스
 
-* 首选使用 Testcontainers 的 `@DataJpaTest` 来镜像生产环境
-* 使用日志断言 SQL 效率：设置 `logging.level.org.hibernate.SQL=DEBUG` 和 `logging.level.org.hibernate.orm.jdbc.bind=TRACE` 以查看参数值
+* 운영 환경과 유사한 환경을 위해 Testcontainers를 사용한 `@DataJpaTest`를 권장합니다.
+* SQL 효율성을 확인하려면 로그 설정을 활용하십시오: `logging.level.org.hibernate.SQL=DEBUG` 및 `logging.level.org.hibernate.orm.jdbc.bind=TRACE`.
 
-**请记住**：保持实体精简，查询有针对性，事务简短。通过获取策略和投影来预防 N+1 问题，并根据读写路径建立索引。
+**핵심**: 엔티티는 가볍게, 쿼리는 타겟 지향적으로, 트랜잭션은 짧게 유지하십시오. 페치 전략과 프로젝션으로 N+1 문제를 예방하고, 읽기/쓰기 패턴에 최적화된 인덱스를 설계하십시오.

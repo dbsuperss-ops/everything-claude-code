@@ -5,28 +5,28 @@ paths:
   - "**/go.sum"
 ---
 
-# Go 测试
+# Go 테스트 (Testing)
 
-> 本文档在 [common/testing.md](../common/testing.md) 的基础上扩展了 Go 特定的内容。
+> 이 문서는 [common/testing.md](../common/testing.md)의 내용을 바탕으로 Go 언어에 특화된 내용을 확장합니다.
 
-## 框架
+## 프레임워크
 
-使用标准的 `go test` 并采用 **表格驱动测试**。
+표준 `go test` 패키지를 사용하며, **테이블 구동 테스트(Table-driven tests)** 방식을 채택하십시오.
 
-## 竞态检测
+## 레이스(Race) 감지
 
-始终使用 `-race` 标志运行：
+항상 `-race` 플래그를 사용하여 테스트를 실행하십시오:
 
 ```bash
 go test -race ./...
 ```
 
-## 覆盖率
+## 커버리지
 
 ```bash
 go test -cover ./...
 ```
 
-## 参考
+## 참고 자료
 
-查看技能：`golang-testing` 以获取详细的 Go 测试模式和辅助工具。
+상세한 Go 테스트 패턴과 보조 도구들에 대해서는 `golang-testing` 스킬을 참조하십시오.

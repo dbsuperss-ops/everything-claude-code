@@ -1,231 +1,52 @@
 ---
 name: springboot-verification
-description: "Verification loop for Spring Boot projects: build, static analysis, tests with coverage, security scans, and diff review before release or PR."
+description: Spring Boot 프로젝트를 위한 검증 루프 가이드입니다. 배포 또는 PR 전에 빌드, 정적 분석, 커버리지 확인, 보안 스캔 및 변경 사항 검토를 수행합니다.
 origin: ECC
 ---
 
-# Spring Boot Verification Loop
+# Spring Boot 검증 루프 (Spring Boot Verification Loop)
 
-Run before PRs, after major changes, and pre-deploy.
+Pull Request(PR) 전, 주요 변경 후, 그리고 배포 직전에 이 루프를 실행하십시오.
 
-## When to Activate
+## 활성화 시점
 
-- Before opening a pull request for a Spring Boot service
-- After major refactoring or dependency upgrades
-- Pre-deployment verification for staging or production
-- Running full build → lint → test → security scan pipeline
-- Validating test coverage meets thresholds
+- Spring Boot 서비스에 대한 PR을 올리기 전
+- 대규모 리팩토링이나 의존성 업그레이드 후
+- 스테이징 또는 운영 환경 배포 전 검증 시
+- 전체 빌드 → 린트 → 테스트 → 보안 스캔 파이프라인을 실행할 때
+- 테스트 커버리지가 임계치(예: 80% 이상)를 만족하는지 확인할 때
 
-## Phase 1: Build
+## 단계별 검증 절차
 
-```bash
-mvn -T 4 clean verify -DskipTests
-# or
-./gradlew clean assemble -x test
-```
+### 1단계: 빌드 (Build)
+- `mvn clean verify -DskipTests` 또는 `./gradlew clean assemble -x test`를 실행하십시오.
+- 빌드가 실패하면 즉시 중단하고 수정하십시오.
 
-If build fails, stop and fix.
+### 2단계: 정적 분석 (Static Analysis)
+- **Maven**: `spotbugs`, `pmd`, `checkstyle` 플러그인을 사용하여 잠재적인 버그와 코드 스타일을 점검하십시오.
+- **Gradle**: `checkstyleMain`, `pmdMain`, `spotbugsMain` 태스크를 활용하십시오.
 
-## Phase 2: Static Analysis
+### 3단계: 테스트 및 커버리지
+- 단위 테스트(Mocking 활용)와 통합 테스트(Testcontainers 활용)를 모두 실행하십시오.
+- `jacoco:report`를 통해 라인/브랜치 커버리지가 80% 이상인지 확인하십시오.
+- 결과 보고서에는 총 테스트 수, 패스/실패 수, 커버리지 비율이 포함되어야 합니다.
 
-Maven (common plugins):
-```bash
-mvn -T 4 spotbugs:check pmd:check checkstyle:check
-```
+### 4단계: 보안 스캔 (Security Scan)
+- **의존성**: `dependency-check-maven` 등을 사용하여 알려진 취약점(CVE)이 있는지 확인하십시오.
+- **시크릿**: 소스 코드나 설정 파일(`.yml`, `.properties`)에 비밀번호나 API 키가 하드코딩되어 있는지 `grep` 등으로 검색하십시오.
+- **안티 패턴**: `System.out.println` 사용 여부나 예외 메시지 노출 여부, 와일드카드 CORS 설정 등을 점검하십시오.
 
-Gradle (if configured):
-```bash
-./gradlew checkstyleMain pmdMain spotbugsMain
-```
+### 5단계: 포맷팅 및 디프(Diff) 검토
+- `spotless:apply`를 사용하여 코드를 자동 정렬하십시오.
+- `git diff`를 통해 변경된 파일을 최종 검토하십시오. 디버깅 로그가 남아있는지, 트랜잭션과 검증 로직이 누락되지 않았는지 확인하십시오.
 
-## Phase 3: Tests + Coverage
+## 검증 결과 보고 양식 (예시)
 
-```bash
-mvn -T 4 test
-mvn jacoco:report   # verify 80%+ coverage
-# or
-./gradlew test jacocoTestReport
-```
+- **빌드**: [성공/실패]
+- **정적 분석**: [성공/실패] (SpotBugs/PMD/Checkstyle)
+- **테스트**: [성공/실패] (성공X/전체Y, 커버리지 Z%)
+- **보안**: [성공/실패] (취약점 발견 수: N)
+- **종합 판정**: [준비 완료 / 수정 필요]
 
-Report:
-- Total tests, passed/failed
-- Coverage % (lines/branches)
-
-### Unit Tests
-
-Test service logic in isolation with mocked dependencies:
-
-```java
-@ExtendWith(MockitoExtension.class)
-class UserServiceTest {
-
-  @Mock private UserRepository userRepository;
-  @InjectMocks private UserService userService;
-
-  @Test
-  void createUser_validInput_returnsUser() {
-    var dto = new CreateUserDto("Alice", "alice@example.com");
-    var expected = new User(1L, "Alice", "alice@example.com");
-    when(userRepository.save(any(User.class))).thenReturn(expected);
-
-    var result = userService.create(dto);
-
-    assertThat(result.name()).isEqualTo("Alice");
-    verify(userRepository).save(any(User.class));
-  }
-
-  @Test
-  void createUser_duplicateEmail_throwsException() {
-    var dto = new CreateUserDto("Alice", "existing@example.com");
-    when(userRepository.existsByEmail(dto.email())).thenReturn(true);
-
-    assertThatThrownBy(() -> userService.create(dto))
-        .isInstanceOf(DuplicateEmailException.class);
-  }
-}
-```
-
-### Integration Tests with Testcontainers
-
-Test against a real database instead of H2:
-
-```java
-@SpringBootTest
-@Testcontainers
-class UserRepositoryIntegrationTest {
-
-  @Container
-  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-      .withDatabaseName("testdb");
-
-  @DynamicPropertySource
-  static void configureProperties(DynamicPropertyRegistry registry) {
-    registry.add("spring.datasource.url", postgres::getJdbcUrl);
-    registry.add("spring.datasource.username", postgres::getUsername);
-    registry.add("spring.datasource.password", postgres::getPassword);
-  }
-
-  @Autowired private UserRepository userRepository;
-
-  @Test
-  void findByEmail_existingUser_returnsUser() {
-    userRepository.save(new User("Alice", "alice@example.com"));
-
-    var found = userRepository.findByEmail("alice@example.com");
-
-    assertThat(found).isPresent();
-    assertThat(found.get().getName()).isEqualTo("Alice");
-  }
-}
-```
-
-### API Tests with MockMvc
-
-Test controller layer with full Spring context:
-
-```java
-@WebMvcTest(UserController.class)
-class UserControllerTest {
-
-  @Autowired private MockMvc mockMvc;
-  @MockBean private UserService userService;
-
-  @Test
-  void createUser_validInput_returns201() throws Exception {
-    var user = new UserDto(1L, "Alice", "alice@example.com");
-    when(userService.create(any())).thenReturn(user);
-
-    mockMvc.perform(post("/api/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {"name": "Alice", "email": "alice@example.com"}
-                """))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.name").value("Alice"));
-  }
-
-  @Test
-  void createUser_invalidEmail_returns400() throws Exception {
-    mockMvc.perform(post("/api/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {"name": "Alice", "email": "not-an-email"}
-                """))
-        .andExpect(status().isBadRequest());
-  }
-}
-```
-
-## Phase 4: Security Scan
-
-```bash
-# Dependency CVEs
-mvn org.owasp:dependency-check-maven:check
-# or
-./gradlew dependencyCheckAnalyze
-
-# Secrets in source
-grep -rn "password\s*=\s*\"" src/ --include="*.java" --include="*.yml" --include="*.properties"
-grep -rn "sk-\|api_key\|secret" src/ --include="*.java" --include="*.yml"
-
-# Secrets (git history)
-git secrets --scan  # if configured
-```
-
-### Common Security Findings
-
-```
-# Check for System.out.println (use logger instead)
-grep -rn "System\.out\.print" src/main/ --include="*.java"
-
-# Check for raw exception messages in responses
-grep -rn "e\.getMessage()" src/main/ --include="*.java"
-
-# Check for wildcard CORS
-grep -rn "allowedOrigins.*\*" src/main/ --include="*.java"
-```
-
-## Phase 5: Lint/Format (optional gate)
-
-```bash
-mvn spotless:apply   # if using Spotless plugin
-./gradlew spotlessApply
-```
-
-## Phase 6: Diff Review
-
-```bash
-git diff --stat
-git diff
-```
-
-Checklist:
-- No debugging logs left (`System.out`, `log.debug` without guards)
-- Meaningful errors and HTTP statuses
-- Transactions and validation present where needed
-- Config changes documented
-
-## Output Template
-
-```
-VERIFICATION REPORT
-===================
-Build:     [PASS/FAIL]
-Static:    [PASS/FAIL] (spotbugs/pmd/checkstyle)
-Tests:     [PASS/FAIL] (X/Y passed, Z% coverage)
-Security:  [PASS/FAIL] (CVE findings: N)
-Diff:      [X files changed]
-
-Overall:   [READY / NOT READY]
-
-Issues to Fix:
-1. ...
-2. ...
-```
-
-## Continuous Mode
-
-- Re-run phases on significant changes or every 30–60 minutes in long sessions
-- Keep a short loop: `mvn -T 4 test` + spotbugs for quick feedback
-
-**Remember**: Fast feedback beats late surprises. Keep the gate strict—treat warnings as defects in production systems.
+**기억하십시오**: 빠른 피드백이 나중의 큰 문제를 방지합니다. 검증 관문을 엄격하게 유지하고, 경고(Warning)를 가볍게 여기지 마십시오.
+    

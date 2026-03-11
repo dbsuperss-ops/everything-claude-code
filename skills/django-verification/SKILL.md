@@ -1,469 +1,86 @@
 ---
 name: django-verification
-description: "Verification loop for Django projects: migrations, linting, tests with coverage, security scans, and deployment readiness checks before release or PR."
+description: "Django 프로젝트를 위한 검증 루프: 마이그레이션, 린팅, 테스트 커버리지, 보안 스캔 및 배포 전 최종 점검 가이드입니다."
 origin: ECC
 ---
 
-# Django Verification Loop
+# Django 검증 루프 (Django Verification Loop)
 
-Run before PRs, after major changes, and pre-deploy to ensure Django application quality and security.
+PR(Pull Request) 생성 전, 주요 변경 사항 적용 후, 그리고 최종 배포 전에 실행하여 Django 애플리케이션의 품질과 보안을 보장합니다.
 
-## When to Activate
+## 활성화 시점
 
-- Before opening a pull request for a Django project
-- After major model changes, migration updates, or dependency upgrades
-- Pre-deployment verification for staging or production
-- Running full environment → lint → test → security → deploy readiness pipeline
-- Validating migration safety and test coverage
+- Django 프로젝트의 PR을 열기 전
+- 모델 변경, 마이그레이션 업데이트 또는 종속성 업그레이드 후
+- 스테이징 또는 상용 환경 배포 전 검증 시
+- 환경 설정 -> 린트 -> 테스트 -> 보안 -> 배포 준비로 이어지는 전체 파이프라인 실행 시
+- 마이그레이션의 안전성 및 테스트 커버리지 확인 시
 
-## Phase 1: Environment Check
+## 단계 1: 환경 점검 (Environment Check)
 
-```bash
-# Verify Python version
-python --version  # Should match project requirements
+Python 버전, 가상 환경 상태 및 필수 환경 변수(`DJANGO_SECRET_KEY` 등)가 제대로 설정되었는지 확인합니다.
 
-# Check virtual environment
-which python
-pip list --outdated
+## 단계 2: 코드 품질 및 포매팅 (Code Quality & Formatting)
 
-# Verify environment variables
-python -c "import os; import environ; print('DJANGO_SECRET_KEY set' if os.environ.get('DJANGO_SECRET_KEY') else 'MISSING: DJANGO_SECRET_KEY')"
-```
+- **Mypy**: 타입 검사 수행
+- **Ruff**: 린팅 수행 및 자동 수정
+- **Black**: 코드 포매팅 확인 및 자동 수정
+- **Isort**: 임포트(Import) 정렬 확인 및 자동 수정
+- **Django Check**: `python manage.py check --deploy`로 배포용 설정 확인
 
-If environment is misconfigured, stop and fix.
+## 단계 3: 마이그레이션 (Migrations)
 
-## Phase 2: Code Quality & Formatting
+- 적용되지 않은 마이그레이션이 있는지 확인합니다.
+- 마이그레이션 충돌(`Conflicts`) 여부를 점검합니다.
+- 모델 변경 사항이 마이그레이션 파일에 모두 반영되었는지 확인합니다.
 
-```bash
-# Type checking
-mypy . --config-file pyproject.toml
+## 단계 4: 테스트 및 커버리지 (Tests + Coverage)
 
-# Linting with ruff
-ruff check . --fix
+`pytest`를 사용하여 모든 테스트를 실행하고 커버리지 보고서를 생성합니다.
+- **목표 커버리지**: 전체 80% 이상, 핵심 비즈니스 로직(모델/서비스) 90% 이상 권장.
 
-# Formatting with black
-black . --check
-black .  # Auto-fix
+## 단계 5: 보안 스캔 (Security Scan)
 
-# Import sorting
-isort . --check-only
-isort .  # Auto-fix
+- **pip-audit / safety**: 종속 라이브러리의 보안 취약점 점검
+- **Bandit**: 파이썬 코드 보안 린팅
+- **Gitleaks**: 하드코딩된 비밀 키/자격 증명 감지
+- **DEBUG 모드 확인**: 상용 환경에서는 반드시 `False`여야 함.
 
-# Django-specific checks
-python manage.py check --deploy
-```
+## 단계 6: Django 관리 명령 (Management Commands)
 
-Common issues:
-- Missing type hints on public functions
-- PEP 8 formatting violations
-- Unsorted imports
-- Debug settings left in production configuration
+- `collectstatic`: 정적 파일 모으기 기능 확인
+- `check --database`: 데이터베이스 무결성 확인
+- 캐시 백엔드(Redis 등) 연결 테스트
 
-## Phase 3: Migrations
+## 단계 7: 성능 점검 (Performance Checks)
 
-```bash
-# Check for unapplied migrations
-python manage.py showmigrations
+- **N+1 쿼리**: SQL 패널을 통해 중복 쿼리 여부 확인
+- **인덱스**: 자주 사용되는 쿼리 경로에 인덱스가 누락되었는지 확인
+- **쿼리 횟수**: 페이지당 쿼리 횟수가 적절한 수준(보통 50회 미만)인지 확인
 
-# Create missing migrations
-python manage.py makemigrations --check
+## 단계 8: 정적 자산 점검 (Static Assets)
 
-# Dry-run migration application
-python manage.py migrate --plan
+npm 종속성 보안 점검 및 프론트엔드 빌드 결과물을 확인합니다.
 
-# Apply migrations (test environment)
-python manage.py migrate
+## 단계 9: 설정 리뷰 (Configuration Review)
 
-# Check for migration conflicts
-python manage.py makemigrations --merge  # Only if conflicts exist
-```
+`DEBUG`, `SECRET_KEY`, `ALLOWED_HOSTS`, HTTPS/HSTS 설정 등 배포 필수 항목들이 올바르게 구성되었는지 최종 확인합니다.
 
-Report:
-- Number of pending migrations
-- Any migration conflicts
-- Model changes without migrations
+## 단계 10: 로깅 및 모니터링 (Logging)
 
-## Phase 4: Tests + Coverage
+로그 파일 기록 권한 및 에러 모니터링 도구(Sentry 등)의 연동 상태를 확인합니다.
 
-```bash
-# Run all tests with pytest
-pytest --cov=apps --cov-report=html --cov-report=term-missing --reuse-db
+## 단계 11: API 문서화 (API Documentation)
 
-# Run specific app tests
-pytest apps/users/tests/
+DRF 사용 시 OpenAPI 스키마가 정상적으로 생성되는지, Swagger UI 접근이 가능한지 확인합니다.
 
-# Run with markers
-pytest -m "not slow"  # Skip slow tests
-pytest -m integration  # Only integration tests
+## 단계 12: Diff 리뷰 (Diff Review)
 
-# Coverage report
-open htmlcov/index.html
-```
+`git diff`를 통해 실제 변경 로그를 검토하고, 디버깅 코드(`print`, `pdb`)나 `TODO` 주석이 남아있는지 확인합니다.
 
-Report:
-- Total tests: X passed, Y failed, Z skipped
-- Overall coverage: XX%
-- Per-app coverage breakdown
+## 검증 보고서 템플릿 (Output Template)
 
-Coverage targets:
+검증 완료 후에는 각 단계별 성공(✓) 및 실패(✗) 여부와 조치 필요 사항(권장 사항)을 포함한 보고서를 작성하십시오.
 
-| Component | Target |
-|-----------|--------|
-| Models | 90%+ |
-| Serializers | 85%+ |
-| Views | 80%+ |
-| Services | 90%+ |
-| Overall | 80%+ |
-
-## Phase 5: Security Scan
-
-```bash
-# Dependency vulnerabilities
-pip-audit
-safety check --full-report
-
-# Django security checks
-python manage.py check --deploy
-
-# Bandit security linter
-bandit -r . -f json -o bandit-report.json
-
-# Secret scanning (if gitleaks is installed)
-gitleaks detect --source . --verbose
-
-# Environment variable check
-python -c "from django.core.exceptions import ImproperlyConfigured; from django.conf import settings; settings.DEBUG"
-```
-
-Report:
-- Vulnerable dependencies found
-- Security configuration issues
-- Hardcoded secrets detected
-- DEBUG mode status (should be False in production)
-
-## Phase 6: Django Management Commands
-
-```bash
-# Check for model issues
-python manage.py check
-
-# Collect static files
-python manage.py collectstatic --noinput --clear
-
-# Create superuser (if needed for tests)
-echo "from apps.users.models import User; User.objects.create_superuser('admin@example.com', 'admin')" | python manage.py shell
-
-# Database integrity
-python manage.py check --database default
-
-# Cache verification (if using Redis)
-python -c "from django.core.cache import cache; cache.set('test', 'value', 10); print(cache.get('test'))"
-```
-
-## Phase 7: Performance Checks
-
-```bash
-# Django Debug Toolbar output (check for N+1 queries)
-# Run in dev mode with DEBUG=True and access a page
-# Look for duplicate queries in SQL panel
-
-# Query count analysis
-django-admin debugsqlshell  # If django-debug-sqlshell installed
-
-# Check for missing indexes
-python manage.py shell << EOF
-from django.db import connection
-with connection.cursor() as cursor:
-    cursor.execute("SELECT table_name, index_name FROM information_schema.statistics WHERE table_schema = 'public'")
-    print(cursor.fetchall())
-EOF
-```
-
-Report:
-- Number of queries per page (should be < 50 for typical pages)
-- Missing database indexes
-- Duplicate queries detected
-
-## Phase 8: Static Assets
-
-```bash
-# Check for npm dependencies (if using npm)
-npm audit
-npm audit fix
-
-# Build static files (if using webpack/vite)
-npm run build
-
-# Verify static files
-ls -la staticfiles/
-python manage.py findstatic css/style.css
-```
-
-## Phase 9: Configuration Review
-
-```python
-# Run in Python shell to verify settings
-python manage.py shell << EOF
-from django.conf import settings
-import os
-
-# Critical checks
-checks = {
-    'DEBUG is False': not settings.DEBUG,
-    'SECRET_KEY set': bool(settings.SECRET_KEY and len(settings.SECRET_KEY) > 30),
-    'ALLOWED_HOSTS set': len(settings.ALLOWED_HOSTS) > 0,
-    'HTTPS enabled': getattr(settings, 'SECURE_SSL_REDIRECT', False),
-    'HSTS enabled': getattr(settings, 'SECURE_HSTS_SECONDS', 0) > 0,
-    'Database configured': settings.DATABASES['default']['ENGINE'] != 'django.db.backends.sqlite3',
-}
-
-for check, result in checks.items():
-    status = '✓' if result else '✗'
-    print(f"{status} {check}")
-EOF
-```
-
-## Phase 10: Logging Configuration
-
-```bash
-# Test logging output
-python manage.py shell << EOF
-import logging
-logger = logging.getLogger('django')
-logger.warning('Test warning message')
-logger.error('Test error message')
-EOF
-
-# Check log files (if configured)
-tail -f /var/log/django/django.log
-```
-
-## Phase 11: API Documentation (if DRF)
-
-```bash
-# Generate schema
-python manage.py generateschema --format openapi-json > schema.json
-
-# Validate schema
-# Check if schema.json is valid JSON
-python -c "import json; json.load(open('schema.json'))"
-
-# Access Swagger UI (if using drf-yasg)
-# Visit http://localhost:8000/swagger/ in browser
-```
-
-## Phase 12: Diff Review
-
-```bash
-# Show diff statistics
-git diff --stat
-
-# Show actual changes
-git diff
-
-# Show changed files
-git diff --name-only
-
-# Check for common issues
-git diff | grep -i "todo\|fixme\|hack\|xxx"
-git diff | grep "print("  # Debug statements
-git diff | grep "DEBUG = True"  # Debug mode
-git diff | grep "import pdb"  # Debugger
-```
-
-Checklist:
-- No debugging statements (print, pdb, breakpoint())
-- No TODO/FIXME comments in critical code
-- No hardcoded secrets or credentials
-- Database migrations included for model changes
-- Configuration changes documented
-- Error handling present for external calls
-- Transaction management where needed
-
-## Output Template
-
-```
-DJANGO VERIFICATION REPORT
-==========================
-
-Phase 1: Environment Check
-  ✓ Python 3.11.5
-  ✓ Virtual environment active
-  ✓ All environment variables set
-
-Phase 2: Code Quality
-  ✓ mypy: No type errors
-  ✗ ruff: 3 issues found (auto-fixed)
-  ✓ black: No formatting issues
-  ✓ isort: Imports properly sorted
-  ✓ manage.py check: No issues
-
-Phase 3: Migrations
-  ✓ No unapplied migrations
-  ✓ No migration conflicts
-  ✓ All models have migrations
-
-Phase 4: Tests + Coverage
-  Tests: 247 passed, 0 failed, 5 skipped
-  Coverage:
-    Overall: 87%
-    users: 92%
-    products: 89%
-    orders: 85%
-    payments: 91%
-
-Phase 5: Security Scan
-  ✗ pip-audit: 2 vulnerabilities found (fix required)
-  ✓ safety check: No issues
-  ✓ bandit: No security issues
-  ✓ No secrets detected
-  ✓ DEBUG = False
-
-Phase 6: Django Commands
-  ✓ collectstatic completed
-  ✓ Database integrity OK
-  ✓ Cache backend reachable
-
-Phase 7: Performance
-  ✓ No N+1 queries detected
-  ✓ Database indexes configured
-  ✓ Query count acceptable
-
-Phase 8: Static Assets
-  ✓ npm audit: No vulnerabilities
-  ✓ Assets built successfully
-  ✓ Static files collected
-
-Phase 9: Configuration
-  ✓ DEBUG = False
-  ✓ SECRET_KEY configured
-  ✓ ALLOWED_HOSTS set
-  ✓ HTTPS enabled
-  ✓ HSTS enabled
-  ✓ Database configured
-
-Phase 10: Logging
-  ✓ Logging configured
-  ✓ Log files writable
-
-Phase 11: API Documentation
-  ✓ Schema generated
-  ✓ Swagger UI accessible
-
-Phase 12: Diff Review
-  Files changed: 12
-  +450, -120 lines
-  ✓ No debug statements
-  ✓ No hardcoded secrets
-  ✓ Migrations included
-
-RECOMMENDATION: ⚠️ Fix pip-audit vulnerabilities before deploying
-
-NEXT STEPS:
-1. Update vulnerable dependencies
-2. Re-run security scan
-3. Deploy to staging for final testing
-```
-
-## Pre-Deployment Checklist
-
-- [ ] All tests passing
-- [ ] Coverage ≥ 80%
-- [ ] No security vulnerabilities
-- [ ] No unapplied migrations
-- [ ] DEBUG = False in production settings
-- [ ] SECRET_KEY properly configured
-- [ ] ALLOWED_HOSTS set correctly
-- [ ] Database backups enabled
-- [ ] Static files collected and served
-- [ ] Logging configured and working
-- [ ] Error monitoring (Sentry, etc.) configured
-- [ ] CDN configured (if applicable)
-- [ ] Redis/cache backend configured
-- [ ] Celery workers running (if applicable)
-- [ ] HTTPS/SSL configured
-- [ ] Environment variables documented
-
-## Continuous Integration
-
-### GitHub Actions Example
-
-```yaml
-# .github/workflows/django-verification.yml
-name: Django Verification
-
-on: [push, pull_request]
-
-jobs:
-  verify:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Cache pip
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install ruff black mypy pytest pytest-django pytest-cov bandit safety pip-audit
-
-      - name: Code quality checks
-        run: |
-          ruff check .
-          black . --check
-          isort . --check-only
-          mypy .
-
-      - name: Security scan
-        run: |
-          bandit -r . -f json -o bandit-report.json
-          safety check --full-report
-          pip-audit
-
-      - name: Run tests
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test
-          DJANGO_SECRET_KEY: test-secret-key
-        run: |
-          pytest --cov=apps --cov-report=xml --cov-report=term-missing
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-```
-
-## Quick Reference
-
-| Check | Command |
-|-------|---------|
-| Environment | `python --version` |
-| Type checking | `mypy .` |
-| Linting | `ruff check .` |
-| Formatting | `black . --check` |
-| Migrations | `python manage.py makemigrations --check` |
-| Tests | `pytest --cov=apps` |
-| Security | `pip-audit && bandit -r .` |
-| Django check | `python manage.py check --deploy` |
-| Collectstatic | `python manage.py collectstatic --noinput` |
-| Diff stats | `git diff --stat` |
-
-Remember: Automated verification catches common issues but doesn't replace manual code review and testing in staging environment.
+**기억하십시오**: 자동화된 검증은 공통적인 실수를 잡아내기에 매우 유용하지만, 사람이 직접 수행하는 코드 리뷰와 스테이징 환경에서의 최종 테스트를 완전히 대신할 수는 없습니다.
+    

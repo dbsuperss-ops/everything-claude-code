@@ -1,475 +1,249 @@
 ---
 name: django-verification
-description: "Django项目的验证循环：迁移、代码检查、带覆盖率的测试、安全扫描，以及在发布或PR前的部署就绪检查。"
+description: "Django 프로젝트를 위한 검증 루틴입니다. 마이그레이션 확인, 코드 린팅, 커버리지를 포함한 테스트 실행, 보안 스캔 및 배포 전 최종 체크리스트를 포함합니다."
 origin: ECC
 ---
 
-# Django 验证循环
+# Django 검증 루프 (Verification Loop)
 
-在发起 PR 之前、进行重大更改之后以及部署之前运行，以确保 Django 应用程序的质量和安全性。
+PR(Pull Request) 생성 전, 주요 변경 사항 적용 후, 그리고 최종 배포 전에 실행하여 Django 애플리케이션의 품질과 보안을 보장하는 프로세스입니다.
 
-## 何时激活
+## 적용 시점
 
-* 在为一个 Django 项目开启拉取请求之前
-* 在重大模型变更、迁移更新或依赖升级之后
-* 用于暂存或生产环境的预部署验证
-* 运行完整的环境 → 代码检查 → 测试 → 安全 → 部署就绪流水线时
-* 验证迁移安全性和测试覆盖率时
+* Django 프로젝트에서 PR을 올리기 직전
+* 주요 모델 변경, 마이그레이션 업데이트 또는 의존성 라이브러리 업그레이드 후
+* 스테이징(Staging) 및 운영(Production) 환경 배포 전 검증 단계
+* 환경 설정 → 코드 품질 → 테스트 → 보안 → 배포 준비 상태를 종합적으로 점검할 때
+* 마이그레이션의 안전성 및 테스트 커버리지 목표 달성 여부를 확인할 때
 
-## 阶段 1: 环境检查
+## 1단계: 환경 점검
 
 ```bash
-# Verify Python version
-python --version  # Should match project requirements
+# Python 버전 확인
+python --version  # 프로젝트 요구 사양과 일치하는지 확인
 
-# Check virtual environment
+# 가상 환경 상태 확인
 which python
-pip list --outdated
+pip list --outdated # 업데이트가 필요한 패키지 확인
 
-# Verify environment variables
-python -c "import os; import environ; print('DJANGO_SECRET_KEY set' if os.environ.get('DJANGO_SECRET_KEY') else 'MISSING: DJANGO_SECRET_KEY')"
+# 핵심 환경 변수 설정 확인
+python -c "import os; print('DJANGO_SECRET_KEY 설정됨' if os.environ.get('DJANGO_SECRET_KEY') else '누락됨: DJANGO_SECRET_KEY')"
 ```
 
-如果环境配置错误，请停止并修复。
-
-## 阶段 2: 代码质量与格式化
+## 2단계: 코드 품질 및 포맷팅
 
 ```bash
-# Type checking
+# 타입 체크 (mypy)
 mypy . --config-file pyproject.toml
 
-# Linting with ruff
+# 린트 체크 및 자동 수정 (ruff)
 ruff check . --fix
 
-# Formatting with black
+# 코드 포맷팅 체크 (black)
 black . --check
-black .  # Auto-fix
+black .  # 실제 자동 수정 적용 시
 
-# Import sorting
+# 임포트 순서 정리 (isort)
 isort . --check-only
-isort .  # Auto-fix
+isort .  # 실제 자동 수정 적용 시
 
-# Django-specific checks
+# Django 배포용 설정 체크
 python manage.py check --deploy
 ```
 
-常见问题：
+**주요 확인 사항:**
+* 공용 함수에 타입 힌트가 누락되었는가
+* PEP 8 스타일 가이드를 위반했는가
+* 임포트(Import) 구문이 정렬되지 않았는가
+* 운영 환경 설정에 개발용 DEBUG 설정이 남아있는가
 
-* 公共函数缺少类型提示
-* 违反 PEP 8 格式规范
-* 导入未排序
-* 生产配置中遗留调试设置
-
-## 阶段 3: 数据库迁移
+## 3단계: 데이터베이스 마이그레이션
 
 ```bash
-# Check for unapplied migrations
+# 미적용 마이그레이션 확인
 python manage.py showmigrations
 
-# Create missing migrations
+# 누락된 마이그레이션 파일 확인 (모델 변경 후 생성 여부)
 python manage.py makemigrations --check
 
-# Dry-run migration application
+# 마이그레이션 실행 계획 미리보기 (Dry-run)
 python manage.py migrate --plan
 
-# Apply migrations (test environment)
+# 마이그레이션 적용 (테스트 환경)
 python manage.py migrate
 
-# Check for migration conflicts
-python manage.py makemigrations --merge  # Only if conflicts exist
+# 마이그레이션 충돌 확인 및 병합
+python manage.py makemigrations --merge
 ```
 
-报告：
-
-* 待应用的迁移数量
-* 任何迁移冲突
-* 模型更改未生成迁移
-
-## 阶段 4: 测试与覆盖率
+## 4단계: 테스트 및 커버리지
 
 ```bash
-# Run all tests with pytest
+# pytest를 사용한 전체 테스트 및 커버리지 측정
 pytest --cov=apps --cov-report=html --cov-report=term-missing --reuse-db
 
-# Run specific app tests
+# 특정 앱만 테스트
 pytest apps/users/tests/
 
-# Run with markers
-pytest -m "not slow"  # Skip slow tests
-pytest -m integration  # Only integration tests
+# 마커(Marker)를 사용한 선별 실행
+pytest -m "not slow"  # 느린 테스트 제외
+pytest -m integration  # 통합 테스트만 실행
 
-# Coverage report
-open htmlcov/index.html
+# 커버리지 보고서 확인
+# (Windows의 경우) start htmlcov/index.html
 ```
 
-报告：
-
-* 总测试数：X 通过，Y 失败，Z 跳过
-* 总体覆盖率：XX%
-* 按应用划分的覆盖率明细
-
-覆盖率目标：
-
-| 组件 | 目标 |
+**커버리지 목표치:**
+| 컴포넌트 | 목표 수치 |
 |-----------|--------|
-| 模型 | 90%+ |
-| 序列化器 | 85%+ |
-| 视图 | 80%+ |
-| 服务 | 90%+ |
-| 总体 | 80%+ |
+| 모델 (Models) | 90% 이상 |
+| 시리얼라이저 (Serializers) | 85% 이상 |
+| 뷰 (Views) | 80% 이상 |
+| 서비스 (Services) | 90% 이상 |
+| **전체 평균** | **80% 이상** |
 
-## 阶段 5: 安全扫描
+## 5단계: 보안 스캔
 
 ```bash
-# Dependency vulnerabilities
+# 의존성 패키지 취약점 검사
 pip-audit
 safety check --full-report
 
-# Django security checks
+# Django 보안 전용 체크
 python manage.py check --deploy
 
-# Bandit security linter
+# Bandit 보안 라이브러리 정적 분석
 bandit -r . -f json -o bandit-report.json
 
-# Secret scanning (if gitleaks is installed)
+# 비밀 정보(Secret) 유출 검사 (gitleaks 등 활용)
 gitleaks detect --source . --verbose
 
-# Environment variable check
-python -c "from django.core.exceptions import ImproperlyConfigured; from django.conf import settings; settings.DEBUG"
+# 운영 환경의 DEBUG 모드 설정 재확인
+python -c "from django.conf import settings; print(f'DEBUG STATUS: {settings.DEBUG}')"
 ```
 
-报告：
-
-* 发现易受攻击的依赖项
-* 安全配置问题
-* 检测到硬编码的密钥
-* DEBUG 模式状态（生产环境中应为 False）
-
-## 阶段 6: Django 管理命令
+## 6단계: 핵심 관리 명령 실행
 
 ```bash
-# Check for model issues
+# 모델 구조 오류 체크
 python manage.py check
 
-# Collect static files
+# 정적 파일 수집 테스트
 python manage.py collectstatic --noinput --clear
 
-# Create superuser (if needed for tests)
-echo "from apps.users.models import User; User.objects.create_superuser('admin@example.com', 'admin')" | python manage.py shell
-
-# Database integrity
+# 데이터베이스 연결성 체크
 python manage.py check --database default
 
-# Cache verification (if using Redis)
-python -c "from django.core.cache import cache; cache.set('test', 'value', 10); print(cache.get('test'))"
+# 캐시(Redis 등) 연결 테스트
+python -c "from django.core.cache import cache; cache.set('test', 'value', 10); print(f'Cache test: {cache.get('test')}')"
 ```
 
-## 阶段 7: 性能检查
+## 7단계: 성능 분석
+
+* **N+1 쿼리 확인**: Django Debug Toolbar를 통해 SQL 패널에서 중복 쿼리 유무를 확인하십시오.
+* **인덱스 누락 확인**: 자주 조회되는 필드에 데이터베이스 인덱스가 설정되어 있는지 검토하십시오.
+* **페이지당 쿼리 수**: 일반적인 페이지 로드 시 쿼리 수가 50회 미만인지 확인하십시오.
+
+## 8단계: 정적 자산(Static Assets) 검증
 
 ```bash
-# Django Debug Toolbar output (check for N+1 queries)
-# Run in dev mode with DEBUG=True and access a page
-# Look for duplicate queries in SQL panel
-
-# Query count analysis
-django-admin debugsqlshell  # If django-debug-sqlshell installed
-
-# Check for missing indexes
-python manage.py shell << EOF
-from django.db import connection
-with connection.cursor() as cursor:
-    cursor.execute("SELECT table_name, index_name FROM information_schema.statistics WHERE table_schema = 'public'")
-    print(cursor.fetchall())
-EOF
-```
-
-报告：
-
-* 每页查询次数（典型页面应 < 50）
-* 缺少数据库索引
-* 检测到重复查询
-
-## 阶段 8: 静态资源
-
-```bash
-# Check for npm dependencies (if using npm)
+# NPM 취약점 검사 (프론트엔드 도구 사용 시)
 npm audit
-npm audit fix
 
-# Build static files (if using webpack/vite)
+# 정적 파일 빌드 (Webpack, Vite 등)
 npm run build
 
-# Verify static files
+# 수집된 정적 파일 확인
 ls -la staticfiles/
 python manage.py findstatic css/style.css
 ```
 
-## 阶段 9: 配置审查
+## 9단계: 최종 설정(Config) 리뷰
 
 ```python
-# Run in Python shell to verify settings
+# Django 쉘에서 핵심 설정 최종 확인
 python manage.py shell << EOF
 from django.conf import settings
-import os
-
-# Critical checks
-checks = {
-    'DEBUG is False': not settings.DEBUG,
-    'SECRET_KEY set': bool(settings.SECRET_KEY and len(settings.SECRET_KEY) > 30),
-    'ALLOWED_HOSTS set': len(settings.ALLOWED_HOSTS) > 0,
-    'HTTPS enabled': getattr(settings, 'SECURE_SSL_REDIRECT', False),
-    'HSTS enabled': getattr(settings, 'SECURE_HSTS_SECONDS', 0) > 0,
-    'Database configured': settings.DATABASES['default']['ENGINE'] != 'django.db.backends.sqlite3',
-}
-
-for check, result in checks.items():
-    status = '✓' if result else '✗'
-    print(f"{status} {check}")
+print(f"DEBUG is False: {not settings.DEBUG}")
+print(f"SECRET_KEY 보안성: {len(settings.SECRET_KEY) > 30}")
+print(f"ALLOWED_HOSTS 설정됨: {len(settings.ALLOWED_HOSTS) > 0}")
+print(f"HTTPS 리다이렉트: {getattr(settings, 'SECURE_SSL_REDIRECT', False)}")
+print(f"DB 엔진: {settings.DATABASES['default']['ENGINE']}")
 EOF
 ```
 
-## 阶段 10: 日志配置
+## 10단계: Diff(변경사항) 리뷰
 
 ```bash
-# Test logging output
-python manage.py shell << EOF
-import logging
-logger = logging.getLogger('django')
-logger.warning('Test warning message')
-logger.error('Test error message')
-EOF
-
-# Check log files (if configured)
-tail -f /var/log/django/django.log
-```
-
-## 阶段 11: API 文档（如果使用 DRF）
-
-```bash
-# Generate schema
-python manage.py generateschema --format openapi-json > schema.json
-
-# Validate schema
-# Check if schema.json is valid JSON
-python -c "import json; json.load(open('schema.json'))"
-
-# Access Swagger UI (if using drf-yasg)
-# Visit http://localhost:8000/swagger/ in browser
-```
-
-## 阶段 12: 差异审查
-
-```bash
-# Show diff statistics
+# 변경 파일 통계 확인
 git diff --stat
 
-# Show actual changes
+# 실제 코드 차이점 상세 검토
 git diff
 
-# Show changed files
-git diff --name-only
-
-# Check for common issues
-git diff | grep -i "todo\|fixme\|hack\|xxx"
-git diff | grep "print("  # Debug statements
-git diff | grep "DEBUG = True"  # Debug mode
-git diff | grep "import pdb"  # Debugger
+# 흔한 실수(Debug 코드 등) 검색
+git diff | grep -i "todo\|fixme\|hack"
+git diff | grep "print(" # 디버그용 출력문 제거 확인
+git diff | grep "DEBUG = True" # 운영 설정 확인
+git diff | grep "import pdb" # 디버거 호출부 확인
 ```
 
-检查清单：
-
-* 无调试语句（print, pdb, breakpoint()）
-* 关键代码中无 TODO/FIXME 注释
-* 无硬编码的密钥或凭证
-* 模型更改包含数据库迁移
-* 配置更改已记录
-* 外部调用存在错误处理
-* 需要时已进行事务管理
-
-## 输出模板
+## 검증 리포트 구성 예시 (Report Template)
 
 ```
-DJANGO VERIFICATION REPORT
+[DJANGO 검증 결과 보고서]
 ==========================
 
-Phase 1: Environment Check
+1단계: 환경 점검
   ✓ Python 3.11.5
-  ✓ Virtual environment active
-  ✓ All environment variables set
+  ✓ 가상 환경 활성화됨
+  ✓ 환경 변수 주입 완료
 
-Phase 2: Code Quality
-  ✓ mypy: No type errors
-  ✗ ruff: 3 issues found (auto-fixed)
-  ✓ black: No formatting issues
-  ✓ isort: Imports properly sorted
-  ✓ manage.py check: No issues
+2단계: 코드 품질
+  ✓ mypy: 타입 오류 없음
+  ✓ ruff: 3개 이슈 발견 (자동 수정 완료)
+  ✓ black: 포맷팅 일치
+  ✓ isort: 임포트 정렬 완료
 
-Phase 3: Migrations
-  ✓ No unapplied migrations
-  ✓ No migration conflicts
-  ✓ All models have migrations
+3단계: 마이그레이션
+  ✓ 미적용 마이그레이션 없음
+  ✓ 충돌 없음
+  ✓ 모든 모델 변경사항 반영됨
 
-Phase 4: Tests + Coverage
-  Tests: 247 passed, 0 failed, 5 skipped
-  Coverage:
-    Overall: 87%
-    users: 92%
-    products: 89%
-    orders: 85%
-    payments: 91%
+4단계: 테스트 및 커버리지
+  결과: 247 통과, 0 실패, 5 건너뜀
+  커버리지:
+    - 전체: 87%
+    - users: 92%
+    - products: 89%
 
-Phase 5: Security Scan
-  ✗ pip-audit: 2 vulnerabilities found (fix required)
-  ✓ safety check: No issues
-  ✓ bandit: No security issues
-  ✓ No secrets detected
-  ✓ DEBUG = False
+5단계: 보안 스캔
+  ⚠ pip-audit: 취약한 패키지 2개 발견 (업데이트 필요)
+  ✓ bandit: 보안 경고 없음
+  ✓ 시크릿 유출 없음
+  ✓ DEBUG = False 확인됨
 
-Phase 6: Django Commands
-  ✓ collectstatic completed
-  ✓ Database integrity OK
-  ✓ Cache backend reachable
+배포 권고 사항: ⚠ 배포 전 pip-audit에서 발견된 취약 패키지를 반드시 업데이트하십시오.
 
-Phase 7: Performance
-  ✓ No N+1 queries detected
-  ✓ Database indexes configured
-  ✓ Query count acceptable
-
-Phase 8: Static Assets
-  ✓ npm audit: No vulnerabilities
-  ✓ Assets built successfully
-  ✓ Static files collected
-
-Phase 9: Configuration
-  ✓ DEBUG = False
-  ✓ SECRET_KEY configured
-  ✓ ALLOWED_HOSTS set
-  ✓ HTTPS enabled
-  ✓ HSTS enabled
-  ✓ Database configured
-
-Phase 10: Logging
-  ✓ Logging configured
-  ✓ Log files writable
-
-Phase 11: API Documentation
-  ✓ Schema generated
-  ✓ Swagger UI accessible
-
-Phase 12: Diff Review
-  Files changed: 12
-  +450, -120 lines
-  ✓ No debug statements
-  ✓ No hardcoded secrets
-  ✓ Migrations included
-
-RECOMMENDATION: ⚠️ Fix pip-audit vulnerabilities before deploying
-
-NEXT STEPS:
-1. Update vulnerable dependencies
-2. Re-run security scan
-3. Deploy to staging for final testing
+다음 단계:
+1. 취약점 발견된 패키지 버전 업그레이드
+2. 보안 스캔 재실행
+3. 스테이징 환경 배포 및 최종 웹 테스트
 ```
 
-## 预部署检查清单
+## 배포 전 최종 체크리스트
 
-* \[ ] 所有测试通过
-* \[ ] 覆盖率 ≥ 80%
-* \[ ] 无安全漏洞
-* \[ ] 无未应用的迁移
-* \[ ] 生产设置中 DEBUG = False
-* \[ ] SECRET\_KEY 已正确配置
-* \[ ] ALLOWED\_HOSTS 设置正确
-* \[ ] 数据库备份已启用
-* \[ ] 静态文件已收集并提供服务
-* \[ ] 日志配置正常且有效
-* \[ ] 错误监控（Sentry 等）已配置
-* \[ ] CDN 已配置（如果适用）
-* \[ ] Redis/缓存后端已配置
-* \[ ] Celery 工作进程正在运行（如果适用）
-* \[ ] HTTPS/SSL 已配置
-* \[ ] 环境变量已记录
+* [ ] 모든 테스트 통과 여부
+* [ ] 전체 커버리지 80% 이상 달성 여부
+* [ ] 알려진 보안 취약점 해결 여부
+* [ ] 미적용 마이그레이션 파일 존재 여부
+* [ ] 운영 설정에서 `DEBUG = False` 확인
+* [ ] `SECRET_KEY`가 환경 변수로 안전하게 분리되었는가
+* [ ] `ALLOWED_HOSTS`가 운영 도메인으로 정확히 설정되었는가
+* [ ] 데이터베이스 백업 프로세스가 가동 중인가
+* [ ] 정적 파일(Static files) 수집 및 서빙 설정 확인
+* [ ] 에러 모니터링(Sentry 등) 작동 여부
+* [ ] Redis/Cache 백언드 연결 상태 확인
+* [ ] HTTPS/SSL 적용 및 강제 리다이렉트 확인
 
-## 持续集成
-
-### GitHub Actions 示例
-
-```yaml
-# .github/workflows/django-verification.yml
-name: Django Verification
-
-on: [push, pull_request]
-
-jobs:
-  verify:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Cache pip
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install ruff black mypy pytest pytest-django pytest-cov bandit safety pip-audit
-
-      - name: Code quality checks
-        run: |
-          ruff check .
-          black . --check
-          isort . --check-only
-          mypy .
-
-      - name: Security scan
-        run: |
-          bandit -r . -f json -o bandit-report.json
-          safety check --full-report
-          pip-audit
-
-      - name: Run tests
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test
-          DJANGO_SECRET_KEY: test-secret-key
-        run: |
-          pytest --cov=apps --cov-report=xml --cov-report=term-missing
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-```
-
-## 快速参考
-
-| 检查项 | 命令 |
-|-------|---------|
-| 环境 | `python --version` |
-| 类型检查 | `mypy .` |
-| 代码检查 | `ruff check .` |
-| 格式化 | `black . --check` |
-| 迁移 | `python manage.py makemigrations --check` |
-| 测试 | `pytest --cov=apps` |
-| 安全 | `pip-audit && bandit -r .` |
-| Django 检查 | `python manage.py check --deploy` |
-| 收集静态文件 | `python manage.py collectstatic --noinput` |
-| 差异统计 | `git diff --stat` |
-
-请记住：自动化验证可以发现常见问题，但不能替代在预发布环境中的手动代码审查和测试。
+**기억하십시오**: 자동화된 검증 루프는 휴먼 에러를 줄여주지만, 스테이징 환경에서의 수동 코드 리뷰와 실제 사용자 시나리오 테스트를 완전히 대체할 수는 없습니다.

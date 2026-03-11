@@ -1,257 +1,244 @@
 ---
-description: Comprehensive Python code review for PEP 8 compliance, type hints, security, and Pythonic idioms. Invokes the python-reviewer agent.
+이름: python-review
+설명: PEP 8 준수 여부, 타입 힌트, 보안 및 파이썬스러운(Pythonic) 관용구에 대해 종합적인 Python 코드 리뷰를 수행합니다. python-reviewer 에이전트를 호출합니다.
 ---
 
-# Python Code Review
+# Python 코드 리뷰 (Python Code Review)
 
-This command invokes the **python-reviewer** agent for comprehensive Python-specific code review.
+이 명령어는 종합적인 Python 전용 코드 리뷰를 위해 **python-reviewer** 에이전트를 호출합니다.
 
-## What This Command Does
+## 주요 기능
 
-1. **Identify Python Changes**: Find modified `.py` files via `git diff`
-2. **Run Static Analysis**: Execute `ruff`, `mypy`, `pylint`, `black --check`
-3. **Security Scan**: Check for SQL injection, command injection, unsafe deserialization
-4. **Type Safety Review**: Analyze type hints and mypy errors
-5. **Pythonic Code Check**: Verify code follows PEP 8 and Python best practices
-6. **Generate Report**: Categorize issues by severity
+1. **Python 변경 사항 식별**: `git diff`를 통해 수정된 `.py` 파일을 찾습니다.
+2. **정적 분석 실행**: `ruff`, `mypy`, `pylint`, `black --check` 등을 실행합니다.
+3. **보안 스캔**: SQL 인젝션, 명령 인젝션, 안전하지 않은 역직렬화 등을 점검합니다.
+4. **타입 안전성 리뷰**: 타입 힌트와 mypy 에러를 분석합니다.
+5. **파이썬스러운 코드 확인**: 코드가 PEP 8 및 Python 최선 관행을 따르는지 확인합니다.
+6. **보고서 생성**: 이슈를 심각도별로 분류하여 보고합니다.
 
-## When to Use
+## 사용 시점
 
-Use `/python-review` when:
-- After writing or modifying Python code
-- Before committing Python changes
-- Reviewing pull requests with Python code
-- Onboarding to a new Python codebase
-- Learning Pythonic patterns and idioms
+다음과 같은 경우 `/python-review`를 사용하십시오:
+- Python 코드를 작성하거나 수정했을 때
+- Python 변경 사항을 커밋하기 전
+- Python 코드가 포함된 Pull Request를 리뷰할 때
+- 새로운 Python 코드베이스에 온보딩할 때
+- 파이썬스러운 패턴과 관용구를 학습하고 싶을 때
 
-## Review Categories
+## 리뷰 카테고리
 
-### CRITICAL (Must Fix)
-- SQL/Command injection vulnerabilities
-- Unsafe eval/exec usage
-- Pickle unsafe deserialization
-- Hardcoded credentials
-- YAML unsafe load
-- Bare except clauses hiding errors
+### 치명적 (CRITICAL - 반드시 수정)
+- SQL/명령 인젝션 취약점
+- 안전하지 않은 eval/exec 사용
+- Pickle을 사용한 안전하지 않은 역직렬화
+- 하드코딩된 자격 증명 (API 키 등)
+- YAML 안전하지 않은 로드(unsafe_load)
+- 에러를 숨기는 빈 except 구문 (bare except)
 
-### HIGH (Should Fix)
-- Missing type hints on public functions
-- Mutable default arguments
-- Swallowing exceptions silently
-- Not using context managers for resources
-- C-style looping instead of comprehensions
-- Using type() instead of isinstance()
-- Race conditions without locks
+### 높음 (HIGH - 수정 권장)
+- 퍼블릭 함수에 타입 힌트 누락
+- 가변 기본 인자 (Mutable default arguments)
+- 예외를 조용히 무시함 (Swallowing exceptions)
+- 리소스 관리에 컨텍스트 매니저(with 구문) 미사용
+- 컴프리헨션 대신 C-스타일의 루프 사용
+- isinstance() 대신 type() 사용
+- Lock 없는 경쟁 상태(Race condition)
 
-### MEDIUM (Consider)
-- PEP 8 formatting violations
-- Missing docstrings on public functions
-- Print statements instead of logging
-- Inefficient string operations
-- Magic numbers without named constants
-- Not using f-strings for formatting
-- Unnecessary list creation
+### 보통 (MEDIUM - 고려 사항)
+- PEP 8 포맷 규칙 위반
+- 퍼블릭 함수에 독스트링(docstring) 누락
+- 로깅 대신 print 문 사용
+- 비효율적인 문자열 연산
+- 명명된 상수 없는 매직 넘버(Magic numbers)
+- f-string 대신 이전 방식의 포맷팅 사용
+- 불필요한 리스트 생성
 
-## Automated Checks Run
+## 자동 검사 도구 실행
 
 ```bash
-# Type checking
+# 타입 체크
 mypy .
 
-# Linting and formatting
+# 린트 및 포맷팅
 ruff check .
 black --check .
 isort --check-only .
 
-# Security scanning
+# 보안 스캔
 bandit -r .
 
-# Dependency audit
+# 의존성 감사
 pip-audit
 safety check
 
-# Testing
+# 테스트
 pytest --cov=app --cov-report=term-missing
 ```
 
-## Example Usage
+## 사용 예시
 
 ```text
-User: /python-review
+사용자: /python-review
 
-Agent:
-# Python Code Review Report
+에이전트:
+# Python 코드 리뷰 보고서
 
-## Files Reviewed
-- app/routes/user.py (modified)
-- app/services/auth.py (modified)
+## 리뷰된 파일
+- app/routes/user.py (수정됨)
+- app/services/auth.py (수정됨)
 
-## Static Analysis Results
-✓ ruff: No issues
-✓ mypy: No errors
-⚠️ black: 2 files need reformatting
-✓ bandit: No security issues
+## 정적 분석 결과
+✓ ruff: 이슈 없음
+✓ mypy: 에러 없음
+⚠️ black: 2개 파일의 포맷팅 수정 필요
+✓ bandit: 보안 이슈 없음
 
-## Issues Found
+## 이슈 발견 사항
 
-[CRITICAL] SQL Injection vulnerability
-File: app/routes/user.py:42
-Issue: User input directly interpolated into SQL query
+[치명적 - CRITICAL] SQL 인젝션 취약점
+파일: app/routes/user.py:42
+이슈: 사용자 입력이 SQL 쿼리에 직접 삽입됨
 ```python
-query = f"SELECT * FROM users WHERE id = {user_id}"  # Bad
+query = f"SELECT * FROM users WHERE id = {user_id}"  # 나쁜 예시
 ```
-Fix: Use parameterized query
+수정 제안: 파라미터화된 쿼리 사용
 ```python
-query = "SELECT * FROM users WHERE id = %s"  # Good
+query = "SELECT * FROM users WHERE id = %s"  # 좋은 예시
 cursor.execute(query, (user_id,))
 ```
 
-[HIGH] Mutable default argument
-File: app/services/auth.py:18
-Issue: Mutable default argument causes shared state
+[높음 - HIGH] 가변 기본 인자 (Mutable default argument)
+파일: app/services/auth.py:18
+이슈: 가변 기본 인자로 인해 상태가 공유됨
 ```python
-def process_items(items=[]):  # Bad
+def process_items(items=[]):  # 나쁜 예시
     items.append("new")
     return items
 ```
-Fix: Use None as default
+수정 제안: 기본값으로 None 사용
 ```python
-def process_items(items=None):  # Good
+def process_items(items=None):  # 좋은 예시
     if items is None:
         items = []
     items.append("new")
     return items
 ```
 
-[MEDIUM] Missing type hints
-File: app/services/auth.py:25
-Issue: Public function without type annotations
+[보통 - MEDIUM] 타입 힌트 누락
+파일: app/services/auth.py:25
+이슈: 퍼블릭 함수에 타입 어노테이션이 없음
 ```python
-def get_user(user_id):  # Bad
+def get_user(user_id):  # 나쁜 예시
     return db.find(user_id)
 ```
-Fix: Add type hints
+수정 제안: 타입 힌트 추가
 ```python
-def get_user(user_id: str) -> Optional[User]:  # Good
+def get_user(user_id: str) -> Optional[User]:  # 좋은 예시
     return db.find(user_id)
 ```
 
-[MEDIUM] Not using context manager
-File: app/routes/user.py:55
-Issue: File not closed on exception
-```python
-f = open("config.json")  # Bad
-data = f.read()
-f.close()
-```
-Fix: Use context manager
-```python
-with open("config.json") as f:  # Good
-    data = f.read()
+## 요약
+- 치명적(CRITICAL): 1
+- 높음(HIGH): 1
+- 보통(MEDIUM): 2
+
+판정: ❌ 치명적인 이슈가 수정될 때까지 머지를 차단하십시오.
+
+## 포맷팅 수정 필요
+실행: `black app/routes/user.py app/services/auth.py`
 ```
 
-## Summary
-- CRITICAL: 1
-- HIGH: 1
-- MEDIUM: 2
+## 승인 기준
 
-Recommendation: ❌ Block merge until CRITICAL issue is fixed
-
-## Formatting Required
-Run: `black app/routes/user.py app/services/auth.py`
-```
-
-## Approval Criteria
-
-| Status | Condition |
+| 상태 | 조건 |
 |--------|-----------|
-| ✅ Approve | No CRITICAL or HIGH issues |
-| ⚠️ Warning | Only MEDIUM issues (merge with caution) |
-| ❌ Block | CRITICAL or HIGH issues found |
+| ✅ 승인(Approve) | 치명적(CRITICAL) 또는 높음(HIGH) 이슈 없음 |
+| ⚠️ 경고(Warning) | 보통(MEDIUM) 이슈만 발견됨 (주의하여 머지) |
+| ❌ 차단(Block) | 치명적(CRITICAL) 또는 높음(HIGH) 이슈 발견됨 |
 
-## Integration with Other Commands
+## 다른 명령어와의 통합
 
-- Use `/tdd` first to ensure tests pass
-- Use `/code-review` for non-Python specific concerns
-- Use `/python-review` before committing
-- Use `/build-fix` if static analysis tools fail
+- 테스트 통과 여부 확인을 위해 `/tdd` 먼저 실행
+- Python 전용 사항이 아닌 일반적인 사항은 `/code-review` 활용
+- 커밋 전 반드시 `/python-review` 실행
+- 정적 분석 도구 자체에서 에러 발생 시 `/build-fix` 사용
 
-## Framework-Specific Reviews
+## 프레임워크별 리뷰 항목
 
-### Django Projects
-The reviewer checks for:
-- N+1 query issues (use `select_related` and `prefetch_related`)
-- Missing migrations for model changes
-- Raw SQL usage when ORM could work
-- Missing `transaction.atomic()` for multi-step operations
+### Django 프로젝트
+리뷰어 확인 사항:
+- N+1 쿼리 이슈 (`select_related`, `prefetch_related` 사용 여부)
+- 모델 변경에 따른 마이그레이션 파일 누락 여부
+- ORM으로 처리 가능한 곳에 생(raw) SQL 사용 여부
+- 다단계 작업 시 `transaction.atomic()` 누락 여부
 
-### FastAPI Projects
-The reviewer checks for:
-- CORS misconfiguration
-- Pydantic models for request validation
-- Response models correctness
-- Proper async/await usage
-- Dependency injection patterns
+### FastAPI 프로젝트
+리뷰어 확인 사항:
+- CORS 설정 오류
+- 요청 검증을 위한 Pydantic 모델 사용 여부
+- 응답 모델의 정확성
+- 올바른 async/await 사용
+- 의존성 주입(Dependency Injection) 패턴
 
-### Flask Projects
-The reviewer checks for:
-- Context management (app context, request context)
-- Proper error handling
-- Blueprint organization
-- Configuration management
+### Flask 프로젝트
+리뷰어 확인 사항:
+- 컨텍스트 관리 (app context, request context)
+- 적절한 에러 처리
+- Blueprint를 활용한 조직화
+- 설정값 관리 방식
 
-## Related
+## 관련 정보
 
-- Agent: `agents/python-reviewer.md`
-- Skills: `skills/python-patterns/`, `skills/python-testing/`
+- 에이전트: `agents/python-reviewer.md`
+- 스킬: `skills/python-patterns/`, `skills/python-testing/`
 
-## Common Fixes
+## 일반적인 수정 사례 (Common Fixes)
 
-### Add Type Hints
+### 타입 힌트 추가
 ```python
-# Before
+# 수정 전
 def calculate(x, y):
     return x + y
 
-# After
+# 수정 후
 from typing import Union
 
 def calculate(x: Union[int, float], y: Union[int, float]) -> Union[int, float]:
     return x + y
 ```
 
-### Use Context Managers
+### 컨텍스트 매니저 사용
 ```python
-# Before
+# 수정 전
 f = open("file.txt")
 data = f.read()
 f.close()
 
-# After
+# 수정 후
 with open("file.txt") as f:
     data = f.read()
 ```
 
-### Use List Comprehensions
+### 리스트 컴프리헨션 사용
 ```python
-# Before
+# 수정 전
 result = []
 for item in items:
     if item.active:
         result.append(item.name)
 
-# After
+# 수정 후
 result = [item.name for item in items if item.active]
 ```
 
-### Fix Mutable Defaults
+### 가변 기본값 수정
 ```python
-# Before
+# 수정 전
 def append(value, items=[]):
     items.append(value)
     return items
 
-# After
+# 수정 후
 def append(value, items=None):
     if items is None:
         items = []
@@ -259,39 +246,39 @@ def append(value, items=None):
     return items
 ```
 
-### Use f-strings (Python 3.6+)
+### f-strings 사용 (Python 3.6+)
 ```python
-# Before
+# 수정 전
 name = "Alice"
 greeting = "Hello, " + name + "!"
 greeting2 = "Hello, {}".format(name)
 
-# After
+# 수정 후
 greeting = f"Hello, {name}!"
 ```
 
-### Fix String Concatenation in Loops
+### 루프 내 문자열 연결 수정
 ```python
-# Before
+# 수정 전
 result = ""
 for item in items:
     result += str(item)
 
-# After
+# 수정 후
 result = "".join(str(item) for item in items)
 ```
 
-## Python Version Compatibility
+## Python 버전 호환성
 
-The reviewer notes when code uses features from newer Python versions:
+리뷰어는 코드가 더 최신 Python 버전의 기능을 사용하는지 확인합니다:
 
-| Feature | Minimum Python |
+| 기능 | 최소 Python 버전 |
 |---------|----------------|
-| Type hints | 3.5+ |
+| 타입 힌트 | 3.5+ |
 | f-strings | 3.6+ |
-| Walrus operator (`:=`) | 3.8+ |
-| Position-only parameters | 3.8+ |
-| Match statements | 3.10+ |
-| Type unions (&#96;x &#124; None&#96;) | 3.10+ |
+| 바다코끼리 연산자 (`:=`) | 3.8+ |
+| 위치 전용 파라미터 (Position-only) | 3.8+ |
+| Match 구문 | 3.10+ |
+| 타입 유니온 (&#96;x &#124; None&#96;) | 3.10+ |
 
-Ensure your project's `pyproject.toml` or `setup.py` specifies the correct minimum Python version.
+프로젝트의 `pyproject.toml` 또는 `setup.py`에 올바른 최소 Python 버전이 명시되어 있는지 확인하십시오.

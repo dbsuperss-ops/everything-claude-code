@@ -1,131 +1,131 @@
 ---
 name: java-coding-standards
-description: "Spring Boot服务的Java编码标准：命名、不可变性、Optional用法、流、异常、泛型和项目布局。"
+description: Spring Boot 서비스를 위한 Java 코딩 표준 가이드입니다. 명명 규칙, 불변성, Optional 사용법, 스트림, 예외 처리, 제네릭 및 프로젝트 구조를 다룹니다.
 origin: ECC
 ---
 
-# Java 编码规范
+# Java 코딩 표준
 
-适用于 Spring Boot 服务中可读、可维护的 Java (17+) 代码的规范。
+Spring Boot 서비스에서 가독성 있고 유지보수가 용이한 Java (17+) 코드를 작성하기 위한 가이드라인입니다.
 
-## 何时激活
+## 적용 시점
 
-* 在 Spring Boot 项目中编写或审查 Java 代码时
-* 强制执行命名、不可变性或异常处理约定时
-* 使用记录类、密封类或模式匹配（Java 17+）时
-* 审查 Optional、流或泛型的使用时
-* 构建包和项目布局时
+* Spring Boot 프로젝트에서 Java 코드를 작성하거나 리뷰할 때
+* 명명 규칙, 불변성 또는 예외 처리 규약을 강제해야 할 때
+* 레코드(Records), 봉인된 클래스(Sealed classes) 또는 패턴 매칭(Java 17+)을 사용할 때
+* Optional, 스트림(Streams) 또는 제네릭(Generics) 사용을 검토할 때
+* 패키지 및 프로젝트 레이아웃을 구성할 때
 
-## 核心原则
+## 핵심 원칙
 
-* 清晰优于巧妙
-* 默认不可变；最小化共享可变状态
-* 快速失败并提供有意义的异常
-* 一致的命名和包结构
+* 기교보다는 명확성(Clarity)을 우선시하십시오.
+* 기본적으로 불변성(Immutability)을 유지하고, 공유 가변 상태를 최소화하십시오.
+* 의미 있는 예외와 함께 빠르게 실패(Fail-fast)하십시오.
+* 일관된 명명 규칙과 패키지 구조를 유지하십시오.
 
-## 命名
+## 명명 규칙 (Naming)
 
 ```java
-// ✅ Classes/Records: PascalCase
+// ✅ 클래스 & 레코드: PascalCase
 public class MarketService {}
 public record Money(BigDecimal amount, Currency currency) {}
 
-// ✅ Methods/fields: camelCase
+// ✅ 메서드 & 필드: camelCase
 private final MarketRepository marketRepository;
 public Market findBySlug(String slug) {}
 
-// ✅ Constants: UPPER_SNAKE_CASE
+// ✅ 상수: UPPER_SNAKE_CASE
 private static final int MAX_PAGE_SIZE = 100;
 ```
 
-## 不可变性
+## 불변성 (Immutability)
 
 ```java
-// ✅ Favor records and final fields
+// ✅ 레코드와 final 필드를 지향하십시오.
 public record MarketDto(Long id, String name, MarketStatus status) {}
 
 public class Market {
   private final Long id;
   private final String name;
-  // getters only, no setters
+  // Getter만 제공하고 Setter는 지양하십시오.
 }
 ```
 
-## Optional 使用
+## Optional 사용법
 
 ```java
-// ✅ Return Optional from find* methods
+// ✅ find* 메서드에서 Optional을 반환하십시오.
 Optional<Market> market = marketRepository.findBySlug(slug);
 
-// ✅ Map/flatMap instead of get()
+// ✅ get() 대신 map/flatMap과 orElseThrow를 사용하십시오.
 return market
     .map(MarketResponse::from)
-    .orElseThrow(() -> new EntityNotFoundException("Market not found"));
+    .orElseThrow(() -> new EntityNotFoundException("마켓을 찾을 수 없습니다: " + slug));
 ```
 
-## Streams 最佳实践
+## 스트림 (Streams) 베스트 프랙티스
 
 ```java
-// ✅ Use streams for transformations, keep pipelines short
+// ✅ 데이터 변환에 스트림을 사용하고, 파이프라인을 짧게 유지하십시오.
 List<String> names = markets.stream()
     .map(Market::name)
     .filter(Objects::nonNull)
     .toList();
 
-// ❌ Avoid complex nested streams; prefer loops for clarity
+// ❌ 복잡하게 중첩된 스트림은 피하십시오. 명확성을 위해 단순 반복문(Loop)이 더 나을 수 있습니다.
 ```
 
-## 异常
+## 예외 처리 (Exceptions)
 
-* 领域错误使用非受检异常；包装技术异常时提供上下文
-* 创建特定领域的异常（例如，`MarketNotFoundException`）
-* 避免宽泛的 `catch (Exception ex)`，除非在中心位置重新抛出/记录
+* 도메인 에러에는 언체크 예외(Unchecked Exception)를 사용하십시오. 기술적 예외를 래핑할 때는 컨텍스트를 제공하십시오.
+* 도메인 특화 예외를 생성하십시오 (예: `MarketNotFoundException`).
+* 중앙 집중식으로 다시 던지거나 로깅하는 경우가 아니라면 광범위한 `catch (Exception ex)`를 피하십시오.
 
 ```java
 throw new MarketNotFoundException(slug);
 ```
 
-## 泛型和类型安全
+## 제네릭 및 타입 안정성
 
-* 避免原始类型；声明泛型参数
-* 对于可复用的工具类，优先使用有界泛型
+* 원시 타입(Raw types)을 피하고 제네릭 파라미터를 선언하십시오.
+* 재사용 가능한 유틸리티 클래스에서는 가급적 한정적 와일드카드(Bounded generics)를 사용하십시오.
 
 ```java
 public <T extends Identifiable> Map<Long, T> indexById(Collection<T> items) { ... }
 ```
 
-## 项目结构 (Maven/Gradle)
+## 프로젝트 구조 (Maven/Gradle)
 
 ```
 src/main/java/com/example/app/
-  config/
-  controller/
-  service/
-  repository/
-  domain/
-  dto/
-  util/
+  config/         # 설정 레이어
+  controller/     # web/api 엔드포인트
+  service/        # 비즈니스 로직
+  repository/     # 데이터 접근
+  domain/         # 엔티티 및 핵심 도메인 모델
+  dto/            # 데이터 전송 객체
+  util/           # 유틸리티 함수
 src/main/resources/
   application.yml
-src/test/java/... (mirrors main)
+src/test/java/... (main 구조와 동일하게 유지)
 ```
 
-## 格式化和风格
+## 포맷팅 및 스타일
 
-* 一致地使用 2 或 4 个空格（项目标准）
-* 每个文件一个公共顶级类型
-* 保持方法简短且专注；提取辅助方法
-* 成员顺序：常量、字段、构造函数、公共方法、受保护方法、私有方法
+* 프로젝트 표준에 따라 2개 또는 4개의 공백을 일관되게 사용하십시오.
+* 파일당 하나의 공공 최상위 타입(Public top-level type)만 유지하십시오.
+* 메서드는 짧고 집중적으로 유지하고, 필요시 헬퍼 메서드를 추출하십시오.
+* 멤버 순서: 상수 -> 필드 -> 생성자 -> 공공 메서드 -> 보호/사설 메서드
 
-## 需要避免的代码坏味道
+## 피해야 할 코드 취약점 (Code Smells)
 
-* 长参数列表 → 使用 DTO/构建器
-* 深度嵌套 → 提前返回
-* 魔法数字 → 命名常量
-* 静态可变状态 → 优先使用依赖注入
-* 静默捕获块 → 记录日志并处理或重新抛出
+* 긴 파라미터 리스트 → DTO나 빌더(Builder) 패턴 사용
+* 깊은 중첩 → Early Return(빠른 반환) 활용
+* 매직 넘버 → 명명된 상수 사용
+* 정적 가변 상태 → 의존성 주입(DI) 지향
+* 빈 catch 블록 → 로그를 남기거나 처리하거나 다시 던지기
 
-## 日志记录
+## 로깅 (Logging)
 
 ```java
 private static final Logger log = LoggerFactory.getLogger(MarketService.class);
@@ -133,15 +133,15 @@ log.info("fetch_market slug={}", slug);
 log.error("failed_fetch_market slug={}", slug, ex);
 ```
 
-## Null 处理
+## Null 처리
 
-* 仅在不可避免时接受 `@Nullable`；否则使用 `@NonNull`
-* 在输入上使用 Bean 验证（`@NotNull`, `@NotBlank`）
+* 불가피한 경우에만 `@Nullable`을 허용하고, 그 외에는 `@NonNull`을 사용하십시오.
+* 입력값에 대해 Bean Validation (`@NotNull`, `@NotBlank` 등)을 사용하십시오.
 
-## 测试期望
+## 테스트 원칙
 
-* 使用 JUnit 5 + AssertJ 进行流畅的断言
-* 使用 Mockito 进行模拟；尽可能避免部分模拟
-* 倾向于确定性测试；没有隐藏的休眠
+* 유창한 단언(Fluent assertions)을 위해 JUnit 5 + AssertJ를 사용하십시오.
+* 모킹(Mocking)에는 Mockito를 사용하되, 가급적 부분 모킹(Partial mocking)은 피하십시오.
+* 결정론적인 테스트를 지향하십시오 (Thread.sleep() 등 숨겨진 대기 지양).
 
-**记住**：保持代码意图明确、类型安全且可观察。除非证明有必要，否则优先考虑可维护性而非微优化。
+**핵심**: 코드의 의도를 명확히 하고 타입 안정성과 가관측성(Observability)을 확보하십시오. 입증된 필요성이 없는 한 미세 최적화보다 유지보수성을 우선시하십시오.

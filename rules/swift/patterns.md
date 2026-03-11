@@ -3,13 +3,13 @@ paths:
   - "**/*.swift"
   - "**/Package.swift"
 ---
-# Swift Patterns
+# Swift 패턴 (Swift Patterns)
 
-> This file extends [common/patterns.md](../common/patterns.md) with Swift specific content.
+> 이 파일은 [common/patterns.md](../common/patterns.md)을 Swift 전용 내용으로 확장합니다.
 
-## Protocol-Oriented Design
+## 프로토콜 지향 설계 (Protocol-Oriented Design)
 
-Define small, focused protocols. Use protocol extensions for shared defaults:
+작고 집중된 프로토콜을 정의하십시오. 공통 기본 동작을 위해 프로토콜 익스텐션(Extension)을 사용하십시오:
 
 ```swift
 protocol Repository: Sendable {
@@ -19,10 +19,10 @@ protocol Repository: Sendable {
 }
 ```
 
-## Value Types
+## 값 타입 (Value Types)
 
-- Use structs for data transfer objects and models
-- Use enums with associated values to model distinct states:
+- 데이터 전송 객체(DTO)와 모델에 `struct`를 사용하십시오.
+- 서구분된 상태를 모델링하기 위해 연관 값(Associated values)을 가진 `enum`을 사용하십시오:
 
 ```swift
 enum LoadState<T: Sendable>: Sendable {
@@ -33,9 +33,9 @@ enum LoadState<T: Sendable>: Sendable {
 }
 ```
 
-## Actor Pattern
+## 액터 패턴 (Actor Pattern)
 
-Use actors for shared mutable state instead of locks or dispatch queues:
+잠금(Lock)이나 디스패치 큐 대신 공유 가변 상태를 위해 액터(Actors)를 사용하십시오:
 
 ```swift
 actor Cache<Key: Hashable & Sendable, Value: Sendable> {
@@ -46,9 +46,9 @@ actor Cache<Key: Hashable & Sendable, Value: Sendable> {
 }
 ```
 
-## Dependency Injection
+## 의존성 주입 (Dependency Injection)
 
-Inject protocols with default parameters — production uses defaults, tests inject mocks:
+기본 매개변수와 함께 프로토콜을 주입하십시오 — 프로덕션에서는 기본값을 사용하고, 테스트에서는 목(Mock)을 주입합니다.
 
 ```swift
 struct UserService {
@@ -60,7 +60,7 @@ struct UserService {
 }
 ```
 
-## References
+## 참조
 
-See skill: `swift-actor-persistence` for actor-based persistence patterns.
-See skill: `swift-protocol-di-testing` for protocol-based DI and testing.
+액터 기반 퍼시스턴스 패턴에 대해서는 `swift-actor-persistence` 스킬을 참조하십시오.
+프로토콜 기반 DI 및 테스트에 대해서는 `swift-protocol-di-testing` 스킬을 참조하십시오.

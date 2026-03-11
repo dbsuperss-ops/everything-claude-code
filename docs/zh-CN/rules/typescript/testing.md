@@ -6,14 +6,14 @@ paths:
   - "**/*.jsx"
 ---
 
-# TypeScript/JavaScript 测试
+# TypeScript/JavaScript 테스트 (Testing)
 
-> 本文档基于 [common/testing.md](../common/testing.md) 扩展，补充了 TypeScript/JavaScript 特定的内容。
+> 이 문서는 [common/testing.md](../common/testing.md)의 내용을 바탕으로 TypeScript/JavaScript에 특화된 내용을 확장합니다.
 
-## E2E 测试
+## E2E 테스트
 
-使用 **Playwright** 作为关键用户流程的 E2E 测试框架。
+주요 사용자 워크플로우를 위한 엔드투엔드(E2E) 테스트 프레임워크로 **Playwright**를 사용하십시오.
 
-## 智能体支持
+## 에이전트 지원
 
-* **e2e-runner** - Playwright E2E 测试专家
+* **e2e-runner**: Playwright E2E 테스트 전문가 에이전트입니다.

@@ -1,28 +1,28 @@
 ---
 name: api-design
-description: REST API design patterns including resource naming, status codes, pagination, filtering, error responses, versioning, and rate limiting for production APIs.
+description: 리소스 명명, 상태 코드, 페이지네이션, 필터링, 에러 응답, 버전 관리 및 속도 제한을 포함한 운영용 REST API 설계 패턴입니다.
 origin: ECC
 ---
 
-# API Design Patterns
+# API 설계 패턴 (API Design Patterns)
 
-Conventions and best practices for designing consistent, developer-friendly REST APIs.
+일관되고 개발자 친화적인 REST API를 설계하기 위한 컨벤션과 최선 관행(Best practices)을 안내합니다.
 
-## When to Activate
+## 활성화 시점
 
-- Designing new API endpoints
-- Reviewing existing API contracts
-- Adding pagination, filtering, or sorting
-- Implementing error handling for APIs
-- Planning API versioning strategy
-- Building public or partner-facing APIs
+- 새로운 API 엔드포인트 설계 시
+- 기존 API 규약(Contract) 검토 시
+- 페이지네이션, 필터링 또는 정렬 기능 추가 시
+- API 에러 처리 구현 시
+- API 버전 관리 전략 수립 시
+- 공개용 또는 파트너용 API 구축 시
 
-## Resource Design
+## 리소스 설계
 
-### URL Structure
+### URL 구조
 
 ```
-# Resources are nouns, plural, lowercase, kebab-case
+# 리소스는 명사, 복수형, 소문자, 케밥 케이스(kebab-case)를 사용합니다.
 GET    /api/v1/users
 GET    /api/v1/users/:id
 POST   /api/v1/users
@@ -30,90 +30,90 @@ PUT    /api/v1/users/:id
 PATCH  /api/v1/users/:id
 DELETE /api/v1/users/:id
 
-# Sub-resources for relationships
+# 관계를 나타내는 하위 리소스
 GET    /api/v1/users/:id/orders
 POST   /api/v1/users/:id/orders
 
-# Actions that don't map to CRUD (use verbs sparingly)
+# CRUD로 매핑되지 않는 동작 (동사는 가급적 제한적으로 사용)
 POST   /api/v1/orders/:id/cancel
 POST   /api/v1/auth/login
 POST   /api/v1/auth/refresh
 ```
 
-### Naming Rules
+### 명명 규칙
 
 ```
-# GOOD
-/api/v1/team-members          # kebab-case for multi-word resources
-/api/v1/orders?status=active  # query params for filtering
-/api/v1/users/123/orders      # nested resources for ownership
+# 좋음 (GOOD)
+/api/v1/team-members          # 여러 단어로 된 리소스는 케밥 케이스 사용
+/api/v1/orders?status=active  # 필터링을 위해 쿼리 파라미터 사용
+/api/v1/users/123/orders      # 소유 관계를 위해 중첩 리소스 사용
 
-# BAD
-/api/v1/getUsers              # verb in URL
-/api/v1/user                  # singular (use plural)
-/api/v1/team_members          # snake_case in URLs
-/api/v1/users/123/getOrders   # verb in nested resource
+# 나쁨 (BAD)
+/api/v1/getUsers              # URL에 동사 포함
+/api/v1/user                  # 단수형 사용 (복수형 권장)
+/api/v1/team_members          # URL에 스네이크 케이스(snake_case) 사용
+/api/v1/users/123/getOrders   # 하위 리소스에 동사 포함
 ```
 
-## HTTP Methods and Status Codes
+## HTTP 메서드 및 상태 코드
 
-### Method Semantics
+### 메서드 의미론 (Method Semantics)
 
-| Method | Idempotent | Safe | Use For |
+| 메서드 | 멱등성 (Idempotent) | 안전함 (Safe) | 용도 |
 |--------|-----------|------|---------|
-| GET | Yes | Yes | Retrieve resources |
-| POST | No | No | Create resources, trigger actions |
-| PUT | Yes | No | Full replacement of a resource |
-| PATCH | No* | No | Partial update of a resource |
-| DELETE | Yes | No | Remove a resource |
+| GET | 예 | 예 | 리소스 조회 |
+| POST | 아니오 | 아니오 | 리소스 생성, 동작 트리거 |
+| PUT | 예 | 아니오 | 리소스 전체 교체 |
+| PATCH | 아니오* | 아니오 | 리소스의 일부 업데이트 |
+| DELETE | 예 | 아니오 | 리소스 삭제 |
 
-*PATCH can be made idempotent with proper implementation
+*PATCH는 적절한 구현을 통해 멱등성을 보장받을 수 있습니다.
 
-### Status Code Reference
-
-```
-# Success
-200 OK                    — GET, PUT, PATCH (with response body)
-201 Created               — POST (include Location header)
-204 No Content            — DELETE, PUT (no response body)
-
-# Client Errors
-400 Bad Request           — Validation failure, malformed JSON
-401 Unauthorized          — Missing or invalid authentication
-403 Forbidden             — Authenticated but not authorized
-404 Not Found             — Resource doesn't exist
-409 Conflict              — Duplicate entry, state conflict
-422 Unprocessable Entity  — Semantically invalid (valid JSON, bad data)
-429 Too Many Requests     — Rate limit exceeded
-
-# Server Errors
-500 Internal Server Error — Unexpected failure (never expose details)
-502 Bad Gateway           — Upstream service failed
-503 Service Unavailable   — Temporary overload, include Retry-After
-```
-
-### Common Mistakes
+### 상태 코드 참조
 
 ```
-# BAD: 200 for everything
+# 성공 (Success)
+200 OK                    — GET, PUT, PATCH (응답 바디가 있는 경우)
+201 Created               — POST (Location 헤더 포함 권장)
+204 No Content            — DELETE, PUT (응답 바디가 없는 경우)
+
+# 클라이언트 에러 (Client Errors)
+400 Bad Request           — 유효성 검사 실패, 잘못된 JSON 형식
+401 Unauthorized          — 인증 누락 또는 잘못된 인증
+403 Forbidden             — 인증되었으나 권한이 없음
+404 Not Found             — 리소스가 존재하지 않음
+409 Conflict              — 중복 항목, 상태 충돌
+422 Unprocessable Entity  — 의미론적으로 부적절함 (JSON은 올바르나 데이터가 잘못됨)
+429 Too Many Requests     — 속도 제한(Rate limit) 초과
+
+# 서버 에러 (Server Errors)
+500 Internal Server Error — 예상치 못한 실패 (상세 내용은 절대 노출하지 말 것)
+502 Bad Gateway           — 상위 서비스 실패
+503 Service Unavailable   — 일시적인 과부하, Retry-After 포함 권장
+```
+
+### 흔한 실수
+
+```
+# 나쁨 (BAD): 모든 상황에 200 반환
 { "status": 200, "success": false, "error": "Not found" }
 
-# GOOD: Use HTTP status codes semantically
+# 좋음 (GOOD): HTTP 상태 코드를 의미에 맞게 사용
 HTTP/1.1 404 Not Found
 { "error": { "code": "not_found", "message": "User not found" } }
 
-# BAD: 500 for validation errors
-# GOOD: 400 or 422 with field-level details
+# 나쁨 (BAD): 유효성 검사 에러에 500 반환
+# 좋음 (GOOD): 필드 수준의 상세 정보를 포함하여 400 또는 422 반환
 
-# BAD: 200 for created resources
-# GOOD: 201 with Location header
+# 나쁨 (BAD): 리소스 생성 시 200 반환
+# 좋음 (GOOD): Location 헤더와 함께 201 반환
 HTTP/1.1 201 Created
 Location: /api/v1/users/abc-123
 ```
 
-## Response Format
+## 응답 형식
 
-### Success Response
+### 성공 응답
 
 ```json
 {
@@ -126,7 +126,7 @@ Location: /api/v1/users/abc-123
 }
 ```
 
-### Collection Response (with Pagination)
+### 컬렉션 응답 (페이지네이션 포함)
 
 ```json
 {
@@ -148,7 +148,7 @@ Location: /api/v1/users/abc-123
 }
 ```
 
-### Error Response
+### 에러 응답
 
 ```json
 {
@@ -171,162 +171,102 @@ Location: /api/v1/users/abc-123
 }
 ```
 
-### Response Envelope Variants
+## 페이지네이션 (Pagination)
 
-```typescript
-// Option A: Envelope with data wrapper (recommended for public APIs)
-interface ApiResponse<T> {
-  data: T;
-  meta?: PaginationMeta;
-  links?: PaginationLinks;
-}
-
-interface ApiError {
-  error: {
-    code: string;
-    message: string;
-    details?: FieldError[];
-  };
-}
-
-// Option B: Flat response (simpler, common for internal APIs)
-// Success: just return the resource directly
-// Error: return error object
-// Distinguish by HTTP status code
-```
-
-## Pagination
-
-### Offset-Based (Simple)
+### 오프셋 기반 (Offset-Based, 단순형)
 
 ```
 GET /api/v1/users?page=2&per_page=20
 
-# Implementation
+# 구현 예시
 SELECT * FROM users
 ORDER BY created_at DESC
 LIMIT 20 OFFSET 20;
 ```
 
-**Pros:** Easy to implement, supports "jump to page N"
-**Cons:** Slow on large offsets (OFFSET 100000), inconsistent with concurrent inserts
+**장점:** 구현이 쉬움, "N 페이지로 이동" 기능 지원 가능
+**단점:** 오프셋이 커질수록 성능 저하 발생, 동시 삽입 시 데이터 중복/누락 가능성
 
-### Cursor-Based (Scalable)
+### 커서 기반 (Cursor-Based, 확장형)
 
 ```
 GET /api/v1/users?cursor=eyJpZCI6MTIzfQ&limit=20
 
-# Implementation
+# 구현 예시
 SELECT * FROM users
 WHERE id > :cursor_id
 ORDER BY id ASC
-LIMIT 21;  -- fetch one extra to determine has_next
+LIMIT 21;  -- has_next 여부를 판단하기 위해 하나 더 가져옴
 ```
 
-```json
-{
-  "data": [...],
-  "meta": {
-    "has_next": true,
-    "next_cursor": "eyJpZCI6MTQzfQ"
-  }
-}
-```
+**장점:** 위치에 상관없이 일관된 성능 유지, 동시 삽입 상황에서도 안정적
+**단점:** 임의의 페이지로 바로 점프할 수 없음, 커서 값이 불투명함
 
-**Pros:** Consistent performance regardless of position, stable with concurrent inserts
-**Cons:** Cannot jump to arbitrary page, cursor is opaque
+### 활용 가이드
 
-### When to Use Which
-
-| Use Case | Pagination Type |
+| 유스케이스 | 페이지네이션 유형 |
 |----------|----------------|
-| Admin dashboards, small datasets (<10K) | Offset |
-| Infinite scroll, feeds, large datasets | Cursor |
-| Public APIs | Cursor (default) with offset (optional) |
-| Search results | Offset (users expect page numbers) |
+| 관리자 대시보드, 소규모 데이터셋 (<1만 건) | 오프셋(Offset) |
+| 무한 스크롤, 피드, 대규모 데이터셋 | 커서(Cursor) |
+| 공개용 API | 커서(Cursor) 기본, 오프셋(Offset) 선택 사항 |
+| 검색 결과 | 오프셋(Offset, 페이지 번호 필요) |
 
-## Filtering, Sorting, and Search
+## 필터링, 정렬 및 검색
 
-### Filtering
+### 필터링 (Filtering)
 
 ```
-# Simple equality
+# 단순 동등 비교
 GET /api/v1/orders?status=active&customer_id=abc-123
 
-# Comparison operators (use bracket notation)
+# 비교 연산자 (대괄호 표기법 사용)
 GET /api/v1/products?price[gte]=10&price[lte]=100
 GET /api/v1/orders?created_at[after]=2025-01-01
 
-# Multiple values (comma-separated)
+# 다중 값 (쉼표 구분)
 GET /api/v1/products?category=electronics,clothing
 
-# Nested fields (dot notation)
+# 중첩 필드 (점 표기법)
 GET /api/v1/orders?customer.country=US
 ```
 
-### Sorting
+### 정렬 (Sorting)
 
 ```
-# Single field (prefix - for descending)
+# 단일 필드 (내림차순은 접두사 - 사용)
 GET /api/v1/products?sort=-created_at
 
-# Multiple fields (comma-separated)
+# 다중 필드 (쉼표 구분)
 GET /api/v1/products?sort=-featured,price,-created_at
 ```
 
-### Full-Text Search
+### 전체 텍스트 검색 (Full-Text Search)
 
 ```
-# Search query parameter
+# 검색 쿼리 파라미터
 GET /api/v1/products?q=wireless+headphones
 
-# Field-specific search
+# 특정 필드 검색
 GET /api/v1/users?email=alice
 ```
 
-### Sparse Fieldsets
+## 인증 및 인가 (Authentication/Authorization)
+
+### 토큰 기반 인증
 
 ```
-# Return only specified fields (reduces payload)
-GET /api/v1/users?fields=id,name,email
-GET /api/v1/orders?fields=id,total,status&include=customer.name
-```
-
-## Authentication and Authorization
-
-### Token-Based Auth
-
-```
-# Bearer token in Authorization header
+# Authorization 헤더에 Bearer 토큰 포함
 GET /api/v1/users
 Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 
-# API key (for server-to-server)
+# API 키 (서버 간 통신용)
 GET /api/v1/data
 X-API-Key: sk_live_abc123
 ```
 
-### Authorization Patterns
+## 속도 제한 (Rate Limiting)
 
-```typescript
-// Resource-level: check ownership
-app.get("/api/v1/orders/:id", async (req, res) => {
-  const order = await Order.findById(req.params.id);
-  if (!order) return res.status(404).json({ error: { code: "not_found" } });
-  if (order.userId !== req.user.id) return res.status(403).json({ error: { code: "forbidden" } });
-  return res.json({ data: order });
-});
-
-// Role-based: check permissions
-app.delete("/api/v1/users/:id", requireRole("admin"), async (req, res) => {
-  await User.delete(req.params.id);
-  return res.status(204).send();
-});
-```
-
-## Rate Limiting
-
-### Headers
+### 응답 헤더
 
 ```
 HTTP/1.1 200 OK
@@ -334,7 +274,7 @@ X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
 X-RateLimit-Reset: 1640000000
 
-# When exceeded
+# 제한 초과 시
 HTTP/1.1 429 Too Many Requests
 Retry-After: 60
 {
@@ -345,179 +285,50 @@ Retry-After: 60
 }
 ```
 
-### Rate Limit Tiers
+## 버전 관리 (Versioning)
 
-| Tier | Limit | Window | Use Case |
-|------|-------|--------|----------|
-| Anonymous | 30/min | Per IP | Public endpoints |
-| Authenticated | 100/min | Per user | Standard API access |
-| Premium | 1000/min | Per API key | Paid API plans |
-| Internal | 10000/min | Per service | Service-to-service |
-
-## Versioning
-
-### URL Path Versioning (Recommended)
+### URL 경로 버전 관리 (권장)
 
 ```
 /api/v1/users
 /api/v2/users
 ```
 
-**Pros:** Explicit, easy to route, cacheable
-**Cons:** URL changes between versions
+**장점:** 명시적임, 라우팅이 쉬움, 캐싱 가능
+**단점:** 버전 간에 URL이 변경됨
 
-### Header Versioning
+### 버전 관리 전략
 
-```
-GET /api/users
-Accept: application/vnd.myapp.v2+json
-```
+1. `/api/v1/`로 시작하십시오 — 꼭 필요한 경우가 아니면 버전을 올리지 마십시오.
+2. 최대 2개의 활성 버전만 유지하십시오 (현재 버전 + 이전 버전).
+3. 일몰(Deprecation) 타임라인 계획:
+   - 일몰 예고 (공개 API의 경우 최소 6개월 전 공지)
+   - Sunset 헤더 추가: `Sunset: Sat, 01 Jan 2026 00:00:00 GMT`
+   - 일몰 후에는 410 Gone 반환
+4. 하위 호환성이 유지되는 변경 사항은 새로운 버전이 필요하지 않습니다:
+   - 응답에 새로운 필드 추가
+   - 새로운 옵셔널 쿼리 파라미터 추가
+   - 새로운 엔드포인트 추가
+5. 하위 호환성이 깨지는 변경 사항은 새로운 버전이 필요합니다:
+   - 기존 필드 삭제 또는 이름 변경
+   - 필드 타입 변경
+   - URL 구조 변경
+   - 인증 방식 변경
 
-**Pros:** Clean URLs
-**Cons:** Harder to test, easy to forget
+## API 설계 체크리스트
 
-### Versioning Strategy
+새로운 엔드포인트를 출시하기 전에 확인하십시오:
 
-```
-1. Start with /api/v1/ — don't version until you need to
-2. Maintain at most 2 active versions (current + previous)
-3. Deprecation timeline:
-   - Announce deprecation (6 months notice for public APIs)
-   - Add Sunset header: Sunset: Sat, 01 Jan 2026 00:00:00 GMT
-   - Return 410 Gone after sunset date
-4. Non-breaking changes don't need a new version:
-   - Adding new fields to responses
-   - Adding new optional query parameters
-   - Adding new endpoints
-5. Breaking changes require a new version:
-   - Removing or renaming fields
-   - Changing field types
-   - Changing URL structure
-   - Changing authentication method
-```
-
-## Implementation Patterns
-
-### TypeScript (Next.js API Route)
-
-```typescript
-import { z } from "zod";
-import { NextRequest, NextResponse } from "next/server";
-
-const createUserSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(1).max(100),
-});
-
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const parsed = createUserSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json({
-      error: {
-        code: "validation_error",
-        message: "Request validation failed",
-        details: parsed.error.issues.map(i => ({
-          field: i.path.join("."),
-          message: i.message,
-          code: i.code,
-        })),
-      },
-    }, { status: 422 });
-  }
-
-  const user = await createUser(parsed.data);
-
-  return NextResponse.json(
-    { data: user },
-    {
-      status: 201,
-      headers: { Location: `/api/v1/users/${user.id}` },
-    },
-  );
-}
-```
-
-### Python (Django REST Framework)
-
-```python
-from rest_framework import serializers, viewsets, status
-from rest_framework.response import Response
-
-class CreateUserSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    name = serializers.CharField(max_length=100)
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "email", "name", "created_at"]
-
-class UserViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.action == "create":
-            return CreateUserSerializer
-        return UserSerializer
-
-    def create(self, request):
-        serializer = CreateUserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = UserService.create(**serializer.validated_data)
-        return Response(
-            {"data": UserSerializer(user).data},
-            status=status.HTTP_201_CREATED,
-            headers={"Location": f"/api/v1/users/{user.id}"},
-        )
-```
-
-### Go (net/http)
-
-```go
-func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-    var req CreateUserRequest
-    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-        writeError(w, http.StatusBadRequest, "invalid_json", "Invalid request body")
-        return
-    }
-
-    if err := req.Validate(); err != nil {
-        writeError(w, http.StatusUnprocessableEntity, "validation_error", err.Error())
-        return
-    }
-
-    user, err := h.service.Create(r.Context(), req)
-    if err != nil {
-        switch {
-        case errors.Is(err, domain.ErrEmailTaken):
-            writeError(w, http.StatusConflict, "email_taken", "Email already registered")
-        default:
-            writeError(w, http.StatusInternalServerError, "internal_error", "Internal error")
-        }
-        return
-    }
-
-    w.Header().Set("Location", fmt.Sprintf("/api/v1/users/%s", user.ID))
-    writeJSON(w, http.StatusCreated, map[string]any{"data": user})
-}
-```
-
-## API Design Checklist
-
-Before shipping a new endpoint:
-
-- [ ] Resource URL follows naming conventions (plural, kebab-case, no verbs)
-- [ ] Correct HTTP method used (GET for reads, POST for creates, etc.)
-- [ ] Appropriate status codes returned (not 200 for everything)
-- [ ] Input validated with schema (Zod, Pydantic, Bean Validation)
-- [ ] Error responses follow standard format with codes and messages
-- [ ] Pagination implemented for list endpoints (cursor or offset)
-- [ ] Authentication required (or explicitly marked as public)
-- [ ] Authorization checked (user can only access their own resources)
-- [ ] Rate limiting configured
-- [ ] Response does not leak internal details (stack traces, SQL errors)
-- [ ] Consistent naming with existing endpoints (camelCase vs snake_case)
-- [ ] Documented (OpenAPI/Swagger spec updated)
+- [ ] 리소스 URL이 명명 규칙(복수형, 케밥 케이스, 동사 배제)을 따르는가
+- [ ] 올바른 HTTP 메서드를 사용하고 있는가 (조회는 GET, 생성은 POST 등)
+- [ ] 적절한 상태 코드를 반환하는가 (모든 경우에 200 반환 지양)
+- [ ] 입력값이 스키마(Zod, Pydantic 등)에 의해 검증되는가
+- [ ] 에러 응답이 코드와 메시지를 포함한 표준 형식을 따르는가
+- [ ] 리스트 엔드포인트에 페이지네이션(커서 또는 오프셋)이 구현되어 있는가
+- [ ] 인증이 요구되는가 (또는 명시적으로 공개 엔드포인트로 설정되었는가)
+- [ ] 인가가 확인되는가 (사용자가 자신의 리소스에만 접근 가능한가)
+- [ ] 속도 제한(Rate limit)이 구성되어 있는가
+- [ ] 응답에 내부 상세 정보(스택 트레이스, SQL 에러 등)가 유출되지 않는가
+- [ ] 기존 엔드포인트와 일관된 명명 규칙(camelCase vs snake_case)을 따르는가
+- [ ] 문서화(OpenAPI/Swagger 등)가 업데이트되었는가
+    

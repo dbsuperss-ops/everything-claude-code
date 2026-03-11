@@ -1,58 +1,56 @@
 ---
 name: continuous-learning-v2
-description: 基于本能的学习系统，通过钩子观察会话，创建带置信度评分的原子本能，并将其进化为技能/命令/代理。v2.1版本增加了项目范围的本能，以防止跨项目污染。
+description: 후크(hook)를 통해 세션을 관찰하고, 확신 점수가 포함된 원자 단위의 '본능(instinct)'을 생성하며, 이를 스킬/명령/에이전트로 진화시키는 본능 기반 학습 시스템입니다. v2.1 버전에서는 프로젝트 간 간섭을 방지하기 위해 프로젝트 범위(scope)의 본능 기능이 추가되었습니다.
 origin: ECC
 version: 2.1.0
 ---
 
-# 持续学习 v2.1 - 基于本能
+# 지속적 학습 v2.1 - 본능 기반 (Instinct-based)
 
-的架构
+확신 점수가 포함된 작은 학습된 행동 단위인 '본능(Instinct)'을 통해 Claude Code 세션을 재사용 가능한 지식으로 변환하는 고급 아키텍처 학습 시스템입니다.
 
-一个高级学习系统，通过原子化的“本能”——带有置信度评分的小型习得行为——将你的 Claude Code 会话转化为可重用的知识。
+**v2.1**에서는 **프로젝트 범위(Project-scoped) 본능**이 도입되었습니다. React 패턴은 React 프로젝트에, Python 규칙은 Python 프로젝트에 유지되며, "항상 데이터 검증 수행"과 같은 공통 패턴만 전역(Global)으로 공유됩니다.
 
-**v2.1** 新增了**项目作用域的本能** — React 模式保留在你的 React 项目中，Python 约定保留在你的 Python 项目中，而通用模式（如“始终验证输入”）则全局共享。
+## 적용 시점
 
-## 何时激活
+* Claude Code 세션에서 자동 학습을 설정할 때
+* 후크를 통한 본능 기반의 행동 추출을 구성할 때
+* 학습된 행동의 확신 점수 임계값(Threshold)을 조정할 때
+* 본능 라이브러리를 검토, 내보내기 또는 가져오기 할 때
+* 본능을 완전한 스킬(Skill), 명령어(Command) 또는 에이전트(Agent)로 진화시킬 때
+* 프로젝트 전용 본능과 전역 본능을 관리할 때
+* 프로젝트 전용 본능을 전역 범위로 승격(Promote)시킬 때
 
-* 设置从 Claude Code 会话自动学习
-* 通过钩子配置基于本能的行为提取
-* 调整已学习行为的置信度阈值
-* 查看、导出或导入本能库
-* 将本能进化为完整的技能、命令或代理
-* 管理项目作用域与全局本能
-* 将本能从项目作用域提升到全局作用域
+## v2.1의 새로운 기능
 
-## v2.1 的新特性
-
-| 特性 | v2.0 | v2.1 |
+| 기능 | v2.0 | v2.1 |
 |---------|------|------|
-| 存储 | 全局 (~/.claude/homunculus/) | 项目作用域 (projects/<hash>/) |
-| 作用域 | 所有本能随处适用 | 项目作用域 + 全局 |
-| 检测 | 无 | git remote URL / 仓库路径 |
-| 提升 | 不适用 | 在 2+ 个项目中出现时，项目 → 全局 |
-| 命令 | 4个 (status/evolve/export/import) | 6个 (+promote/projects) |
-| 跨项目 | 存在污染风险 | 默认隔离 |
+| 저장 위치 | 전역 (~/.claude/homunculus/) | 프로젝트별 (projects/<hash>/) |
+| 범위(Scope) | 모든 본능이 어디든 적용됨 | 프로젝트 전용 + 전역 분리 |
+| 감지 방식 | 없음 | git remote URL / 저장소 경로 기반 |
+| 승격(Promote) | 해당 없음 | 2개 이상의 프로젝트에서 발견 시 전역으로 승격 |
+| 명령어 | 4개 (status/evolve/export/import) | 6개 (+promote/projects 추가) |
+| 프로젝트 간 간섭 | 오염 위험 있음 | 기본적으로 격리됨 |
 
-## v2 的新特性（对比 v1）
+## v2와 v1의 차이점
 
-| 特性 | v1 | v2 |
+| 기능 | v1 (기존) | v2 (현재) |
 |---------|----|----|
-| 观察 | 停止钩子（会话结束） | PreToolUse/PostToolUse (100% 可靠) |
-| 分析 | 主上下文 | 后台代理 (Haiku) |
-| 粒度 | 完整技能 | 原子化“本能” |
-| 置信度 | 无 | 0.3-0.9 加权 |
-| 进化 | 直接进化为技能 | 本能 -> 聚类 -> 技能/命令/代理 |
-| 共享 | 无 | 导出/导入本能 |
+| 관찰 방식 | 중단 훅 (세션 종료 시) | Pre/PostToolUse (100% 신뢰도) |
+| 분석 주체 | 메인 컨텍스트 | 백그라운드 에이전트 (Haiku) |
+| 분석 단위 | 완성된 형태의 스킬 | 원자 단위의 '본능' |
+| 가중치 | 없음 | 0.3~0.9 확신 점수 부여 |
+| 진화 과정 | 즉시 스킬로 생성 | 본능 -> 군집(Cluster) -> 스킬/명령/에이전트 |
+| 공유 가능 | 없음 | 본능 내보내기/가져오기 가능 |
 
-## 本能模型
+## 본능(Instinct) 모델
 
-一个本能是一个小型习得行为：
+본능은 다음과 같은 형태의 작은 학습된 행동 단위입니다:
 
 ```yaml
 ---
 id: prefer-functional-style
-trigger: "when writing new functions"
+trigger: "새로운 함수를 작성할 때"
 confidence: 0.7
 domain: "code-style"
 source: "session-observation"
@@ -61,88 +59,87 @@ project_id: "a1b2c3d4e5f6"
 project_name: "my-react-app"
 ---
 
-# Prefer Functional Style
+# 함수형 스타일 선호
 
-## Action
-Use functional patterns over classes when appropriate.
+## 행동 (Action)
+적절한 경우 클래스 대신 함수형 패턴을 사용합니다.
 
-## Evidence
-- Observed 5 instances of functional pattern preference
-- User corrected class-based approach to functional on 2025-01-15
+## 근거 (Evidence)
+- 함수형 패턴 선호 사례 5회 관찰됨
+- 2025-01-15 사용자가 클래스 기반 접근 방식을 함수형으로 수정함
 ```
 
-**属性：**
+**속성:**
+* **원자성(Atomic)** -- 하나의 트리거, 하나의 행동
+* **확신 점수 가중치** -- 0.3 = 시도 중, 0.9 = 거의 확실함
+* **도메인 태그** -- 코드 스타일, 테스트, git, 디버깅, 워크플로우 등
+* **근거 기반(Evidence-backed)** -- 어떤 관찰을 통해 생성되었는지 추적 가능
+* **범위 인식(Scope-aware)** -- `project` (기본값) 또는 `global`
 
-* **原子化** -- 一个触发条件，一个动作
-* **置信度加权** -- 0.3 = 试探性，0.9 = 几乎确定
-* **领域标记** -- 代码风格、测试、git、调试、工作流等
-* **有证据支持** -- 追踪是哪些观察创建了它
-* **作用域感知** -- `project` (默认) 或 `global`
-
-## 工作原理
+## 작동 원리
 
 ```
-Session Activity (in a git repo)
+세션 활동 (git 저장소 내)
       |
-      | Hooks capture prompts + tool use (100% reliable)
-      | + detect project context (git remote / repo path)
+      | 후크가 프롬프트 + 도구 사용 캡처 (100% 신뢰도)
+      | + 프로젝트 컨텍스트 감지 (git remote / 저장소 경로)
       v
 +---------------------------------------------+
 |  projects/<project-hash>/observations.jsonl  |
-|   (prompts, tool calls, outcomes, project)   |
+|   (프롬프트, 도구 호출, 결과, 프로젝트 정보)   |
 +---------------------------------------------+
       |
-      | Observer agent reads (background, Haiku)
+      | 관찰자 에이전트가 데이터 읽기 (백그라운드, Haiku)
       v
 +---------------------------------------------+
-|          PATTERN DETECTION                   |
-|   * User corrections -> instinct             |
-|   * Error resolutions -> instinct            |
-|   * Repeated workflows -> instinct           |
-|   * Scope decision: project or global?       |
+|          패턴 탐지 (PATTERN DETECTION)       |
+|   * 사용자 교정 -> 본능 생성                 |
+|   * 에러 해결 -> 본능 생성                   |
+|   * 반복되는 워크플로우 -> 본능 생성           |
+|   * 범위 결정: 프로젝트 전용 또는 전역?        |
 +---------------------------------------------+
       |
-      | Creates/updates
+      | 생성 및 업데이트
       v
 +---------------------------------------------+
 |  projects/<project-hash>/instincts/personal/ |
 |   * prefer-functional.yaml (0.7) [project]   |
 |   * use-react-hooks.yaml (0.9) [project]     |
 +---------------------------------------------+
-|  instincts/personal/  (GLOBAL)               |
+|  instincts/personal/  (전역 범위)             |
 |   * always-validate-input.yaml (0.85) [global]|
 |   * grep-before-edit.yaml (0.6) [global]     |
 +---------------------------------------------+
       |
-      | /evolve clusters + /promote
+      | /evolve (군집화) + /promote (승격)
       v
 +---------------------------------------------+
-|  projects/<hash>/evolved/ (project-scoped)   |
-|  evolved/ (global)                           |
+|  projects/<hash>/evolved/ (프로젝트 범위)    |
+|  evolved/ (전역 범위)                        |
 |   * commands/new-feature.md                  |
 |   * skills/testing-workflow.md               |
 |   * agents/refactor-specialist.md            |
 +---------------------------------------------+
 ```
 
-## 项目检测
+## 프로젝트 감지
 
-系统会自动检测您当前的项目：
+시스템은 현재 작업 중인 프로젝트를 자동으로 감지합니다:
 
-1. **`CLAUDE_PROJECT_DIR` 环境变量** (最高优先级)
-2. **`git remote get-url origin`** -- 哈希化以创建可移植的项目 ID (同一仓库在不同机器上获得相同的 ID)
-3. **`git rev-parse --show-toplevel`** -- 使用仓库路径作为后备方案 (机器特定)
-4. **全局后备方案** -- 如果未检测到项目，本能将进入全局作用域
+1. **`CLAUDE_PROJECT_DIR` 환경 변수** (최우선순위)
+2. **`git remote get-url origin`** -- 포터블한 프로젝트 ID 생성을 위해 해싱함 (다른 기기에서도 동일 저장소면 같은 ID 획득)
+3. **`git rev-parse --show-toplevel`** -- 저장소 경로를 차선책으로 사용 (기기 종속적임)
+4. **전역 폴백(Fallback)** -- 프로젝트가 감지되지 않으면 본능은 전역 범위로 저장됩니다.
 
-每个项目都会获得一个 12 字符的哈希 ID (例如 `a1b2c3d4e5f6`)。`~/.claude/homunculus/projects.json` 处的注册表文件将 ID 映射到人类可读的名称。
+각 프로젝트는 12자리의 해시 ID(예: `a1b2c3d4e5f6`)를 할당받습니다. `~/.claude/homunculus/projects.json` 파일이 이 ID와 사람이 읽을 수 있는 프로젝트 이름을 매핑합니다.
 
-## 快速开始
+## 빠른 시작
 
-### 1. 启用观察钩子
+### 1. 관찰 후크(Observation Hooks) 활성화
 
-添加到你的 `~/.claude/settings.json` 中。
+`~/.claude/settings.json`에 다음 내용을 추가합니다.
 
-**如果作为插件安装**（推荐）：
+**플러그인으로 설치한 경우** (권장):
 
 ```json
 {
@@ -165,7 +162,7 @@ Session Activity (in a git repo)
 }
 ```
 
-**如果手动安装**到 `~/.claude/skills`：
+**`~/.claude/skills`에 수동으로 설치한 경우**:
 
 ```json
 {
@@ -188,42 +185,42 @@ Session Activity (in a git repo)
 }
 ```
 
-### 2. 初始化目录结构
+### 2. 디렉토리 구조 초기화
 
-系统会在首次使用时自动创建目录，但您也可以手动创建：
+시스템이 처음 실행될 때 자동으로 생성하지만, 수동으로 생성할 수도 있습니다:
 
 ```bash
-# Global directories
+# 전역 디렉토리
 mkdir -p ~/.claude/homunculus/{instincts/{personal,inherited},evolved/{agents,skills,commands},projects}
 
-# Project directories are auto-created when the hook first runs in a git repo
+# 프로젝트 디렉토리는 git 저장소에서 후크가 처음 실행될 때 자동 생성됩니다.
 ```
 
-### 3. 使用本能命令
+### 3. 본능 명령어 사용
 
 ```bash
-/instinct-status     # Show learned instincts (project + global)
-/evolve              # Cluster related instincts into skills/commands
-/instinct-export     # Export instincts to file
-/instinct-import     # Import instincts from others
-/promote             # Promote project instincts to global scope
-/projects            # List all known projects and their instinct counts
+/instinct-status     # 학습된 본능 표시 (프로젝트 + 전역)
+/evolve              # 관련된 본능들을 모아 스킬/명령어로 진화
+/instinct-export     # 본능을 파일로 내보내기
+/instinct-import     # 외부에서 본능 가져오기
+/promote             # 프로젝트 본능을 전역 범위로 승격
+/projects            # 알려진 모든 프로젝트와 본능 개수 목록 표시
 ```
 
-## 命令
+## 명령어 요약
 
-| 命令 | 描述 |
+| 명령어 | 설명 |
 |---------|-------------|
-| `/instinct-status` | 显示所有本能 (项目作用域 + 全局) 及其置信度 |
-| `/evolve` | 将相关本能聚类成技能/命令，建议提升 |
-| `/instinct-export` | 导出本能 (可按作用域/领域过滤) |
-| `/instinct-import <file>` | 导入本能 (带作用域控制) |
-| `/promote [id]` | 将项目本能提升到全局作用域 |
-| `/projects` | 列出所有已知项目及其本能数量 |
+| `/instinct-status` | 모든 본능(프로젝트 + 전역)과 각 확신 점수 표시 |
+| `/evolve` | 관련된 본능들을 스킬/명령어로 군집화하고 승격 제안 |
+| `/instinct-export` | 본능 내보내기 (범위/도메인 필터링 가능) |
+| `/instinct-import <file>` | 본능 가져오기 (범위 제어 가능) |
+| `/promote [id]` | 특정 프로젝트 본능을 전역 범위로 승격 |
+| `/projects` | 알려진 모든 프로젝트와 각각의 본능 개수 출력 |
 
-## 配置
+## 설정
 
-编辑 `config.json` 以控制后台观察器：
+백그라운드 관찰자 동작을 제어하려면 `config.json`을 편집하십시오:
 
 ```json
 {
@@ -236,136 +233,129 @@ mkdir -p ~/.claude/homunculus/{instincts/{personal,inherited},evolved/{agents,sk
 }
 ```
 
-| 键 | 默认值 | 描述 |
+| 키 | 기본값 | 설명 |
 |-----|---------|-------------|
-| `observer.enabled` | `false` | 启用后台观察器代理 |
-| `observer.run_interval_minutes` | `5` | 观察器分析观察结果的频率 |
-| `observer.min_observations_to_analyze` | `20` | 运行分析所需的最小观察次数 |
+| `observer.enabled` | `false` | 백그라운드 관찰자 에이전트 활성화 여부 |
+| `observer.run_interval_minutes` | `5` | 관찰자가 데이터를 분석하는 주기(분) |
+| `observer.min_observations_to_analyze` | `20` | 분석을 실행하기 위해 필요한 최소 데이터 개수 |
 
-其他行为 (观察捕获、本能阈值、项目作用域、提升标准) 通过 `instinct-cli.py` 和 `observe.sh` 中的代码默认值进行配置。
+기타 동작(관찰 캡처, 본능 임계값, 프로젝트 범위 결정 등)은 `instinct-cli.py` 및 `observe.sh` 파일 내의 기본값을 통해 설정됩니다.
 
-## 文件结构
+## 파일 구조
 
 ```
 ~/.claude/homunculus/
-+-- identity.json           # Your profile, technical level
-+-- projects.json           # Registry: project hash -> name/path/remote
-+-- observations.jsonl      # Global observations (fallback)
++-- identity.json           # 사용자 프로필, 기술 수준 정보
++-- projects.json           # 레지스트리: 프로젝트 해시 -> 이름/경로/리모트 주소
++-- observations.jsonl      # 전역 관찰 데이터 (폴백용)
 +-- instincts/
-|   +-- personal/           # Global auto-learned instincts
-|   +-- inherited/          # Global imported instincts
+|   +-- personal/           # 전역적으로 자동 학습된 본능
+|   +-- inherited/          # 전역적으로 가져온 본능
 +-- evolved/
-|   +-- agents/             # Global generated agents
-|   +-- skills/             # Global generated skills
-|   +-- commands/           # Global generated commands
+|   +-- agents/             # 전역적으로 생성된 에이전트
+|   +-- skills/             # 전역적으로 생성된 스킬
+|   +-- commands/           # 전역적으로 생성된 명령어
 +-- projects/
-    +-- a1b2c3d4e5f6/       # Project hash (from git remote URL)
+    +-- a1b2c3d4e5f6/       # 프로젝트 해시 (git 리모트 URL 기반)
     |   +-- observations.jsonl
     |   +-- observations.archive/
     |   +-- instincts/
-    |   |   +-- personal/   # Project-specific auto-learned
-    |   |   +-- inherited/  # Project-specific imported
+    |   |   +-- personal/   # 프로젝트 전용 자동 학습 본능
+    |   |   +-- inherited/  # 프로젝트 전용 가져온 본능
     |   +-- evolved/
     |       +-- skills/
     |       +-- commands/
     |       +-- agents/
-    +-- f6e5d4c3b2a1/       # Another project
+    +-- f6e5d4c3b2a1/       # 또 다른 프로젝트
         +-- ...
 ```
 
-## 作用域决策指南
+## 범위 결정 가이드라인 (Scope Decision)
 
-| 模式类型 | 作用域 | 示例 |
+| 패턴 유형 | 권장 범위 | 예시 |
 |-------------|-------|---------|
-| 语言/框架约定 | **项目** | "使用 React hooks", "遵循 Django REST 模式" |
-| 文件结构偏好 | **项目** | "测试放在 `__tests__`/", "组件放在 src/components/" |
-| 代码风格 | **项目** | "使用函数式风格", "首选数据类" |
-| 错误处理策略 | **项目** | "对错误使用 Result 类型" |
-| 安全实践 | **全局** | "验证用户输入", "清理 SQL" |
-| 通用最佳实践 | **全局** | "先写测试", "始终处理错误" |
-| 工具工作流偏好 | **全局** | "编辑前先 Grep", "写入前先读取" |
-| Git 实践 | **全局** | "约定式提交", "小而专注的提交" |
+| 언어/프레임워크 규칙 | **프로젝트** | "React hooks 사용", "Django REST 패턴 준수" |
+| 파일 구조 선호도 | **프로젝트** | "테스트는 `__tests__`/에 배치", "컴포넌트는 src/components/에 배치" |
+| 코딩 스타일 | **프로젝트** | "함수형 스타일 사용", "데이터 클래스 선호" |
+| 에러 처리 전략 | **프로젝트** | "에러 처리에 Result 타입 사용" |
+| 보안 관행 | **전역** | "사용자 입력 검증", "SQL 새니타이징" |
+| 공통 베스트 프랙티스 | **전역** | "테스트 먼저 작성", "항상 에러 처리 수행" |
+| 도구 워크플로우 선호도 | **전역** | "수정 전 Grep 권장", "쓰기 전 읽기 권장" |
+| Git 관행 | **전역** | "Conventional Commit 준수", "작고 집중된 커밋" |
 
-## 本能提升 (项目 -> 全局)
+## 본능 승격 (프로젝트 -> 전역)
 
-当同一个本能在多个项目中以高置信度出现时，它就有资格被提升到全局作用域。
+동일한 본능이 여러 프로젝트에서 높은 확신 점수로 반복되어 나타나면 전역 범위로 승결될 자격을 얻습니다.
 
-**自动提升标准：**
+**자동 승격 기준:**
+* 동일한 본능 ID가 2개 이상의 프로젝트에서 발견됨
+* 평균 확신 점수가 0.8 이상
 
-* 相同的本能 ID 出现在 2+ 个项目中
-* 平均置信度 >= 0.8
-
-**如何提升：**
-
+**승격 방법:**
 ```bash
-# Promote a specific instinct
+# 특정 본능 개별 승격
 python3 instinct-cli.py promote prefer-explicit-errors
 
-# Auto-promote all qualifying instincts
+# 자격을 갖춘 모든 본능 자동 승격
 python3 instinct-cli.py promote
 
-# Preview without changes
+# 실제 변경 없이 미리 보기 (Dry-run)
 python3 instinct-cli.py promote --dry-run
 ```
+`/evolve` 명령어 실행 시에도 승격 가능한 후보 본능을 제안해 줍니다.
 
-`/evolve` 命令也会建议可提升的候选本能。
+## 확신 점수 (Confidence Scoring)
 
-## 置信度评分
+확신 점수는 시간이 지남에 따라 변합니다:
 
-置信度随时间演变：
-
-| 分数 | 含义 | 行为 |
+| 점수 | 의미 | 동작 방식 |
 |-------|---------|----------|
-| 0.3 | 尝试性的 | 建议但不强制执行 |
-| 0.5 | 中等的 | 相关时应用 |
-| 0.7 | 强烈的 | 自动批准应用 |
-| 0.9 | 近乎确定的 | 核心行为 |
+| 0.3 | 시도 중 (Tentative) | 제안은 하되 강제하지 않음 |
+| 0.5 | 중간 수준 (Moderate) | 관련 상황에서 적용 시도 |
+| 0.7 | 강력함 (Strong) | 자동으로 적용 승인 |
+| 0.9 | 거의 확실함 (Certain) | 핵심 행동 원칙으로 간주 |
 
-**置信度增加**当：
+**점수가 올라가는 경우:**
+* 패턴이 반복적으로 관찰됨
+* 사용자가 제안된 행동을 수정 없이 수긍함
+* 다른 소스에서 유입된 유사한 본능과 일치함
 
-* 模式被反复观察到
-* 用户未纠正建议的行为
-* 来自其他来源的相似本能一致
+**점수가 내려가는 경우:**
+* 사용자가 해당 행동을 명시적으로 교정함
+* 오랫동안 해당 패턴이 관찰되지 않음
+* 상충하는 증거가 발견됨
 
-**置信度降低**当：
+## 왜 스킬 대신 후크를 사용하나요?
 
-* 用户明确纠正该行为
-* 长时间未观察到该模式
-* 出现矛盾证据
+> "v1은 관찰을 위해 '스킬' 기능에 의존합니다. 스킬은 확률적입니다. Claude의 판단에 따라 약 50~80% 정도만 트리거됩니다."
 
-## 为什么用钩子而非技能进行观察？
+후크는 **100% 트리거**되며 결정론적(deterministic)입니다. 이는 다음과 같은 이점이 있습니다:
+* 모든 도구 호출이 누락 없이 기록됨
+* 어떤 패턴도 놓치지 않음
+* 학습 데이터가 종합적이고 체계적임
 
-> "v1 依赖技能来观察。技能是概率性的 -- 根据 Claude 的判断，它们触发的概率约为 50-80%。"
+## 하위 호환성
 
-钩子**100% 触发**，是确定性的。这意味着：
+v2.1은 v2.0 및 v1과 완전한 호환성을 유지합니다:
+* `~/.claude/homunculus/instincts/` 경로의 기존 전역 본능은 계속 작동합니다.
+* v1에서 생성된 `~/.claude/skills/learned/` 스킬들도 유효합니다.
+* 중단 훅(Stop hook)은 계속 실행되지만, 이제는 v2 데이터로도 활용됩니다.
+* 점진적 마이그레이션이 가능합니다 (두 방식 병렬 실행 가능).
 
-* 每次工具调用都被观察到
-* 不会错过任何模式
-* 学习是全面的
+## 개인정보 보호
 
-## 向后兼容性
+* 관찰 데이터는 오직 사용자의 기기 **로컬**에만 저장됩니다.
+* 프로젝트별 본능은 프로젝트 단위로 철저히 격리됩니다.
+* 오직 **본능(패턴)**만 내보낼 수 있으며, 원본 관찰 데이터는 내보내지 않습니다.
+* 실제 코드 내용이나 대화 전문은 공유되지 않습니다.
+* 내보내거나 승격할 항목은 사용자가 직접 제어합니다.
 
-v2.1 与 v2.0 和 v1 完全兼容：
+## 관련 링크
 
-* `~/.claude/homunculus/instincts/` 中现有的全局本能仍然作为全局本能工作
-* 来自 v1 的现有 `~/.claude/skills/learned/` 技能仍然有效
-* 停止钩子仍然运行 (但现在也会输入到 v2)
-* 逐步迁移：并行运行两者
-
-## 隐私
-
-* 观察结果**本地**保留在您的机器上
-* 项目作用域的本能按项目隔离
-* 只有**本能** (模式) 可以被导出 — 而不是原始观察数据
-* 不会共享实际的代码或对话内容
-* 您控制导出和提升的内容
-
-## 相关链接
-
-* [技能创建器](https://skill-creator.app) - 从仓库历史生成本能
-* Homunculus - 启发了 v2 基于本能的架构的社区项目（原子观察、置信度评分、本能进化管道）
-* [长篇指南](https://x.com/affaanmustafa/status/2014040193557471352) - 持续学习部分
+* [Skill Creator](https://skill-creator.app) - 저장소 히스토리를 통한 본능 생성기
+* Homunculus - 본능 기반 아키텍처(원자적 관찰, 확신 점수, 본능 진화 파이프라인)의 영감을 준 커뮤니티 프로젝트
+* [Guide Full Version](https://x.com/affaanmustafa/status/2014040193557471352) - 지속적 학습 섹션
 
 ***
 
-*基于本能的学习：一次一个项目，教会 Claude 您的模式。*
+*본능 기반 학습: 하나의 프로젝트에서 배운 것을 넘어, Claude에게 당신만의 패턴을 가르치십시오.*

@@ -4,31 +4,31 @@ paths:
   - "**/Package.swift"
 ---
 
-# Swift 安全
+# Swift 보안 (Security)
 
-> 此文件扩展了 [common/security.md](../common/security.md)，并包含 Swift 特定的内容。
+> 이 문서는 [common/security.md](../common/security.md)의 내용을 바탕으로 Swift에 특화된 내용을 확장합니다.
 
-## 密钥管理
+## 비밀 정보(Secrets) 관리
 
-* 使用 **Keychain Services** 处理敏感数据（令牌、密码、密钥）—— 切勿使用 `UserDefaults`
-* 使用环境变量或 `.xcconfig` 文件来管理构建时的密钥
-* 切勿在源代码中硬编码密钥 —— 反编译工具可以轻易提取它们
+* 민감한 데이터(토큰, 비밀번호, 키 등)는 **Keychain Services**를 사용하여 처리하십시오. 절대로 `UserDefaults`를 사용하지 마십시오.
+* 빌드 시점의 비밀 정보는 환경 변수나 `.xcconfig` 파일을 사용하여 관리하십시오.
+* 소스 코드 내에 비밀 정보를 하드코딩하지 마십시오. 디컴파일 도구를 통해 쉽게 추출될 수 있습니다.
 
 ```swift
 let apiKey = ProcessInfo.processInfo.environment["API_KEY"]
 guard let apiKey, !apiKey.isEmpty else {
-    fatalError("API_KEY not configured")
+    fatalError("API_KEY가 설정되지 않았습니다")
 }
 ```
 
-## 传输安全
+## 전송 보안 (Transport Security)
 
-* 默认强制执行 App Transport Security (ATS) —— 不要禁用它
-* 对关键端点使用证书锁定
-* 验证所有服务器证书
+* ATS(App Transport Security)는 기본적으로 강제 적용되어야 하며, 이를 비활성화하지 마십시오.
+* 중요한 엔드포인트에는 인증서 핀닝(SSL Pinning)을 적용하십시오.
+* 모든 서버 인증서를 하드웨어 수준에서 검증하십시오.
 
-## 输入验证
+## 입력값 검증
 
-* 在显示之前清理所有用户输入，以防止注入攻击
-* 使用带验证的 `URL(string:)`，而不是强制解包
-* 在处理来自外部源（API、深度链接、剪贴板）的数据之前，先进行验证
+* 인젝션 공격을 방지하기 위해 모든 사용자 입력을 표시하기 전에 정제(Sanitization)하십시오.
+* 강제 언래핑(Force unwrapping) 대신 검증 로직이 포함된 `URL(string:)`을 사용하십시오.
+* 외부 소스(API, 딥링크, 클립보드)에서 온 데이터를 처리하기 전에 먼저 검증하십시오.

@@ -5,29 +5,29 @@ paths:
   - "**/go.sum"
 ---
 
-# Go 编码风格
+# Go 코딩 스타일 (Coding Style)
 
-> 本文件在 [common/coding-style.md](../common/coding-style.md) 的基础上，扩展了 Go 语言的特定内容。
+> 이 문서는 [common/coding-style.md](../common/coding-style.md)의 내용을 바탕으로 Go 언어에 특화된 내용을 확장합니다.
 
-## 格式化
+## 포매팅 (Formatting)
 
-* **gofmt** 和 **goimports** 是强制性的 —— 无需进行风格辩论
+* **gofmt** 및 **goimports** 사용은 필수입니다. 스타일 논쟁은 무의미합니다.
 
-## 设计原则
+## 설계 원칙
 
-* 接受接口，返回结构体
-* 保持接口小巧（1-3 个方法）
+* 인터페이스를 입력으로 받고, 구조체를 반환하십시오. (Accept interfaces, return structs)
+* 인터페이스는 작게 유지하십시오. (메서드 1~3개 권장)
 
-## 错误处理
+## 에러 처리
 
-始终用上下文包装错误：
+항상 컨텍스트(Context)를 포함하여 에러를 래핑하십시오:
 
 ```go
 if err != nil {
-    return fmt.Errorf("failed to create user: %w", err)
+    return fmt.Errorf("사용자 생성 실패: %w", err)
 }
 ```
 
-## 参考
+## 참고 자료
 
-查看技能：`golang-patterns` 以获取全面的 Go 语言惯用法和模式。
+Go 언어의 종합적인 관례와 패턴에 대해서는 `golang-patterns` 스킬을 참조하십시오.

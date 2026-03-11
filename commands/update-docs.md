@@ -1,84 +1,84 @@
-# Update Documentation
+# 문서 업데이트 (Update Documentation)
 
-Sync documentation with the codebase, generating from source-of-truth files.
+코드베이스와 문서를 동기화하며, 신뢰할 수 있는 소스(Source-of-truth) 파일로부터 문서를 자동 생성합니다.
 
-## Step 1: Identify Sources of Truth
+## 1단계: 신뢰할 수 있는 소스 식별
 
-| Source | Generates |
+| 소스 | 생성되는 문서 |
 |--------|-----------|
-| `package.json` scripts | Available commands reference |
-| `.env.example` | Environment variable documentation |
-| `openapi.yaml` / route files | API endpoint reference |
-| Source code exports | Public API documentation |
-| `Dockerfile` / `docker-compose.yml` | Infrastructure setup docs |
+| `package.json` 스크립트 | 사용 가능한 명령어 참조 가이드 |
+| `.env.example` | 환경 변수 관련 문서 |
+| `openapi.yaml` / 라우트 파일 | API 엔드포인트 참조 가이드 |
+| 소스 코드 exports | 공용 API 관련 문서 |
+| `Dockerfile` / `docker-compose.yml` | 인프라 설정 관련 문서 |
 
-## Step 2: Generate Script Reference
+## 2단계: 스크립트 참조 가이드 생성
 
-1. Read `package.json` (or `Makefile`, `Cargo.toml`, `pyproject.toml`)
-2. Extract all scripts/commands with their descriptions
-3. Generate a reference table:
+1. `package.json` (또는 `Makefile`, `Cargo.toml`, `pyproject.toml`)을 읽습니다.
+2. 모든 스크립트/명령어와 그에 대한 설명을 추출합니다.
+3. 다음과 같은 참조 테이블을 생성합니다:
 
 ```markdown
-| Command | Description |
+| 명령어 | 설명 |
 |---------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npm run build` | Production build with type checking |
-| `npm test` | Run test suite with coverage |
+| `npm run dev` | 핫 리로드 기능이 포함된 개발 서버 실행 |
+| `npm run build` | 타입 체크를 포함한 프로덕션 빌드 실행 |
+| `npm test` | 커버리지 분석과 함께 테스트 세트 실행 |
 ```
 
-## Step 3: Generate Environment Documentation
+## 3단계: 환경 변수 문서 생성
 
-1. Read `.env.example` (or `.env.template`, `.env.sample`)
-2. Extract all variables with their purposes
-3. Categorize as required vs optional
-4. Document expected format and valid values
+1. `.env.example` (또는 `.env.template`, `.env.sample`)을 읽습니다.
+2. 모든 변수와 그 용도를 추출합니다.
+3. 필수(Required)와 선택(Optional)으로 분류합니다.
+4. 기대되는 형식과 유효한 값들을 문서화합니다.
 
 ```markdown
-| Variable | Required | Description | Example |
+| 변수명 | 필수 여부 | 설명 | 예시 |
 |----------|----------|-------------|---------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string | `postgres://user:pass@host:5432/db` |
-| `LOG_LEVEL` | No | Logging verbosity (default: info) | `debug`, `info`, `warn`, `error` |
+| `DATABASE_URL` | 예 | PostgreSQL 연결 문자열 | `postgres://user:pass@host:5432/db` |
+| `LOG_LEVEL` | 아니오 | 로깅 상세 수준 (기본값: info) | `debug`, `info`, `warn`, `error` |
 ```
 
-## Step 4: Update Contributing Guide
+## 4단계: 기여 가이드 업데이트
 
-Generate or update `docs/CONTRIBUTING.md` with:
-- Development environment setup (prerequisites, install steps)
-- Available scripts and their purposes
-- Testing procedures (how to run, how to write new tests)
-- Code style enforcement (linter, formatter, pre-commit hooks)
-- PR submission checklist
+다음 내용을 포함하여 `docs/CONTRIBUTING.md`를 생성하거나 업데이트합니다:
+- 개발 환경 설정 (사전 요구사항, 설치 단계)
+- 사용 가능한 스크립트와 그 용도
+- 테스트 절차 (실행 방법, 새로운 테스트 작성 방법)
+- 코드 스타일 강제 (린터, 포맷터, pre-commit 훅)
+- PR 제출 체크리스트
 
-## Step 5: Update Runbook
+## 5단계: 관리 가이드(Runbook) 업데이트
 
-Generate or update `docs/RUNBOOK.md` with:
-- Deployment procedures (step-by-step)
-- Health check endpoints and monitoring
-- Common issues and their fixes
-- Rollback procedures
-- Alerting and escalation paths
+다음 내용을 포함하여 `docs/RUNBOOK.md`를 생성하거나 업데이트합니다:
+- 배포 절차 (단계별 설명)
+- 헬스 체크 엔드포인트 및 모니터링 방법
+- 일반적인 이슈 및 해결 방법
+- 롤백 절차
+- 알람 설정 및 비상 연락망(Escalation path)
 
-## Step 6: Staleness Check
+## 6단계: 최신화 상태 점검
 
-1. Find documentation files not modified in 90+ days
-2. Cross-reference with recent source code changes
-3. Flag potentially outdated docs for manual review
+1. 90일 이상 수정되지 않은 문서 파일을 찾습니다.
+2. 최근의 소스 코드 변경 사항과 대조합니다.
+3. 구식일 가능성이 있는 문서에 수동 검토용 플래그를 표시합니다.
 
-## Step 7: Show Summary
+## 7단계: 요약 표시
 
 ```
-Documentation Update
+문서 업데이트 결과
 ──────────────────────────────
-Updated:  docs/CONTRIBUTING.md (scripts table)
-Updated:  docs/ENV.md (3 new variables)
-Flagged:  docs/DEPLOY.md (142 days stale)
-Skipped:  docs/API.md (no changes detected)
+업데이트됨: docs/CONTRIBUTING.md (스크립트 테이블)
+업데이트됨: docs/ENV.md (3개의 새로운 변수 추가)
+검토 필요: docs/DEPLOY.md (142일 동안 업데이트되지 않음)
+건너뜀:   docs/API.md (변경 사항 없음)
 ──────────────────────────────
 ```
 
-## Rules
+## 규칙
 
-- **Single source of truth**: Always generate from code, never manually edit generated sections
-- **Preserve manual sections**: Only update generated sections; leave hand-written prose intact
-- **Mark generated content**: Use `<!-- AUTO-GENERATED -->` markers around generated sections
-- **Don't create docs unprompted**: Only create new doc files if the command explicitly requests it
+- **단일 소스 원칙 (Single source of truth)**: 항상 코드에서 자동 생성하며, 자동 생성된 섹션을 수동으로 편집하지 마십시오.
+- **수동 섹션 보존**: 자동 생성된 섹션만 업데이트하고, 수동으로 작성된 설명은 그대로 유지하십시오.
+- **자동 생성 표시**: 자동 생성된 섹션 주변에 `<!-- AUTO-GENERATED -->` 마커를 사용하십시오.
+- **불필요한 문서 생성 금지**: 명령어가 명시적으로 요청한 경우에만 새로운 문서 파일을 생성하십시오.

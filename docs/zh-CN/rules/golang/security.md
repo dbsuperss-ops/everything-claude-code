@@ -5,29 +5,29 @@ paths:
   - "**/go.sum"
 ---
 
-# Go 安全
+# Go 보안 (Security)
 
-> 此文件基于 [common/security.md](../common/security.md) 扩展了 Go 特定内容。
+> 이 문서는 [common/security.md](../common/security.md)의 내용을 바탕으로 Go 언어에 특화된 내용을 확장합니다.
 
-## 密钥管理
+## 비밀 정보(Secrets) 관리
 
 ```go
 apiKey := os.Getenv("OPENAI_API_KEY")
 if apiKey == "" {
-    log.Fatal("OPENAI_API_KEY not configured")
+    log.Fatal("OPENAI_API_KEY가 설정되지 않았습니다")
 }
 ```
 
-## 安全扫描
+## 보안 스캔
 
-* 使用 **gosec** 进行静态安全分析：
+* **gosec**을 사용하여 정적 보안 분석을 수행하십시오:
   ```bash
   gosec ./...
   ```
 
-## 上下文与超时
+## 컨텍스트 및 타임아웃
 
-始终使用 `context.Context` 进行超时控制：
+항상 `context.Context`를 사용하여 타임아웃을 제어하십시오:
 
 ```go
 ctx, cancel := context.WithTimeout(ctx, 5*time.Second)

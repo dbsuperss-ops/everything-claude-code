@@ -1,60 +1,60 @@
 ---
 name: cpp-coding-standards
-description: 基于C++核心指南（isocpp.github.io）的C++编码标准。在编写、审查或重构C++代码时使用，以强制实施现代、安全和惯用的实践。
+description: C++ 핵심 가이드라인(isocpp.github.io)을 기반으로 한 C++ 코딩 표준입니다. 현대적이고 안전하며 관용적인 C++ 작성을 위해 코드 작성, 리뷰 또는 리팩토링 시 사용합니다.
 origin: ECC
 ---
 
-# C++ 编码标准（C++ 核心准则）
+# C++ 코딩 표준 (C++ Core Guidelines 기반)
 
-源自 [C++ 核心准则](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) 的现代 C++（C++17/20/23）综合编码标准。强制执行类型安全、资源安全、不变性和清晰性。
+[C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)에서 파생된 현대적 C++(C++17/20/23) 종합 코딩 표준입니다. 타입 안정성, 리소스 안전성, 불변성 및 명확성을 강제합니다.
 
-## 何时使用
+## 적용 시점
 
-* 编写新的 C++ 代码（类、函数、模板）
-* 审查或重构现有的 C++ 代码
-* 在 C++ 项目中做出架构决策
-* 在 C++ 代码库中强制执行一致的风格
-* 在语言特性之间做出选择（例如，`enum` 对比 `enum class`，原始指针对比智能指针）
+* 새로운 C++ 코드(클래스, 함수, 템플릿 등)를 작성할 때
+* 기존 C++ 코드를 리뷰하거나 리팩토링할 때
+* C++ 프로젝트 내에서 아키텍처 결정을 내릴 때
+* C++ 코드베이스 전체에 일관된 스타일을 적용할 때
+* 언어 기능 선택 시 (예: `enum` vs `enum class`, 원시 포인터 vs 스마트 포인터 등)
 
-### 何时不应使用
+### 적용 제외 대상
 
-* 非 C++ 项目
-* 无法采用现代 C++ 特性的遗留 C 代码库
-* 特定准则与硬件限制冲突的嵌入式/裸机环境（选择性适配）
+* C++이 아닌 프로젝트
+* 현대적 C++ 이식성이 없는 레거시 C 코드베이스
+* 가이드라인이 하드웨어 제약과 충돌하는 임베디드/베어메탈 환경 (선택적 적용 권장)
 
-## 贯穿性原则
+## 핵심 원칙
 
-这些主题在整个准则中反复出现，并构成了基础：
+가이드라인 전반에 흐르는 핵심 기반 원칙들입니다:
 
-1. **处处使用 RAII** (P.8, R.1, E.6, CP.20)：将资源生命周期绑定到对象生命周期
-2. **默认为不可变性** (P.10, Con.1-5, ES.25)：从 `const`/`constexpr` 开始；可变性是例外
-3. **类型安全** (P.4, I.4, ES.46-49, Enum.3)：使用类型系统在编译时防止错误
-4. **表达意图** (P.3, F.1, NL.1-2, T.10)：名称、类型和概念应传达目的
-5. **最小化复杂性** (F.2-3, ES.5, Per.4-5)：简单的代码就是正确的代码
-6. **值语义优于指针语义** (C.10, R.3-5, F.20, CP.31)：优先按值返回和作用域对象
+1. **RAII 생활화** (P.8, R.1, E.6, CP.20): 리소스의 수명을 객체의 수명에 바인딩하십시오.
+2. **기본적으로 불변성(Immutability) 유지** (P.10, Con.1-5, ES.25): `const`/`constexpr`로 시작하고, 변경 가능성(mutability)은 예외적인 상황에만 허용하십시오.
+3. **타입 안정성** (P.4, I.4, ES.46-49, Enum.3): 타입 시스템을 활용하여 컴파일 타임에 에러를 방지하십시오.
+4. **의도 표현** (P.3, F.1, NL.1-2, T.10): 이름, 타입, 개념이 코드의 목적을 명확히 전달해야 합니다.
+5. **복잡성 최소화** (F.2-3, ES.5, Per.4-5): 단순한 코드가 곧 올바른 코드입니다.
+6. **포인터보다 값 의미론(Value Semantics) 선호** (C.10, R.3-5, F.20, CP.31): 값 반환(Return by value)과 지역 객체 활용을 우선하십시오.
 
-## 哲学与接口 (P.\*, I.\*)
+## 철학 및 인터페이스 (P.*, I.*)
 
-### 关键规则
+### 주요 규칙
 
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **P.1** | 直接在代码中表达想法 |
-| **P.3** | 表达意图 |
-| **P.4** | 理想情况下，程序应是静态类型安全的 |
-| **P.5** | 优先编译时检查而非运行时检查 |
-| **P.8** | 不要泄漏任何资源 |
-| **P.10** | 优先不可变数据而非可变数据 |
-| **I.1** | 使接口明确 |
-| **I.2** | 避免非 const 全局变量 |
-| **I.4** | 使接口精确且强类型化 |
-| **I.11** | 切勿通过原始指针或引用转移所有权 |
-| **I.23** | 保持函数参数数量少 |
+| **P.1** | 아이디어를 코드에 직접적으로 표현하십시오. |
+| **P.3** | 의도를 명확히 표현하십시오. |
+| **P.4** | 프로그램은 가급적 정적 타입 안전성을 갖춰야 합니다. |
+| **P.5** | 런타임 체크보다 컴파일 타임 체크를 우선하십시오. |
+| **P.8** | 어떤 리소스도 누출(Leak)하지 마십시오. |
+| **P.10** | 가변 데이터보다 불변 데이터를 선호하십시오. |
+| **I.1** | 인터페이스를 명시적으로 만드십시오. |
+| **I.2** | const가 아닌 전역 변수를 피하십시오. |
+| **I.4** | 인터페이스를 정밀하고 강한 타입(Strongly typed)으로 만드십시오. |
+| **I.11** | 원시 포인터나 참조를 통해 소유권을 직접적으로 이전하지 마십시오. |
+| **I.23** | 함수 파라미터 개수를 적게 유지하십시오. |
 
-### 应该做
+### 권장 사례 (DO)
 
 ```cpp
-// P.10 + I.4: Immutable, strongly typed interface
+// P.10 + I.4: 불변성을 갖춘 강한 타입의 인터페이스
 struct Temperature {
     double kelvin;
 };
@@ -62,58 +62,58 @@ struct Temperature {
 Temperature boil(const Temperature& water);
 ```
 
-### 不应该做
+### 금지 사례 (DON'T)
 
 ```cpp
-// Weak interface: unclear ownership, unclear units
+// 나쁜 인터페이스: 소유권 불분명, 단위 불분명
 double boil(double* temp);
 
-// Non-const global variable
-int g_counter = 0;  // I.2 violation
+// const가 아닌 전역 변수 (I.2 위반)
+int g_counter = 0;
 ```
 
-## 函数 (F.\*)
+## 함수 (F.*)
 
-### 关键规则
+### 주요 규칙
 
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **F.1** | 将有意义的操作打包为精心命名的函数 |
-| **F.2** | 函数应执行单一逻辑操作 |
-| **F.3** | 保持函数简短简单 |
-| **F.4** | 如果函数可能在编译时求值，则将其声明为 `constexpr` |
-| **F.6** | 如果你的函数绝不能抛出异常，则将其声明为 `noexcept` |
-| **F.8** | 优先纯函数 |
-| **F.16** | 对于 "输入" 参数，按值传递廉价可复制类型，其他类型通过 `const&` 传递 |
-| **F.20** | 对于 "输出" 值，优先返回值而非输出参数 |
-| **F.21** | 要返回多个 "输出" 值，优先返回结构体 |
-| **F.43** | 切勿返回指向局部对象的指针或引用 |
+| **F.1** | 의미 있는 작업은 잘 명명된 함수로 묶으십시오. |
+| **F.2** | 함수는 하나의 논리적 작업만 수행해야 합니다. |
+| **F.3** | 함수를 짧고 간단하게 유지하십시오. |
+| **F.4** | 컴파일 타임에 평가될 수 있는 함수는 `constexpr`로 선언하십시오. |
+| **F.6** | 절대 예외를 던지지 않는 함수는 `noexcept`로 선언하십시오. |
+| **F.8** | 순수 함수(Pure functions)를 선호하십시오. |
+| **F.16** | 입력 파라미터의 경우, 복사 비용이 적은 타입은 값으로, 나머지는 `const&`로 전달하십시오. |
+| **F.20** | 출력값에 대해서는 출력용 파라미터보다 반환값을 선호하십시오. |
+| **F.21** | 여러 값을 반환할 때는 구조체를 활용하십시오. |
+| **F.43** | 지역 객체에 대한 포인터나 참조를 절대 반환하지 마십시오. |
 
-### 参数传递
+### 파라미터 전달
 
 ```cpp
-// F.16: Cheap types by value, others by const&
-void print(int x);                           // cheap: by value
-void analyze(const std::string& data);       // expensive: by const&
-void transform(std::string s);               // sink: by value (will move)
+// F.16: 가벼운 타입은 값으로, 무거운 타입은 const&로
+void print(int x);                           // 가벼움: 값 전달
+void analyze(const std::string& data);       // 무거움: const& 전달
+void transform(std::string s);               // 이동 대상: 값 전달 (이동됨)
 
-// F.20 + F.21: Return values, not output parameters
+// F.20 + F.21: 출력 파라미터보다 반환값 선호
 struct ParseResult {
     std::string token;
     int position;
 };
 
-ParseResult parse(std::string_view input);   // GOOD: return struct
+ParseResult parse(std::string_view input);   // 좋음: 구조체 반환
 
-// BAD: output parameters
+// 나쁨: 출력용 파라미터 사용
 void parse(std::string_view input,
-           std::string& token, int& pos);    // avoid this
+           std::string& token, int& pos);    // 가급적 피하십시오
 ```
 
-### 纯函数和 constexpr
+### 순수 함수 및 constexpr
 
 ```cpp
-// F.4 + F.8: Pure, constexpr where possible
+// F.4 + F.8: 가능하면 순수 함수 및 constexpr 적용
 constexpr int factorial(int n) noexcept {
     return (n <= 1) ? 1 : n * factorial(n - 1);
 }
@@ -121,45 +121,44 @@ constexpr int factorial(int n) noexcept {
 static_assert(factorial(5) == 120);
 ```
 
-### 反模式
+### 안티 패턴
+* 함수에서 `T&&` 반환 (F.45)
+* `va_arg` / C 스타일 가변 인자 사용 (F.55)
+* 다른 스레드로 전달되는 lambda에서 참조로 캡처 (F.53)
+* `const T`를 반환하여 이동 의미론(Move semantics) 방해 (F.49)
 
-* 从函数返回 `T&&` (F.45)
-* 使用 `va_arg` / C 风格可变参数 (F.55)
-* 在传递给其他线程的 lambda 中通过引用捕获 (F.53)
-* 返回 `const T`，这会抑制移动语义 (F.49)
+## 클래스 및 클래스 계층 구조 (C.*)
 
-## 类与类层次结构 (C.\*)
+### 주요 규칙
 
-### 关键规则
-
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **C.2** | 如果存在不变式，使用 `class`；如果数据成员独立变化，使用 `struct` |
-| **C.9** | 最小化成员的暴露 |
-| **C.20** | 如果你能避免定义默认操作，就这么做（零规则） |
-| **C.21** | 如果你定义或 `=delete` 任何拷贝/移动/析构函数，则处理所有（五规则） |
-| **C.35** | 基类析构函数：公开虚函数或受保护非虚函数 |
-| **C.41** | 构造函数应创建完全初始化的对象 |
-| **C.46** | 将单参数构造函数声明为 `explicit` |
-| **C.67** | 多态类应禁止公开拷贝/移动 |
-| **C.128** | 虚函数：精确指定 `virtual`、`override` 或 `final` 中的一个 |
+| **C.2** | 불변성(Invariant)이 필요하면 `class`를, 멤버가 독립적이면 `struct`를 사용하십시오. |
+| **C.9** | 멤버의 노출을 최소화하십시오. |
+| **C.20** | 컴파일러가 기본 로직을 생성할 수 있다면 직접 정의하지 마십시오(Rule of Zero). |
+| **C.21** | 복사/이동/소멸자 중 하나라도 정의하거나 `=delete`하면 나머지도 모두 처리하십시오(Rule of Five). |
+| **C.35** | 베이스 클래스 소멸자: public virtual이거나 protected non-virtual이어야 합니다. |
+| **C.41** | 생성자는 완전히 초기화된 객체를 만들어야 합니다. |
+| **C.46** | 파라미터가 하나인 생성자는 `explicit`으로 선언하십시오. |
+| **C.67** | 다형성 클래스는 public 복사/이동을 금지해야 합니다. |
+| **C.128** | 가상 함수 명시: `virtual`, `override`, `final` 중 정확히 하나만 사용하십시오. |
 
-### 零规则
+### Rule of Zero (영의 규칙)
 
 ```cpp
-// C.20: Let the compiler generate special members
+// C.20: 컴파일러가 특수 멤버 함수를 생성하게 둠
 struct Employee {
     std::string name;
     std::string department;
     int id;
-    // No destructor, copy/move constructors, or assignment operators needed
+    // 소멸자, 복사/이동 생성자, 대입 연산자를 직접 작성할 필요 없음
 };
 ```
 
-### 五规则
+### Rule of Five (다섯의 규칙)
 
 ```cpp
-// C.21: If you must manage a resource, define all five
+// C.21: 리소스를 직접 관리해야 한다면 5개 모두 정의하십시오.
 class Buffer {
 public:
     explicit Buffer(std::size_t size)
@@ -191,14 +190,14 @@ private:
 };
 ```
 
-### 类层次结构
+### 클래스 계층 구조
 
 ```cpp
-// C.35 + C.128: Virtual destructor, use override
+// C.35 + C.128: 가상 소멸자 정의, override 사용
 class Shape {
 public:
     virtual ~Shape() = default;
-    virtual double area() const = 0;  // C.121: pure interface
+    virtual double area() const = 0;  // C.121: 순수 인터페이스
 };
 
 class Circle : public Shape {
@@ -211,52 +210,51 @@ private:
 };
 ```
 
-### 反模式
+### 안티 패턴
+* 생성자/소멸자 내에서 가상 함수 호출 (C.82)
+* 비트리비얼(Non-trivial) 타입에 `memset`/`memcpy` 사용 (C.90)
+* 가상 함수와 오버라이딩된 함수에 서로 다른 기본 매개변수 사용 (C.140)
+* 데이터 멤버를 `const`나 참조로 선언하여 이동/복사 방해 (C.12)
 
-* 在构造函数/析构函数中调用虚函数 (C.82)
-* 在非平凡类型上使用 `memset`/`memcpy` (C.90)
-* 为虚函数和重写函数提供不同的默认参数 (C.140)
-* 将数据成员设为 `const` 或引用，这会抑制移动/拷贝 (C.12)
+## 리소스 관리 (R.*)
 
-## 资源管理 (R.\*)
+### 주요 규칙
 
-### 关键规则
-
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **R.1** | 使用 RAII 自动管理资源 |
-| **R.3** | 原始指针 (`T*`) 是非拥有的 |
-| **R.5** | 优先作用域对象；不要不必要地在堆上分配 |
-| **R.10** | 避免 `malloc()`/`free()` |
-| **R.11** | 避免显式调用 `new` 和 `delete` |
-| **R.20** | 使用 `unique_ptr` 或 `shared_ptr` 表示所有权 |
-| **R.21** | 除非共享所有权，否则优先 `unique_ptr` 而非 `shared_ptr` |
-| **R.22** | 使用 `make_shared()` 来创建 `shared_ptr` |
+| **R.1** | RAII를 사용하여 리소스를 자동으로 관리하십시오. |
+| **R.3** | 원시 포인터(`T*`)는 비소유(Non-owning)를 의미합니다. |
+| **R.5** | 지역(Scoped) 객체를 선호하십시오. 불필요하게 힙 할당을 하지 마십시오. |
+| **R.10** | `malloc()`/`free()`를 피하십시오. |
+| **R.11** | 명시적인 `new`와 `delete` 호출을 피하십시오. |
+| **R.20** | 소유권을 표현할 때는 `unique_ptr` 또는 `shared_ptr`를 사용하십시오. |
+| **R.21** | 소유권을 공유해야 하는 경우가 아니면 `shared_ptr`보다 `unique_ptr`를 사용하십시오. |
+| **R.22** | `shared_ptr` 생성 시 `make_shared()`를 사용하십시오. |
 
-### 智能指针使用
+### 스마트 포인터 사용
 
 ```cpp
-// R.11 + R.20 + R.21: RAII with smart pointers
-auto widget = std::make_unique<Widget>("config");  // unique ownership
-auto cache  = std::make_shared<Cache>(1024);        // shared ownership
+// R.11 + R.20 + R.21: 스마트 포인터를 활용한 RAII
+auto widget = std::make_unique<Widget>("config");  // 단독 소유
+auto cache  = std::make_shared<Cache>(1024);        // 공유 소유
 
-// R.3: Raw pointer = non-owning observer
-void render(const Widget* w) {  // does NOT own w
+// R.3: 원시 포인터 = 비소유 관찰자
+void render(const Widget* w) {  // w를 소유하지 않음
     if (w) w->draw();
 }
 
 render(widget.get());
 ```
 
-### RAII 模式
+### RAII 패턴
 
 ```cpp
-// R.1: Resource acquisition is initialization
+// R.1: 리소스 획득은 초기화임(RAII)
 class FileHandle {
 public:
     explicit FileHandle(const std::string& path)
         : handle_(std::fopen(path.c_str(), "r")) {
-        if (!handle_) throw std::runtime_error("Failed to open: " + path);
+        if (!handle_) throw std::runtime_error("파일 열기 실패: " + path);
     }
 
     ~FileHandle() {
@@ -280,39 +278,38 @@ private:
 };
 ```
 
-### 反模式
+### 안티 패턴
+* 생 포인터에 대한 `new`/`delete` 직접 노출 (R.11)
+* C++ 코드 내의 `malloc()`/`free()` (R.10)
+* 단일 표현식 내에서 여러 개의 리소스 할당 (R.13 -- 예외 안전성 위험)
+* `unique_ptr`로 충분한 상황에 `shared_ptr` 사용 (R.21)
 
-* 裸 `new`/`delete` (R.11)
-* C++ 代码中的 `malloc()`/`free()` (R.10)
-* 在单个表达式中进行多次资源分配 (R.13 -- 异常安全风险)
-* 在 `unique_ptr` 足够时使用 `shared_ptr` (R.21)
+## 표현식 및 문장 (ES.*)
 
-## 表达式与语句 (ES.\*)
+### 주요 규칙
 
-### 关键规则
-
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **ES.5** | 保持作用域小 |
-| **ES.20** | 始终初始化对象 |
-| **ES.23** | 优先 `{}` 初始化语法 |
-| **ES.25** | 除非打算修改，否则将对象声明为 `const` 或 `constexpr` |
-| **ES.28** | 使用 lambda 进行 `const` 变量的复杂初始化 |
-| **ES.45** | 避免魔法常量；使用符号常量 |
-| **ES.46** | 避免有损的算术转换 |
-| **ES.47** | 使用 `nullptr` 而非 `0` 或 `NULL` |
-| **ES.48** | 避免强制类型转换 |
-| **ES.50** | 不要丢弃 `const` |
+| **ES.5** | 변수의 범위를 작게 유지하십시오. |
+| **ES.20** | 항상 객체를 초기화하십시오. |
+| **ES.23** | `{}` 중괄호 초기화 문법을 선호하십시오. |
+| **ES.25** | 변경할 의도가 없다면 객체를 `const` 또는 `constexpr`로 선언하십시오. |
+| **ES.28** | 복잡한 `const` 변수 초기화에는 람다(Lambda)를 활용하십시오. |
+| **ES.45** | 매직 상수를 피하고 명명된 상수를 사용하십시오. |
+| **ES.46** | 정보 손실이 발생하는 산술 변환을 피하십시오. |
+| **ES.47** | `0`이나 `NULL` 대신 `nullptr`를 사용하십시오. |
+| **ES.48** | 타입 캐스팅을 가급적 피하십시오. |
+| **ES.50** | `const`를 임의로 제거하지 마십시오(const_cast 지양). |
 
-### 初始化
+### 초기화
 
 ```cpp
-// ES.20 + ES.23 + ES.25: Always initialize, prefer {}, default to const
+// ES.20 + ES.23 + ES.25: 항상 초기화, {} 선호, 기본 const 적용
 const int max_retries{3};
 const std::string name{"widget"};
 const std::vector<int> primes{2, 3, 5, 7, 11};
 
-// ES.28: Lambda for complex const initialization
+// ES.28: 복잡한 const 초기화를 위한 람다 활용
 const auto config = [&] {
     Config c;
     c.timeout = std::chrono::seconds{30};
@@ -322,35 +319,34 @@ const auto config = [&] {
 }();
 ```
 
-### 反模式
+### 안티 패턴
+* 초기화되지 않은 변수 (ES.20)
+* 포인터 값으로 `0` 또는 `NULL` 사용 (ES.47 -- `nullptr` 사용 권장)
+* C 스타일 타입 캐스팅 (ES.48 -- `static_cast`, `const_cast` 등 고수준 캐스트 사용 권장)
+* `const` 제거 (ES.50)
+* 이름 없는 매직 넘버 (ES.45)
+* 부호 있는 정수와 부호 없는 정수의 혼합 연산 (ES.100)
+* 중첩된 범위에서 동일한 이름 재사용 (ES.12)
 
-* 未初始化的变量 (ES.20)
-* 使用 `0` 或 `NULL` 作为指针 (ES.47 -- 使用 `nullptr`)
-* C 风格强制类型转换 (ES.48 -- 使用 `static_cast`、`const_cast` 等)
-* 丢弃 `const` (ES.50)
-* 没有命名常量的魔法数字 (ES.45)
-* 混合有符号和无符号算术 (ES.100)
-* 在嵌套作用域中重用名称 (ES.12)
+## 에러 처리 (E.*)
 
-## 错误处理 (E.\*)
+### 주요 규칙
 
-### 关键规则
-
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **E.1** | 在设计早期制定错误处理策略 |
-| **E.2** | 抛出异常以表示函数无法执行其分配的任务 |
-| **E.6** | 使用 RAII 防止泄漏 |
-| **E.12** | 当抛出异常不可能或不可接受时，使用 `noexcept` |
-| **E.14** | 使用专门设计的用户定义类型作为异常 |
-| **E.15** | 按值抛出，按引用捕获 |
-| **E.16** | 析构函数、释放和 swap 绝不能失败 |
-| **E.17** | 不要试图在每个函数中捕获每个异常 |
+| **E.1** | 설계 초기 단계에서 에러 처리 전략을 수립하십시오. |
+| **E.2** | 함수가 할당된 작업을 완수할 수 없을 때 예외를 던지십시오. |
+| **E.6** | 리소스 누수 방지를 위해 RAII를 사용하십시오. |
+| **E.12** | 예외를 던지는 것이 불가능하거나 부적절한 경우 `noexcept`를 사용하십시오. |
+| **E.14** | 에러 표현을 위해 명확하게 설계된 사용자 정의 타입을 예외로 사용하십시오. |
+| **E.15** | 값으로 던지고(Throw by value), 참조로 받으십시오(Catch by reference). |
+| **E.16** | 소멸자, 리소스 해제, swap 함수는 절대 실패해서는 안 됩니다. |
+| **E.17** | 모든 함수에서 모든 예외를 잡으려고 시도하지 마십시오. |
 
-### 异常层次结构
+### 예외 계층 구조
 
 ```cpp
-// E.14 + E.15: Custom exception types, throw by value, catch by reference
+// E.14 + E.15: 커스텀 예외 타입 활용, 값으로 던지고 참조로 잡기
 class AppError : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
@@ -364,8 +360,8 @@ public:
 };
 
 void fetch_data(const std::string& url) {
-    // E.2: Throw to signal failure
-    throw NetworkError("connection refused", 503);
+    // E.2: 실패 신호를 위해 예외 발생
+    throw NetworkError("연결 거부됨", 503);
 }
 
 void run() {
@@ -376,90 +372,89 @@ void run() {
     } catch (const AppError& e) {
         log_error(e.what());
     }
-    // E.17: Don't catch everything here -- let unexpected errors propagate
+    // E.17: 모든 것을 잡지 말고 예상치 못한 에러는 상위로 전파되게 둠
 }
 ```
 
-### 反模式
+### 안티 패턴
+* `int`나 문자열 리터럴 같은 내장 타입을 직접 던지는 행위 (E.14)
+* 값으로 예외 캡처(Catch by value) -- 슬라이싱 위험 있음 (E.15)
+* 에러를 조용히 무시하는 비어있는 catch 블록
+* 제어 흐름(Control flow)을 위해 예외 사용 (E.3)
+* `errno` 같은 전역 상태 기반의 에러 처리 (E.28)
 
-* 抛出内置类型，如 `int` 或字符串字面量 (E.14)
-* 按值捕获（有切片风险） (E.15)
-* 静默吞掉错误的空 catch 块
-* 使用异常进行流程控制 (E.3)
-* 基于全局状态（如 `errno`）的错误处理 (E.28)
+## 상수 및 불변성 (Con.*)
 
-## 常量与不可变性 (Con.\*)
+### 주요 규칙
 
-### 所有规则
-
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **Con.1** | 默认情况下，使对象不可变 |
-| **Con.2** | 默认情况下，使成员函数为 `const` |
-| **Con.3** | 默认情况下，传递指向 `const` 的指针和引用 |
-| **Con.4** | 对构造后不改变的值使用 `const` |
-| **Con.5** | 对可在编译时计算的值使用 `constexpr` |
+| **Con.1** | 기본적으로 객체를 불변(Immutable)으로 만드십시오. |
+| **Con.2** | 기본적으로 멤버 함수는 `const`로 만드십시오. |
+| **Con.3** | 기본적으로 포인트와 참조는 `const`로 전달하십시오. |
+| **Con.4** | 생성 후 값이 변하지 않는다면 `const`를 사용하십시오. |
+| **Con.5** | 컴파일 타임에 계산 가능한 값은 `constexpr`을 사용하십시오. |
 
 ```cpp
-// Con.1 through Con.5: Immutability by default
+// Con.1 ~ Con.5: 기본 불변성 유지
 class Sensor {
 public:
     explicit Sensor(std::string id) : id_(std::move(id)) {}
 
-    // Con.2: const member functions by default
+    // Con.2: 멤버 함수는 기본적으로 const
     const std::string& id() const { return id_; }
     double last_reading() const { return reading_; }
 
-    // Only non-const when mutation is required
+    // 수정이 꼭 필요한 경우에만 non-const
     void record(double value) { reading_ = value; }
 
 private:
-    const std::string id_;  // Con.4: never changes after construction
+    const std::string id_;  // Con.4: 생성 후 절대 변하지 않음
     double reading_{0.0};
 };
 
-// Con.3: Pass by const reference
+// Con.3: const 참조로 전달
 void display(const Sensor& s) {
     std::cout << s.id() << ": " << s.last_reading() << '\n';
 }
 
-// Con.5: Compile-time constants
+// Con.5: 컴파일 타임 상수
 constexpr double PI = 3.14159265358979;
 constexpr int MAX_SENSORS = 256;
 ```
 
-## 并发与并行 (CP.\*)
+## 동시성 및 병렬성 (CP.*)
 
-### 关键规则
+### 주요 규칙
 
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **CP.2** | 避免数据竞争 |
-| **CP.3** | 最小化可写数据的显式共享 |
-| **CP.4** | 从任务的角度思考，而非线程 |
-| **CP.8** | 不要使用 `volatile` 进行同步 |
-| **CP.20** | 使用 RAII，切勿使用普通的 `lock()`/`unlock()` |
-| **CP.21** | 使用 `std::scoped_lock` 来获取多个互斥量 |
-| **CP.22** | 持有锁时切勿调用未知代码 |
-| **CP.42** | 不要在没有条件的情况下等待 |
-| **CP.44** | 记得为你的 `lock_guard` 和 `unique_lock` 命名 |
-| **CP.100** | 除非绝对必要，否则不要使用无锁编程 |
+| **CP.2** | 데이터 경합(Data races)을 피하십시오. |
+| **CP.3** | 쓰기 가능한 데이터의 명시적 공유를 최소화하십시오. |
+| **CP.4** | 스레드가 아닌 작업(Task)의 관점에서 생각하십시오. |
+| **CP.8** | 동기화를 위해 `volatile`을 사용하지 마십시오. |
+| **CP.20** | RAII를 사용하고, 생으로 `lock()`/`unlock()`을 부르지 마십시오. |
+| **CP.21** | 여러 뮤텍스를 획득할 때는 `std::scoped_lock`을 사용하십시오. |
+| **CP.22** | 락(Lock)을 소유한 상태에서 정체를 알 수 없는 코드를 호출하지 마십시오. |
+| **CP.42** | 조건(Condition) 없이 대기하지 마십시오. |
+| **CP.44** | `lock_guard`나 `unique_lock`은 반드시 이름을 지정하십시오. |
+| **CP.100** | 절대적으로 필요한 경우가 아니면 락-프리(Lock-free) 프로그래밍을 피하십시오. |
 
-### 安全加锁
+### 안전한 잠금(Locking)
 
 ```cpp
-// CP.20 + CP.44: RAII locks, always named
+// CP.20 + CP.44: 명명된 RAII 락 활용
 class ThreadSafeQueue {
 public:
     void push(int value) {
-        std::lock_guard<std::mutex> lock(mutex_);  // CP.44: named!
+        std::lock_guard<std::mutex> lock(mutex_);  // CP.44: 이름 필수!
         queue_.push(value);
         cv_.notify_one();
     }
 
     int pop() {
         std::unique_lock<std::mutex> lock(mutex_);
-        // CP.42: Always wait with a condition
+        // CP.42: 항상 조건과 함께 대기
         cv_.wait(lock, [this] { return !queue_.empty(); });
         const int value = queue_.front();
         queue_.pop();
@@ -467,16 +462,16 @@ public:
     }
 
 private:
-    std::mutex mutex_;             // CP.50: mutex with its data
+    std::mutex mutex_;             // CP.50: 뮤텍스는 보호할 데이터와 함께 배치
     std::condition_variable cv_;
     std::queue<int> queue_;
 };
 ```
 
-### 多个互斥量
+### 다중 뮤텍스
 
 ```cpp
-// CP.21: std::scoped_lock for multiple mutexes (deadlock-free)
+// CP.21: 여러 뮤텍스 획득 시 std::scoped_lock 사용 (데드락 방지)
 void transfer(Account& from, Account& to, double amount) {
     std::scoped_lock lock(from.mutex_, to.mutex_);
     from.balance_ -= amount;
@@ -484,35 +479,34 @@ void transfer(Account& from, Account& to, double amount) {
 }
 ```
 
-### 反模式
+### 안티 패턴
+* 동기화 수단으로 `volatile` 사용 (CP.8 -- 하드웨어 I/O 전용임)
+* 스레드 분리(Detach) (CP.26 -- 수명 관리가 거의 불가능해짐)
+* 이름 없는 락 임시 객체 사용: `std::lock_guard<std::mutex>(m);`는 즉시 소멸됨 (CP.44)
+* 콜백 호출 시 락 유지 (CP.22 -- 데드락 위험)
+* 충분한 전문가적 식견 없이 락-프리 프로그래밍 시도 (CP.100)
 
-* 使用 `volatile` 进行同步 (CP.8 -- 它仅用于硬件 I/O)
-* 分离线程 (CP.26 -- 生命周期管理变得几乎不可能)
-* 未命名的锁保护：`std::lock_guard<std::mutex>(m);` 会立即销毁 (CP.44)
-* 调用回调时持有锁 (CP.22 -- 死锁风险)
-* 没有深厚专业知识就进行无锁编程 (CP.100)
+## 템플릿 및 제네릭 프로그래밍 (T.*)
 
-## 模板与泛型编程 (T.\*)
+### 주요 규칙
 
-### 关键规则
-
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **T.1** | 使用模板来提高抽象级别 |
-| **T.2** | 使用模板为多种参数类型表达算法 |
-| **T.10** | 为所有模板参数指定概念 |
-| **T.11** | 尽可能使用标准概念 |
-| **T.13** | 对于简单概念，优先使用简写符号 |
-| **T.43** | 优先 `using` 而非 `typedef` |
-| **T.120** | 仅在确实需要时使用模板元编程 |
-| **T.144** | 不要特化函数模板（改用重载） |
+| **T.1** | 추상화 수준을 높이기 위해 템플릿을 사용하십시오. |
+| **T.2** | 여러 파라미터 타입에 적용되는 알고리즘 표현에 템플릿을 사용하십시오. |
+| **T.10** | 모든 템플릿 파라미터에 '컨셉(Concepts)'을 지정하십시오. |
+| **T.11** | 가급적 표준 컨셉을 활용하십시오. |
+| **T.13** | 간단한 컨셉에는 속성 구문(Shorthand notation)을 선호하십시오. |
+| **T.43** | `typedef`보다 `using`을 선호하십시오. |
+| **T.120** | 꼭 필요한 경우에만 템플릿 메타프로그래밍(TMP)을 사용하십시오. |
+| **T.144** | 함수 템플릿을 특수화하지 마십시오(대신 오버로딩 사용). |
 
-### 概念 (C++20)
+### 컨셉 (Concepts, C++20)
 
 ```cpp
 #include <concepts>
 
-// T.10 + T.11: Constrain templates with standard concepts
+// T.10 + T.11: 표준 컨셉으로 템플릿 제약 조건 설정
 template<std::integral T>
 T gcd(T a, T b) {
     while (b != 0) {
@@ -521,12 +515,12 @@ T gcd(T a, T b) {
     return a;
 }
 
-// T.13: Shorthand concept syntax
+// T.13: 속성 컨셉 구문
 void sort(std::ranges::random_access_range auto& range) {
     std::ranges::sort(range);
 }
 
-// Custom concept for domain-specific constraints
+// 도메인 전용 제약 조건을 위한 커스텀 컨셉
 template<typename T>
 concept Serializable = requires(const T& t) {
     { t.serialize() } -> std::convertible_to<std::string>;
@@ -536,85 +530,84 @@ template<Serializable T>
 void save(const T& obj, const std::string& path);
 ```
 
-### 反模式
+### 안티 패턴
+* 명시적이지 않은(Unconstrained) 템플릿 사용 (T.47)
+* 오버로딩 대신 함수 템플릿 특수화 (T.144)
+* `constexpr`로 충분한데 템플릿 메타프로그래밍 사용 (T.120)
+* `using` 대신 `typedef` 사용 (T.43)
 
-* 在可见命名空间中使用无约束模板 (T.47)
-* 特化函数模板而非重载 (T.144)
-* 在 `constexpr` 足够时使用模板元编程 (T.120)
-* 使用 `typedef` 而非 `using` (T.43)
+## 표준 라이브러리 (SL.*)
 
-## 标准库 (SL.\*)
+### 주요 규칙
 
-### 关键规则
-
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **SL.1** | 尽可能使用库 |
-| **SL.2** | 优先标准库而非其他库 |
-| **SL.con.1** | 优先 `std::array` 或 `std::vector` 而非 C 数组 |
-| **SL.con.2** | 默认情况下优先 `std::vector` |
-| **SL.str.1** | 使用 `std::string` 来拥有字符序列 |
-| **SL.str.2** | 使用 `std::string_view` 来引用字符序列 |
-| **SL.io.50** | 避免 `endl`（使用 `'\n'` -- `endl` 会强制刷新） |
+| **SL.1** | 가능한 한 라이브러리를 활용하십시오. |
+| **SL.2** | 타사 라이브러리보다 표준 라이브러리를 우선하십시오. |
+| **SL.con.1** | C 스타일 배열보다 `std::array`나 `std::vector`를 선호하십시오. |
+| **SL.con.2** | 컨테이너 선택 시 기본적으로 `std::vector`를 우선하십시오. |
+| **SL.str.1** | 문자 시퀀스 소유 시 `std::string`을 사용하십시오. |
+| **SL.str.2** | 문자 시퀀스 참조 시 `std::string_view`를 사용하십시오. |
+| **SL.io.50** | `endl` 대신 `'\n'`을 사용하십시오 (`endl`은 강제 플러시를 수반함). |
 
 ```cpp
-// SL.con.1 + SL.con.2: Prefer vector/array over C arrays
+// SL.con.1 + SL.con.2: C 배열보다 vector/array 선호
 const std::array<int, 4> fixed_data{1, 2, 3, 4};
 std::vector<std::string> dynamic_data;
 
-// SL.str.1 + SL.str.2: string owns, string_view observes
+// SL.str.1 + SL.str.2: string은 소유, string_view는 관찰
 std::string build_greeting(std::string_view name) {
-    return "Hello, " + std::string(name) + "!";
+    return "안녕하세요, " + std::string(name) + "님!";
 }
 
-// SL.io.50: Use '\n' not endl
-std::cout << "result: " << value << '\n';
+// SL.io.50: endl 대신 '\n' 사용
+std::cout << "결과: " << value << '\n';
 ```
 
-## 枚举 (Enum.\*)
+## 열거형 (Enum.*)
 
-### 关键规则
+### 주요 규칙
 
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **Enum.1** | 优先枚举而非宏 |
-| **Enum.3** | 优先 `enum class` 而非普通 `enum` |
-| **Enum.5** | 不要对枚举项使用全大写 |
-| **Enum.6** | 避免未命名的枚举 |
+| **Enum.1** | 매크로보다 열거형(Enum)을 선호하십시오. |
+| **Enum.3** | 일반 `enum`보다 `enum class`를 선호하십시오. |
+| **Enum.5** | 열거형 항목에 대문자 전용 명칭(ALL_CAPS)을 사용하지 마십시오. |
+| **Enum.6** | 이름 없는(Unnamed) 열거형을 피하십시오. |
 
 ```cpp
-// Enum.3 + Enum.5: Scoped enum, no ALL_CAPS
+// Enum.3 + Enum.5: 스코프 있는 열거형, 대문자 지양
 enum class Color { red, green, blue };
 enum class LogLevel { debug, info, warning, error };
 
-// BAD: plain enum leaks names, ALL_CAPS clashes with macros
-enum { RED, GREEN, BLUE };           // Enum.3 + Enum.5 + Enum.6 violation
-#define MAX_SIZE 100                  // Enum.1 violation -- use constexpr
+// 나쁨: 이름 누출, 매크로와의 충돌 위험
+enum { RED, GREEN, BLUE };           // Enum.3, 5, 6 위반
+#define MAX_SIZE 100                  // Enum.1 위반 -- constexpr 사용 권장
 ```
 
-## 源文件与命名 (SF.*, NL.*)
+## 소스 파일 및 명명 (SF.*, NL.*)
 
-### 关键规则
+### 주요 규칙
 
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **SF.1** | 代码文件使用 `.cpp`，接口文件使用 `.h` |
-| **SF.7** | 不要在头文件的全局作用域内写 `using namespace` |
-| **SF.8** | 所有 `.h` 文件都应使用 `#include` 防护 |
-| **SF.11** | 头文件应是自包含的 |
-| **NL.5** | 避免在名称中编码类型信息（不要使用匈牙利命名法） |
-| **NL.8** | 使用一致的命名风格 |
-| **NL.9** | 仅宏名使用 ALL\_CAPS |
-| **NL.10** | 优先使用 `underscore_style` 命名 |
+| **SF.1** | 소스 파일은 `.cpp`, 인터페이스 파일은 `.h`를 사용하십시오. |
+| **SF.7** | 헤더 파일의 전역 범위에서 `using namespace`를 쓰지 마십시오. |
+| **SF.8** | 모든 `.h` 파일은 `#include` 가드(Guard)를 사용해야 합니다. |
+| **SF.11** | 헤더 파일은 자기 완비적(Self-contained)이어야 합니다. |
+| **NL.5** | 이름에 타입 정보를 넣지 마십시오 (헝가리안 표기법 금지). |
+| **NL.8** | 일관된 명명 스타일을 유지하십시오. |
+| **NL.9** | 오직 매크로에만 대문자 전용(ALL_CAPS) 명칭을 사용하십시오. |
+| **NL.10** | 명명 규칙으로 `underscore_style`을 우선하십시오. |
 
-### 头文件防护
+### 인클루드 가드
 
 ```cpp
-// SF.8: Include guard (or #pragma once)
+// SF.8: 인클루드 가드 (또는 #pragma once)
 #ifndef PROJECT_MODULE_WIDGET_H
 #define PROJECT_MODULE_WIDGET_H
 
-// SF.11: Self-contained -- include everything this header needs
+// SF.11: 자기 완비적 -- 이 헤더에 필요한 모든 다른 헤더를 인클루드
 #include <string>
 #include <vector>
 
@@ -634,52 +627,51 @@ private:
 #endif  // PROJECT_MODULE_WIDGET_H
 ```
 
-### 命名约定
+### 명명 규칙
 
 ```cpp
-// NL.8 + NL.10: Consistent underscore_style
+// NL.8 + NL.10: 일관된 underscore_style
 namespace my_project {
 
-constexpr int max_buffer_size = 4096;  // NL.9: not ALL_CAPS (it's not a macro)
+constexpr int max_buffer_size = 4096;  // NL.9: 매크로가 아니므로 ALL_CAPS 지양
 
-class tcp_connection {                 // underscore_style class
+class tcp_connection {                 // 클래스도 underscore_style
 public:
     void send_message(std::string_view msg);
     bool is_connected() const;
 
 private:
-    std::string host_;                 // trailing underscore for members
+    std::string host_;                 // 멤버 변수 끝에는 언더스코어(_) 추가
     int port_;
 };
 
 }  // namespace my_project
 ```
 
-### 反模式
+### 안티 패턴
+* 헤더 파일 전역 범위에서 `using namespace std;` 사용 (SF.7)
+* 인클루드 순서에 따라 컴파일 여부가 달라지는 헤더 파일 (SF.10, SF.11)
+* `strName`, `iCount` 같은 헝가리안 표기법 (NL.5)
+* 매크로 이외의 용도에 ALL_CAPS 사용 (NL.9)
 
-* 在头文件的全局作用域内使用 `using namespace std;` (SF.7)
-* 依赖包含顺序的头文件 (SF.10, SF.11)
-* 匈牙利命名法，如 `strName`、`iCount` (NL.5)
-* 宏以外的事物使用 ALL\_CAPS (NL.9)
+## 성능 (Per.*)
 
-## 性能 (Per.\*)
+### 주요 규칙
 
-### 关键规则
-
-| 规则 | 摘要 |
+| 규칙 | 요약 |
 |------|---------|
-| **Per.1** | 不要无故优化 |
-| **Per.2** | 不要过早优化 |
-| **Per.6** | 没有测量数据，不要断言性能 |
-| **Per.7** | 设计时应考虑便于优化 |
-| **Per.10** | 依赖静态类型系统 |
-| **Per.11** | 将计算从运行时移至编译时 |
-| **Per.19** | 以可预测的方式访问内存 |
+| **Per.1** | 이유 없는 최적화를 하지 마십시오. |
+| **Per.2** | 조기 최적화(Premature optimization)를 하지 마십시오. |
+| **Per.6** | 측정 데이터 없이 성능에 대해 단정 짓지 마십시오. |
+| **Per.7** | 최적화가 용이하도록 설계하십시오. |
+| **Per.10** | 정적 타입 시스템을 신뢰하고 활용하십시오. |
+| **Per.11** | 연산을 런타임에서 컴파일 타임으로 옮기십시오. |
+| **Per.19** | 예측 가능한 방식으로 메모리에 접근하십시오. |
 
-### 指导原则
+### 가이드라인 예시
 
 ```cpp
-// Per.11: Compile-time computation where possible
+// Per.11: 가능한 경우 컴파일 타임 연산 처리
 constexpr auto lookup_table = [] {
     std::array<int, 256> table{};
     for (int i = 0; i < 256; ++i) {
@@ -688,36 +680,35 @@ constexpr auto lookup_table = [] {
     return table;
 }();
 
-// Per.19: Prefer contiguous data for cache-friendliness
-std::vector<Point> points;           // GOOD: contiguous
-std::vector<std::unique_ptr<Point>> indirect_points; // BAD: pointer chasing
+// Per.19: 캐시 효율을 위해 연속된 메모리 레이아웃 선호
+std::vector<Point> points;           // 좋음: 연속적 배치
+std::vector<std::unique_ptr<Point>> indirect_points; // 나쁨: 포인터 추적(Pointer chasing) 수반
 ```
 
-### 反模式
+### 안티 패턴
+* 프로파일링 데이터 없이 최적화 수행 (Per.1, Per.6)
+* 명확한 추상화 대신 '기교 섞인' 저수준 코드 선택 (Per.4, Per.5)
+* 데이터 레이아웃과 캐시 동작 무시 (Per.19)
 
-* 在没有性能分析数据的情况下进行优化 (Per.1, Per.6)
-* 选择“巧妙”的低级代码而非清晰的抽象 (Per.4, Per.5)
-* 忽略数据布局和缓存行为 (Per.19)
+## 빠른 실무 체크리스트 (Quick Reference Checklist)
 
-## 快速参考检查清单
+C++ 작업을 완료하기 전에 확인하십시오:
 
-在标记 C++ 工作完成之前：
-
-* \[ ] 没有裸 `new`/`delete` —— 使用智能指针或 RAII (R.11)
-* \[ ] 对象在声明时初始化 (ES.20)
-* \[ ] 变量默认是 `const`/`constexpr` (Con.1, ES.25)
-* \[ ] 成员函数尽可能设为 `const` (Con.2)
-* \[ ] 使用 `enum class` 而非普通 `enum` (Enum.3)
-* \[ ] 使用 `nullptr` 而非 `0`/`NULL` (ES.47)
-* \[ ] 没有窄化转换 (ES.46)
-* \[ ] 没有 C 风格转换 (ES.48)
-* \[ ] 单参数构造函数是 `explicit` (C.46)
-* \[ ] 应用了零法则或五法则 (C.20, C.21)
-* \[ ] 基类析构函数是 public virtual 或 protected non-virtual (C.35)
-* \[ ] 模板使用概念进行约束 (T.10)
-* \[ ] 头文件全局作用域内没有 `using namespace` (SF.7)
-* \[ ] 头文件有包含防护且是自包含的 (SF.8, SF.11)
-* \[ ] 锁使用 RAII (`scoped_lock`/`lock_guard`) (CP.20)
-* \[ ] 异常是自定义类型，按值抛出，按引用捕获 (E.14, E.15)
-* \[ ] 使用 `'\n'` 而非 `std::endl` (SL.io.50)
-* \[ ] 没有魔数 (ES.45)
+* [ ] 생 `new`/`delete`가 없는가 — 스마트 포인터나 RAII 사용 여부 (R.11)
+* [ ] 객체가 선언 시점에 초기화되는가 (ES.20)
+* [ ] 변수가 기본적으로 `const`/`constexpr`인가 (Con.1, ES.25)
+* [ ] 멤버 함수가 가능한 한 `const`로 선언되었는가 (Con.2)
+* [ ] 일반 `enum` 대신 `enum class`를 사용했는가 (Enum.3)
+* [ ] `0`/`NULL` 대신 `nullptr`를 사용했는가 (ES.47)
+* [ ] 정보 손실이 있는 산술 변환(Narrowing)이 없는가 (ES.46)
+* [ ] C 스타일 타입 캐스팅을 사용하지 않았는가 (ES.48)
+* [ ] 파라미터가 하나인 생성자는 `explicit`인가 (C.46)
+* [ ] Rule of Zero 또는 Rule of Five가 지켜졌는가 (C.20, C.21)
+* [ ] 베이스 클래스 소멸자가 public virtual이거나 protected non-virtual인가 (C.35)
+* [ ] 템플릿에 컨셉(Concepts) 제약 조건이 있는가 (T.10)
+* [ ] 헤더 파일 전역 범위에 `using namespace`가 없는가 (SF.7)
+* [ ] 헤더 파일에 인클루드 가드가 있고 자기 완비적인가 (SF.8, SF.11)
+* [ ] 잠금(Lock) 처리에 RAII(`scoped_lock`/`lock_guard`)를 사용했는가 (CP.20)
+* [ ] 예외는 커스텀 타입이며, 값으로 던지고 참조로 잡는가 (E.14, E.15)
+* [ ] `std::endl` 대신 `'\n'`을 사용했는가 (SL.io.50)
+* [ ] 이름 없는 매직 넘버가 없는가 (ES.45)

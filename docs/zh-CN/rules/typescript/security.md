@@ -6,24 +6,24 @@ paths:
   - "**/*.jsx"
 ---
 
-# TypeScript/JavaScript 安全
+# TypeScript/JavaScript 보안 (Security)
 
-> 本文档扩展了 [common/security.md](../common/security.md)，包含了 TypeScript/JavaScript 特定的内容。
+> 이 문서는 [common/security.md](../common/security.md)의 내용을 바탕으로 TypeScript/JavaScript에 특화된 내용을 확장합니다.
 
-## 密钥管理
+## 비밀 정보(Secrets) 관리
 
 ```typescript
-// NEVER: Hardcoded secrets
+// 절대 금지: 비밀 정보 하드코딩
 const apiKey = "sk-proj-xxxxx"
 
-// ALWAYS: Environment variables
+// 항상 준수: 환경 변수 사용
 const apiKey = process.env.OPENAI_API_KEY
 
 if (!apiKey) {
-  throw new Error('OPENAI_API_KEY not configured')
+  throw new Error('OPENAI_API_KEY가 설정되지 않았습니다')
 }
 ```
 
-## 代理支持
+## 에이전트 지원
 
-* 使用 **security-reviewer** 技能进行全面的安全审计
+* 종합적인 보안 감사를 위해 **security-reviewer** 스킬을 활용하십시오.

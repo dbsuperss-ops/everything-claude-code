@@ -1,80 +1,77 @@
-# Refactor Clean
+# 리팩토링 및 정리 (Refactor Clean)
 
-Safely identify and remove dead code with test verification at every step.
+매 단계마다 테스트 검증을 통해 데드 코드(사용되지 않는 코드)를 안전하게 식별하고 제거합니다.
 
-## Step 1: Detect Dead Code
+## 1단계: 데드 코드 감지
 
-Run analysis tools based on project type:
+프로젝트 유형에 따라 분석 도구를 실행합니다:
 
-| Tool | What It Finds | Command |
+| 도구 | 감지 대상 | 명령어 |
 |------|--------------|---------|
-| knip | Unused exports, files, dependencies | `npx knip` |
-| depcheck | Unused npm dependencies | `npx depcheck` |
-| ts-prune | Unused TypeScript exports | `npx ts-prune` |
-| vulture | Unused Python code | `vulture src/` |
-| deadcode | Unused Go code | `deadcode ./...` |
-| cargo-udeps | Unused Rust dependencies | `cargo +nightly udeps` |
+| knip | 사용되지 않는 export, 파일, 의존성 | `npx knip` |
+| depcheck | 사용되지 않는 npm 의존성 | `npx depcheck` |
+| ts-prune | 사용되지 않는 TypeScript export | `npx ts-prune` |
+| vulture | 사용되지 않는 Python 코드 | `vulture src/` |
+| deadcode | 사용되지 않는 Go 코드 | `deadcode ./...` |
+| cargo-udeps | 사용되지 않는 Rust 의존성 | `cargo +nightly udeps` |
 
-If no tool is available, use Grep to find exports with zero imports:
-```
-# Find exports, then check if they're imported anywhere
-```
+도구를 사용할 수 없는 경우, Grep을 사용하여 임포트(import)되지 않는 export를 찾습니다.
 
-## Step 2: Categorize Findings
+## 2단계: 발견 사항 분류
 
-Sort findings into safety tiers:
+발견된 사항을 안전 수준별로 분류합니다:
 
-| Tier | Examples | Action |
+| 등급 | 예시 | 조치 |
 |------|----------|--------|
-| **SAFE** | Unused utilities, test helpers, internal functions | Delete with confidence |
-| **CAUTION** | Components, API routes, middleware | Verify no dynamic imports or external consumers |
-| **DANGER** | Config files, entry points, type definitions | Investigate before touching |
+| **안전(SAFE)** | 사용되지 않는 유틸리티, 테스트 헬퍼, 내부 함수 | 확신을 가지고 삭제 |
+| **주의(CAUTION)** | 컴포넌트, API 라우트, 미들웨어 | 동적 임포트나 외부 소비자가 없는지 확인 |
+| **위험(DANGER)** | 설정 파일, 진입점(entry points), 타입 정의 | 손대기 전에 면밀히 조사 |
 
-## Step 3: Safe Deletion Loop
+## 3단계: 안전한 삭제 루프
 
-For each SAFE item:
+각 **안전(SAFE)** 항목에 대해:
 
-1. **Run full test suite** — Establish baseline (all green)
-2. **Delete the dead code** — Use Edit tool for surgical removal
-3. **Re-run test suite** — Verify nothing broke
-4. **If tests fail** — Immediately revert with `git checkout -- <file>` and skip this item
-5. **If tests pass** — Move to next item
+1. **전체 테스트 세트 실행** — 기준점 확보 (모두 통과 상태 확인)
+2. **데드 코드 삭제** — 정밀한 제거를 위해 Edit 도구 사용
+3. **테스트 세트 재실행** — 망가진 부분이 없는지 확인
+4. **테스트 실패 시** — 즉시 `git checkout -- <파일>`로 복구하고 해당 항목 건너뜀
+5. **테스트 통과 시** — 다음 항목으로 진행
 
-## Step 4: Handle CAUTION Items
+## 4단계: 주의(CAUTION) 항목 처리
 
-Before deleting CAUTION items:
-- Search for dynamic imports: `import()`, `require()`, `__import__`
-- Search for string references: route names, component names in configs
-- Check if exported from a public package API
-- Verify no external consumers (check dependents if published)
+**주의(CAUTION)** 항목을 삭제하기 전:
+- 동적 임포트를 검색합니다: `import()`, `require()`, `__import__`
+- 문자열 참조를 검색합니다: 설정 내의 라우트 이름, 컴포넌트 이름 등
+- 공용 패키지 API에서 내보낸(export) 것인지 확인합니다.
+- 외부 소비자(배포된 경우 의존 프로젝트)가 없는지 확인합니다.
 
-## Step 5: Consolidate Duplicates
+## 5단계: 중복 통합
 
-After removing dead code, look for:
-- Near-duplicate functions (>80% similar) — merge into one
-- Redundant type definitions — consolidate
-- Wrapper functions that add no value — inline them
-- Re-exports that serve no purpose — remove indirection
+데드 코드를 제거한 후 다음을 확인합니다:
+- 거의 동일한 함수 (80% 이상 유사) — 하나로 병합
+- 중복된 타입 정의 — 통합
+- 가치가 없는 래퍼(wrapper) 함수 — 인라인(inline)화
+- 목적이 없는 재내보내기(re-exports) — 간접 참조 제거
 
-## Step 6: Summary
+## 6단계: 요약
 
-Report results:
+결과를 보고합니다:
 
 ```
-Dead Code Cleanup
+데드 코드 정리 결과
 ──────────────────────────────
-Deleted:   12 unused functions
-           3 unused files
-           5 unused dependencies
-Skipped:   2 items (tests failed)
-Saved:     ~450 lines removed
+삭제됨:   사용되지 않는 함수 12개
+          사용되지 않는 파일 3개
+          사용되지 않는 의존성 5개
+건너뜀:   2개 (테스트 실패)
+저장됨:   약 450줄 제거
 ──────────────────────────────
-All tests passing ✅
+모든 테스트 통과 ✅
 ```
 
-## Rules
+## 규칙
 
-- **Never delete without running tests first**
-- **One deletion at a time** — Atomic changes make rollback easy
-- **Skip if uncertain** — Better to keep dead code than break production
-- **Don't refactor while cleaning** — Separate concerns (clean first, refactor later)
+- **테스트를 실행하지 않고 삭제하지 마십시오.**
+- **한 번에 하나씩만 삭제하십시오** — 원자적(atomic) 변경은 롤백을 쉽게 만듭니다.
+- **불확실하면 건너뛰십시오** — 프로덕션을 망가뜨리는 것보다 데드 코드를 남겨두는 것이 낫습니다.
+- **정리 중에 리팩토링하지 마십시오** — 관심을 분리하십시오 (먼저 정리하고 나중에 리팩토링).

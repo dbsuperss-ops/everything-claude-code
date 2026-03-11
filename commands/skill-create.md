@@ -1,174 +1,170 @@
 ---
-name: skill-create
-description: Analyze local git history to extract coding patterns and generate SKILL.md files. Local version of the Skill Creator GitHub App.
-allowed_tools: ["Bash", "Read", "Write", "Grep", "Glob"]
+이름: skill-create
+설명: 로컬 git 히스토리를 분석하여 코딩 패턴을 추출하고 SKILL.md 파일을 생성합니다. Skill Creator GitHub App의 로컬 버전입니다.
+허용된_도구: ["Bash", "Read", "Write", "Grep", "Glob"]
 ---
 
-# /skill-create - Local Skill Generation
+# /skill-create - 로컬 스킬 생성
 
-Analyze your repository's git history to extract coding patterns and generate SKILL.md files that teach Claude your team's practices.
+저장소의 git 히스토리를 분석하여 코딩 패턴을 추출하고, 팀의 관행을 Claude에게 가르쳐 줄 수 있는 SKILL.md 파일을 생성합니다.
 
-## Usage
+## 사용법
 
 ```bash
-/skill-create                    # Analyze current repo
-/skill-create --commits 100      # Analyze last 100 commits
-/skill-create --output ./skills  # Custom output directory
-/skill-create --instincts        # Also generate instincts for continuous-learning-v2
+/skill-create                    # 현재 저장소 분석
+/skill-create --commits 100      # 최근 100개의 커밋 분석
+/skill-create --output ./skills  # 출력 디렉토리 지정
+/skill-create --instincts        # continuous-learning-v2를 위한 본능(instincts)도 생성
 ```
 
-## What It Does
+## 주요 기능
 
-1. **Parses Git History** - Analyzes commits, file changes, and patterns
-2. **Detects Patterns** - Identifies recurring workflows and conventions
-3. **Generates SKILL.md** - Creates valid Claude Code skill files
-4. **Optionally Creates Instincts** - For the continuous-learning-v2 system
+1. **Git 히스토리 파싱** - 커밋, 파일 변경 사항, 패턴 분석
+2. **패턴 감지** - 반복되는 워크플로우 및 컨벤션 식별
+3. **SKILL.md 생성** - 유효한 Claude Code 스킬 파일 생성
+4. **본능(Instincts) 생성 (선택 사항)** - continuous-learning-v2 시스템용
 
-## Analysis Steps
+## 분석 단계
 
-### Step 1: Gather Git Data
+### 1단계: Git 데이터 수집
 
 ```bash
-# Get recent commits with file changes
+# 파일 변경 사항을 포함한 최근 커밋 목록 가져오기
 git log --oneline -n ${COMMITS:-200} --name-only --pretty=format:"%H|%s|%ad" --date=short
 
-# Get commit frequency by file
+# 파일별 커밋 빈도 확인
 git log --oneline -n 200 --name-only | grep -v "^$" | grep -v "^[a-f0-9]" | sort | uniq -c | sort -rn | head -20
 
-# Get commit message patterns
+# 커밋 메시지 패턴 확인
 git log --oneline -n 200 | cut -d' ' -f2- | head -50
 ```
 
-### Step 2: Detect Patterns
+### 2단계: 패턴 감지
 
-Look for these pattern types:
+다음과 같은 패턴 유형을 찾습니다:
 
-| Pattern | Detection Method |
+| 패턴 | 감지 방법 |
 |---------|-----------------|
-| **Commit conventions** | Regex on commit messages (feat:, fix:, chore:) |
-| **File co-changes** | Files that always change together |
-| **Workflow sequences** | Repeated file change patterns |
-| **Architecture** | Folder structure and naming conventions |
-| **Testing patterns** | Test file locations, naming, coverage |
+| **커밋 컨벤션** | 커밋 메시지 정규식 (feat:, fix:, chore: 등) |
+| **파일 동시 변경** | 항상 함께 변경되는 파일들 |
+| **워크플로우 시퀀스** | 반복되는 파일 변경 패턴 |
+| **아키텍처** | 폴더 구조 및 명명 규칙 |
+| **테스트 패턴** | 테스트 파일 위치, 명명, 커버리지 |
 
-### Step 3: Generate SKILL.md
+### 3단계: SKILL.md 생성
 
-Output format:
+출력 형식:
 
 ```markdown
 ---
 name: {repo-name}-patterns
-description: Coding patterns extracted from {repo-name}
+description: {repo-name}에서 추출된 코딩 패턴
 version: 1.0.0
 source: local-git-analysis
 analyzed_commits: {count}
 ---
 
-# {Repo Name} Patterns
+# {저장소 이름} 패턴
 
-## Commit Conventions
-{detected commit message patterns}
+## 커밋 컨벤션
+{감지된 커밋 메시지 패턴}
 
-## Code Architecture
-{detected folder structure and organization}
+## 코드 아키텍처
+{감지된 폴더 구조 및 조직 방식}
 
-## Workflows
-{detected repeating file change patterns}
+## 워크플로우
+{감지된 반복적 파일 변경 패턴}
 
-## Testing Patterns
-{detected test conventions}
+## 테스트 패턴
+{감지된 테스트 컨벤션}
 ```
 
-### Step 4: Generate Instincts (if --instincts)
+### 4단계: 본능(Instincts) 생성 (시작 시 --instincts 옵션 사용)
 
-For continuous-learning-v2 integration:
+continuous-learning-v2 통합용:
 
 ```yaml
 ---
 id: {repo}-commit-convention
-trigger: "when writing a commit message"
+trigger: "커밋 메시지를 작성할 때"
 confidence: 0.8
 domain: git
 source: local-repo-analysis
 ---
 
-# Use Conventional Commits
+# 시맨틱 커밋 사용 (Use Conventional Commits)
 
-## Action
-Prefix commits with: feat:, fix:, chore:, docs:, test:, refactor:
+## 행동 (Action)
+커밋 메시지 앞에 다음 접두사를 붙입니다: feat:, fix:, chore:, docs:, test:, refactor:
 
-## Evidence
-- Analyzed {n} commits
-- {percentage}% follow conventional commit format
+## 근거
+- {n}개의 커밋 분석 완료
+- {percentage}%가 시맨틱 커밋 형식을 따름
 ```
 
-## Example Output
+## 출력 예시
 
-Running `/skill-create` on a TypeScript project might produce:
+TypeScript 프로젝트에서 `/skill-create`를 실행하면 다음과 같이 생성될 수 있습니다:
 
 ```markdown
 ---
 name: my-app-patterns
-description: Coding patterns from my-app repository
+description: my-app 저장소에서 추출된 코딩 패턴
 version: 1.0.0
 source: local-git-analysis
 analyzed_commits: 150
 ---
 
-# My App Patterns
+# My App 패턴
 
-## Commit Conventions
+## 커밋 컨벤션
 
-This project uses **conventional commits**:
-- `feat:` - New features
-- `fix:` - Bug fixes
-- `chore:` - Maintenance tasks
-- `docs:` - Documentation updates
+이 프로젝트는 **시맨틱 커밋(Conventional Commits)**을 사용합니다:
+- `feat:` - 새로운 기능
+- `fix:` - 버그 수정
+- `chore:` - 유지보수 작업
+- `docs:` - 문서 업데이트
 
-## Code Architecture
+## 코드 아키텍처
 
 ```
 src/
-├── components/     # React components (PascalCase.tsx)
-├── hooks/          # Custom hooks (use*.ts)
-├── utils/          # Utility functions
-├── types/          # TypeScript type definitions
-└── services/       # API and external services
+├── components/     # React 컴포넌트 (PascalCase.tsx)
+├── hooks/          # 커스텀 훅 (use*.ts)
+├── utils/          # 유틸리티 함수
+├── types/          # TypeScript 타입 정의
+└── services/       # API 및 외부 서비스
 ```
 
-## Workflows
+## 워크플로우
 
-### Adding a New Component
-1. Create `src/components/ComponentName.tsx`
-2. Add tests in `src/components/__tests__/ComponentName.test.tsx`
-3. Export from `src/components/index.ts`
+### 새로운 컴포넌트 추가
+1. `src/components/ComponentName.tsx` 생성
+2. `src/components/__tests__/ComponentName.test.tsx`에 테스트 추가
+3. `src/components/index.ts`에서 내보내기(export) 추가
 
-### Database Migration
-1. Modify `src/db/schema.ts`
-2. Run `pnpm db:generate`
-3. Run `pnpm db:migrate`
+### 데이터베이스 마이그레이션
+1. `src/db/schema.ts` 수정
+2. `pnpm db:generate` 실행
+3. `pnpm db:migrate` 실행
 
-## Testing Patterns
+## 테스트 패턴
 
-- Test files: `__tests__/` directories or `.test.ts` suffix
-- Coverage target: 80%+
-- Framework: Vitest
+- 테스트 파일: `__tests__/` 디렉토리 또는 `.test.ts` 접미사 사용
+- 커버리지 목표: 80% 이상
+- 프레임워크: Vitest
 ```
 
-## GitHub App Integration
+## GitHub App 통합
 
-For advanced features (10k+ commits, team sharing, auto-PRs), use the [Skill Creator GitHub App](https://github.com/apps/skill-creator):
+더 강력한 기능(1만 개 이상의 커밋 분석, 팀 공유, 자동 PR 등)이 필요한 경우 [Skill Creator GitHub App](https://github.com/apps/skill-creator)을 사용하십시오:
 
-- Install: [github.com/apps/skill-creator](https://github.com/apps/skill-creator)
-- Comment `/skill-creator analyze` on any issue
-- Receives PR with generated skills
+- 설치: [github.com/apps/skill-creator](https://github.com/apps/skill-creator)
+- 이슈에 `/skill-creator analyze` 댓글 작성
+- 자동 생성된 스킬이 포함된 PR 수신
 
-## Related Commands
+## 관련 명령어
 
-- `/instinct-import` - Import generated instincts
-- `/instinct-status` - View learned instincts
-- `/evolve` - Cluster instincts into skills/agents
-
----
-
-*Part of [Everything Claude Code](https://github.com/affaan-m/everything-claude-code)*
+- `/instinct-import` - 생성된 본능 가져오기
+- `/instinct-status` - 학습된 본능 확인
+- `/evolve` - 본능을 스킬/에이전트로 클러스터링(Grouping)

@@ -3,11 +3,11 @@ paths:
   - "**/*.py"
   - "**/*.pyi"
 ---
-# Python Patterns
+# Python 패턴 (Python Patterns)
 
-> This file extends [common/patterns.md](../common/patterns.md) with Python specific content.
+> 이 파일은 [common/patterns.md](../common/patterns.md)을 Python 전용 내용으로 확장합니다.
 
-## Protocol (Duck Typing)
+## 프로토콜 (Protocol, 덕 타이핑)
 
 ```python
 from typing import Protocol
@@ -17,7 +17,7 @@ class Repository(Protocol):
     def save(self, entity: dict) -> dict: ...
 ```
 
-## Dataclasses as DTOs
+## DTO로서의 데이터 클래스 (Dataclasses)
 
 ```python
 from dataclasses import dataclass
@@ -29,11 +29,11 @@ class CreateUserRequest:
     age: int | None = None
 ```
 
-## Context Managers & Generators
+## 컨텍스트 매니저 및 제너레이터
 
-- Use context managers (`with` statement) for resource management
-- Use generators for lazy evaluation and memory-efficient iteration
+- 리소스 관리를 위해 컨텍스트 매니저(`with` 문)를 사용하십시오.
+- 지연 평가(Lazy evaluation)와 메모리 효율적인 반복을 위해 제너레이터를 사용하십시오.
 
-## Reference
+## 참조
 
-See skill: `python-patterns` for comprehensive patterns including decorators, concurrency, and package organization.
+데코레이터, 동시성, 패키지 구성 등을 포함한 포괄적인 패턴에 대해서는 `python-patterns` 스킬을 참조하십시오.

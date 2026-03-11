@@ -1,45 +1,46 @@
 ---
 name: continuous-agent-loop
-description: Patterns for continuous autonomous agent loops with quality gates, evals, and recovery controls.
+description: 품질 게이트, 평가 및 복구 제어 기능을 갖춘 자율 에이전트 루프 패턴입니다.
 origin: ECC
 ---
 
-# Continuous Agent Loop
+# 지속적 에이전트 루프 (Continuous Agent Loop)
 
-This is the v1.8+ canonical loop skill name. It supersedes `autonomous-loops` while keeping compatibility for one release.
+v1.8+ 리전의 표준 루프 스킬 이름입니다. `autonomous-loops`를 대체하지만, 한시적으로 하위 호환성을 유지합니다.
 
-## Loop Selection Flow
+## 루프 선택 흐름
 
 ```text
-Start
+시작
   |
-  +-- Need strict CI/PR control? -- yes --> continuous-pr
+  +-- 엄격한 CI/PR 제어가 필요한가? -- 예 --> continuous-pr
   |                                    
-  +-- Need RFC decomposition? -- yes --> rfc-dag
+  +-- RFC 분해(Decomposition)가 필요한가? -- 예 --> rfc-dag
   |
-  +-- Need exploratory parallel generation? -- yes --> infinite
+  +-- 탐색적 병렬 생성이 필요한가? -- 예 --> infinite
   |
-  +-- default --> sequential
+  +-- 아니오(기본값) --> sequential (순차적 루프)
 ```
 
-## Combined Pattern
+## 결합 패턴
 
-Recommended production stack:
-1. RFC decomposition (`ralphinho-rfc-pipeline`)
-2. quality gates (`plankton-code-quality` + `/quality-gate`)
-3. eval loop (`eval-harness`)
-4. session persistence (`nanoclaw-repl`)
+권장되는 운영 환경 스택:
+1. RFC 분해 (`ralphinho-rfc-pipeline`)
+2. 품질 게이트 (`plankton-code-quality` + `/quality-gate`)
+3. 평가 루프 (`eval-harness`)
+4. 세션 유지 (`nanoclaw-repl`)
 
-## Failure Modes
+## 실패 유형 (Failure Modes)
 
-- loop churn without measurable progress
-- repeated retries with same root cause
-- merge queue stalls
-- cost drift from unbounded escalation
+- 측정 가능한 진전 없는 루프 맴돌기 (Churn)
+- 동일한 원인에 대한 반복적인 재시도
+- 머지 큐(Merge queue) 중단
+- 제어되지 않는 확장으로 인한 비용 급증
 
-## Recovery
+## 복구 방법 (Recovery)
 
-- freeze loop
-- run `/harness-audit`
-- reduce scope to failing unit
-- replay with explicit acceptance criteria
+- 루프 동결 (Freeze loop)
+- `/harness-audit` 명령어 실행
+- 실패한 단위로 범위(Scope) 축소
+- 명시적인 수락 기준(Acceptance criteria)과 함께 다시 시도
+    

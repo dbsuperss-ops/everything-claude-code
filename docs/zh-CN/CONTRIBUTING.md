@@ -1,85 +1,85 @@
-# 为 Everything Claude Code 做贡献
+# Everything Claude Code 기여 가이드
 
-感谢您想要贡献！这个仓库是 Claude Code 用户的社区资源。
+기여해 주셔서 감사합니다! 이 저장소는 모든 Claude Code 사용자를 위한 커뮤니티 리소스입니다.
 
-## 目录
+## 목차
 
-* [我们正在寻找的内容](#我们寻找什么)
-* [快速开始](#快速开始)
-* [贡献技能](#贡献技能)
-* [贡献智能体](#贡献智能体)
-* [贡献钩子](#贡献钩子)
-* [贡献命令](#贡献命令)
-* [拉取请求流程](#拉取请求流程)
-
-***
-
-## 我们寻找什么
-
-### 智能体
-
-能够很好地处理特定任务的新智能体：
-
-* 语言特定的审查员（Python、Go、Rust）
-* 框架专家（Django、Rails、Laravel、Spring）
-* DevOps 专家（Kubernetes、Terraform、CI/CD）
-* 领域专家（ML 流水线、数据工程、移动端）
-
-### 技能
-
-工作流定义和领域知识：
-
-* 语言最佳实践
-* 框架模式
-* 测试策略
-* 架构指南
-
-### 钩子
-
-有用的自动化：
-
-* 代码检查/格式化钩子
-* 安全检查
-* 验证钩子
-* 通知钩子
-
-### 命令
-
-调用有用工作流的斜杠命令：
-
-* 部署命令
-* 测试命令
-* 代码生成命令
+* [모집 분야](#모집-분야)
+* [빠른 시작](#빠른-시작)
+* [스킬 기여하기](#스킬-기여하기)
+* [에이전트 기여하기](#에이전트-기여하기)
+* [후크 기여하기](#후크-기여하기)
+* [명령어 기여하기](#명령어-기여하기)
+* [풀 리퀘스트(PR) 프로세스](#풀-리퀘스트-프로세스)
 
 ***
 
-## 快速开始
+## 모집 분야
+
+### 에이전트
+
+특정 작업을 잘 처리하는 새로운 에이전트:
+
+* 언어별 리뷰어 (Python, Go, Rust)
+* 프레임워크 전문가 (Django, Rails, Laravel, Spring)
+* DevOps 전문가 (Kubernetes, Terraform, CI/CD)
+* 도메인 전문가 (ML 파이프라인, 데이터 엔지니어링, 모바일)
+
+### 스킬
+
+워크플로우 정의 및 도메인 지식:
+
+* 언어별 최선 관행(Best Practices)
+* 프레임워크 패턴
+* 테스트 전략
+* 아키텍처 가이드라인
+
+### 후크 (Hooks)
+
+유용한 자동화:
+
+* Lint/포맷팅 후크
+* 보안 점검
+* 검증 후크
+* 알림 후크
+
+### 명령어 (Commands)
+
+유용한 워크플로우를 호출하는 슬래시 명령어:
+
+* 배포 명령어
+* 테스트 명령어
+* 코드 생성 명령어
+
+***
+
+## 빠른 시작
 
 ```bash
-# 1. Fork and clone
+# 1. 포크 및 클론
 gh repo fork affaan-m/everything-claude-code --clone
 cd everything-claude-code
 
-# 2. Create a branch
+# 2. 브랜치 생성
 git checkout -b feat/my-contribution
 
-# 3. Add your contribution (see sections below)
+# 3. 기여 내용 추가 (아래 섹션 참조)
 
-# 4. Test locally
-cp -r skills/my-skill ~/.claude/skills/  # for skills
-# Then test with Claude Code
+# 4. 로컬에서 테스트
+cp -r skills/my-skill ~/.claude/skills/  # 스킬의 경우
+# 그 후 Claude Code로 테스트
 
-# 5. Submit PR
+# 5. PR 제출
 git add . && git commit -m "feat: add my-skill" && git push -u origin feat/my-contribution
 ```
 
 ***
 
-## 贡献技能
+## 스킬 기여하기
 
-技能是 Claude Code 根据上下文加载的知识模块。
+스킬은 Claude Code가 컨텍스트에 따라 로드하는 지식 모듈입니다.
 
-### 目录结构
+### 디렉토리 구조
 
 ```
 skills/
@@ -87,143 +87,143 @@ skills/
     └── SKILL.md
 ```
 
-### SKILL.md 模板
+### SKILL.md 템플릿
 
 ````markdown
 ---
 name: your-skill-name
-description: Brief description shown in skill list
+description: 스킬 목록에서 보여줄 짧은 설명
 origin: ECC
 ---
 
-# 你的技能标题
+# 스킬 제목
 
-简要概述此技能涵盖的内容。
+이 스킬이 다루는 내용에 대한 간략한 개요.
 
-## 核心概念
+## 핵심 개념
 
-解释关键模式和指导原则。
+주요 패턴과 가이드라인을 설명합니다.
 
-## 代码示例
+## 코드 예시
 
 ```typescript
-// 包含实用、经过测试的示例
+// 유용하고 검증된 예시를 포함하십시오.
 function example() {
-  // 注释良好的代码
+  // 주석이 잘 달린 코드
 }
+```
 ````
 
-### 技能清单
+### 스킬 체크리스트
 
-* \[ ] 专注于一个领域/技术
-* \[ ] 包含实用的代码示例
-* \[ ] 少于 500 行
-* \[ ] 使用清晰的章节标题
-* \[ ] 已通过 Claude Code 测试
+* [ ] 하나의 도메인/기술에 집중함
+* [ ] 실용적인 코드 예시를 포함함
+* [ ] 500라인 미만임
+* [ ] 명확한 섹션 헤더를 사용함
+* [ ] Claude Code로 테스트를 완료함
 
-### 技能示例
+### 스킬 예시
 
-| 技能 | 目的 |
+| 스킬 | 목적 |
 |-------|---------|
-| `coding-standards/` | TypeScript/JavaScript 模式 |
-| `frontend-patterns/` | React 和 Next.js 最佳实践 |
-| `backend-patterns/` | API 和数据库模式 |
-| `security-review/` | 安全检查清单 |
+| `coding-standards/` | TypeScript/JavaScript 패턴 |
+| `frontend-patterns/` | React 및 Next.js 최선 관행 |
+| `backend-patterns/` | API 및 데이터베이스 패턴 |
+| `security-review/` | 보안 체크리스트 |
 
 ***
 
-## 贡献智能体
+## 에이전트 기여하기
 
-智能体是通过任务工具调用的专业助手。
+에이전트는 작업을 위임받아 수행하는 전문 조수입니다.
 
-### 文件位置
+### 파일 위치
 
 ```
 agents/your-agent-name.md
 ```
 
-### 智能体模板
+### 에이전트 템플릿
 
 ```markdown
 ---
-name: 你的代理名称
-description: 该代理的作用以及 Claude 应在何时调用它。请具体说明！
+name: 에이전트 이름
+description: 에이전트의 역할과 Claude가 언제 호출해야 하는지 구체적으로 작성하십시오.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: sonnet
 ---
 
-你是一名 [角色] 专家。
+당신은 [역할] 전문가입니다.
 
-## 你的角色
+## 당신의 역할
 
--   主要职责
--   次要职责
--   你不做的事情（界限）
+- 주요 책임
+- 부차적 책임
+- 하지 말아야 할 일 (경계 설정)
 
-## 工作流程
+## 워크플로우
 
-### 步骤 1：理解
-你如何着手处理任务。
+### 1단계: 이해
+작업에 어떻게 접근하는지 설명하십시오.
 
-### 步骤 2：执行
-你如何开展工作。
+### 2단계: 실행
+작업을 어떻게 수행하는지 설명하십시오.
 
-### 步骤 3：验证
-你如何验证结果。
+### 3단계: 검증
+결과를 어떻게 검증하는지 설명하십시오.
 
-## 输出格式
+## 출력 형식
 
-你返回给用户的内容。
+사용자에게 반환하는 내용의 형식을 지정하십시오.
 
-## 示例
+## 예시
 
-### 示例：[场景]
-输入：[用户提供的内容]
-操作：[你做了什么]
-输出：[你返回的内容]
-
+### 예시: [시나리오]
+입력: [사용자 제공 내용]
+작업: [당신이 수행한 일]
+출력: [반환한 내용]
 ```
 
-### 智能体字段
+### 에이전트 필드
 
-| 字段 | 描述 | 选项 |
+| 필드 | 설명 | 옵션 |
 |-------|-------------|---------|
-| `name` | 小写，用连字符连接 | `code-reviewer` |
-| `description` | 用于决定何时调用 | 要具体！ |
-| `tools` | 仅包含必要的内容 | `Read, Write, Edit, Bash, Grep, Glob, WebFetch, Task` |
-| `model` | 复杂度级别 | `haiku` (简单), `sonnet` (编码), `opus` (复杂) |
+| `name` | 소문자 및 하이픈 사용 | `code-reviewer` |
+| `description` | 호출 시점을 결정하는 용도 | 매우 구체적으로 작성! |
+| `tools` | 필요한 도구만 포함 | `Read, Write, Edit, Bash, Grep, Glob, WebFetch, Task` |
+| `model` | 복잡도 수준 | `haiku` (단순), `sonnet` (코딩), `opus` (복잡) |
 
-### 智能体示例
+### 에이전트 예시
 
-| 智能体 | 目的 |
+| 에이전트 | 목적 |
 |-------|---------|
-| `tdd-guide.md` | 测试驱动开发 |
-| `code-reviewer.md` | 代码审查 |
-| `security-reviewer.md` | 安全扫描 |
-| `build-error-resolver.md` | 修复构建错误 |
+| `tdd-guide.md` | 테스트 주도 개발 |
+| `code-reviewer.md` | 코드 리뷰 |
+| `security-reviewer.md` | 보안 스캔 |
+| `build-error-resolver.md` | 빌드 오류 수정 |
 
 ***
 
-## 贡献钩子
+## 후크 기여하기
 
-钩子是由 Claude Code 事件触发的自动行为。
+후크는 Claude Code 이벤트에 의해 트리거되는 자동화 동작입니다.
 
-### 文件位置
+### 파일 위치
 
 ```
 hooks/hooks.json
 ```
 
-### 钩子类型
+### 후크 유형
 
-| 类型 | 触发条件 | 用例 |
+| 유형 | 트리거 시점 | 유스케이스 |
 |------|---------|----------|
-| `PreToolUse` | 工具运行前 | 验证、警告、阻止 |
-| `PostToolUse` | 工具运行后 | 格式化、检查、通知 |
-| `SessionStart` | 会话开始时 | 加载上下文 |
-| `Stop` | 会话结束时 | 清理、审计 |
+| `PreToolUse` | 도구 실행 전 | 검증, 경고, 차단 |
+| `PostToolUse` | 도구 실행 후 | 포맷팅, 체크, 알림 |
+| `SessionStart` | 세션 시작 시 | 컨텍스트 로드 |
+| `Stop` | 세션 종료 시 | 정리, 감사 |
 
-### 钩子格式
+### 후크 형식
 
 ```json
 {
@@ -237,121 +237,118 @@ hooks/hooks.json
             "command": "echo '[Hook] BLOCKED: Dangerous command' && exit 1"
           }
         ],
-        "description": "Block dangerous rm commands"
+        "description": "위험한 rm 명령어 차단"
       }
     ]
   }
 }
 ```
 
-### 匹配器语法
+### 매처(Matcher) 구문
 
 ```javascript
-// Match specific tools
+// 특정 도구 매칭
 tool == "Bash"
 tool == "Edit"
 tool == "Write"
 
-// Match input patterns
+// 입력 패턴 매칭
 tool_input.command matches "npm install"
 tool_input.file_path matches "\\.tsx?$"
 
-// Combine conditions
+// 조건 조합
 tool == "Bash" && tool_input.command matches "git push"
 ```
 
-### 钩子示例
+### 후크 예시
 
 ```json
-// Block dev servers outside tmux
+// tmux 외부에서 개발 서버 실행 차단
 {
   "matcher": "tool == \"Bash\" && tool_input.command matches \"npm run dev\"",
-  "hooks": [{"type": "command", "command": "echo 'Use tmux for dev servers' && exit 1"}],
-  "description": "Ensure dev servers run in tmux"
+  "hooks": [{"type": "command", "command": "echo '개발 서버는 tmux에서 실행하십시오' && exit 1"}],
+  "description": "개발 서버가 tmux에서 실행되도록 보장"
 }
 
-// Auto-format after editing TypeScript
+// TypeScript 편집 후 자동 포맷팅
 {
   "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\.tsx?$\"",
   "hooks": [{"type": "command", "command": "npx prettier --write \"$file_path\""}],
-  "description": "Format TypeScript files after edit"
+  "description": "편집 후 TypeScript 파일 포맷팅"
 }
 
-// Warn before git push
+// git push 전 경고
 {
   "matcher": "tool == \"Bash\" && tool_input.command matches \"git push\"",
-  "hooks": [{"type": "command", "command": "echo '[Hook] Review changes before pushing'"}],
-  "description": "Reminder to review before push"
+  "hooks": [{"type": "command", "command": "echo '[Hook] 푸시 전 변경 사항을 리뷰하십시오'"}],
+  "description": "푸시 전 리뷰 알림"
 }
 ```
 
-### 钩子清单
+### 후크 체크리스트
 
-* \[ ] 匹配器具体（不过于宽泛）
-* \[ ] 包含清晰的错误/信息消息
-* \[ ] 使用正确的退出代码 (`exit 1` 阻止, `exit 0` 允许)
-* \[ ] 经过充分测试
-* \[ ] 有描述
+* [ ] 매처가 구체적임 (너무 광범위하지 않음)
+* [ ] 명확한 오류/정보 메시지를 포함함
+* [ ] 올바른 종료 코드 사용 (`exit 1` 차단, `exit 0` 허용)
+* [ ] 충분히 테스트됨
+* [ ] 설명이 포함됨
 
 ***
 
-## 贡献命令
+## 명령어 기여하기
 
-命令是用户通过 `/command-name` 调用的操作。
+명령어는 사용자가 `/명령어이름`으로 호출하는 작업입니다.
 
-### 文件位置
+### 파일 위치
 
 ```
 commands/your-command.md
 ```
 
-### 命令模板
+### 명령어 템플릿
 
 ```markdown
 ---
-description: 在 /help 中显示的简要描述
+description: /help에서 보여줄 짧은 설명
 ---
 
-# 命令名称
+# 명령어 이름
 
-## 目的
+## 목적
 
-此命令的功能。
+이 명령어가 하는 일.
 
-## 用法
+## 사용법
 
 `​`​`
-
 /your-command [args]
 `​`​`
 
+## 워크플로우
 
-## 工作流程
+1. 첫 번째 단계
+2. 두 번째 단계
+3. 마지막 단계
 
-1.  第一步
-2.  第二步
-3.  最后一步
+## 출력
 
-## 输出
-
-用户将收到的内容。
-
+사용자가 받게 될 결과물.
 ```
 
-### 命令示例
+### 명령어 예시
 
-| 命令 | 目的 |
+| 명령어 | 목적 |
 |---------|---------|
-| `commit.md` | 创建 git 提交 |
-| `code-review.md` | 审查代码变更 |
-| `tdd.md` | TDD 工作流 |
-| `e2e.md` | E2E 测试 |
+| `commit.md` | git 커밋 생성 |
+| `code-review.md` | 코드 변경 사항 리뷰 |
+| `tdd.md` | TDD 워크플로우 |
+| `e2e.md` | E2E 테스트 |
 
 ***
 
-## 拉取请求流程
+## 풀 리퀘스트(PR) 프로세스
 
-### 1. PR 标题格式
+### 1. PR 제목 형식
 
 ```
 feat(skills): add rust-patterns skill
@@ -361,69 +358,68 @@ fix(skills): update React patterns
 docs: improve contributing guide
 ```
 
-### 2. PR 描述
+### 2. PR 설명
 
 ```markdown
-## 摘要
-你正在添加什么以及为什么添加。
+## 요약
+무엇을 왜 추가하는지 작성하십시오.
 
-## 类型
-- [ ] 技能
-- [ ] 代理
-- [ ] 钩子
-- [ ] 命令
+## 유형
+- [ ] 스킬
+- [ ] 에이전트
+- [ ] 후크
+- [ ] 명령어
 
-## 测试
-你是如何测试这个的。
+## 테스트
+어떻게 테스트했는지 작성하십시오.
 
-## 检查清单
-- [ ] 遵循格式指南
-- [ ] 已使用 Claude Code 进行测试
-- [ ] 无敏感信息（API 密钥、路径）
-- [ ] 描述清晰
-
+## 체크리스트
+- [ ] 형식 가이드를 준수함
+- [ ] Claude Code로 테스트 완료함
+- [ ] 민감한 정보가 없음 (API 키, 경로 등)
+- [ ] 설명이 명확함
 ```
 
-### 3. 审查流程
+### 3. 리뷰 프로세스
 
-1. 维护者在 48 小时内审查
-2. 如有要求，请处理反馈
-3. 一旦批准，合并到主分支
-
-***
-
-## 指导原则
-
-### 应该做的
-
-* 保持贡献内容专注和模块化
-* 包含清晰的描述
-* 提交前进行测试
-* 遵循现有模式
-* 记录依赖项
-
-### 不应该做的
-
-* 包含敏感数据（API 密钥、令牌、路径）
-* 添加过于复杂或小众的配置
-* 提交未经测试的贡献
-* 创建现有功能的重复项
+1. 메인테이너가 48시간 이내에 리뷰합니다.
+2. 피드백이 있는 경우 이를 반영해 주십시오.
+3. 승인되면 메인 브랜치에 병합됩니다.
 
 ***
 
-## 文件命名
+## 가이드 원칙
 
-* 使用小写和连字符：`python-reviewer.md`
-* 描述性要强：`tdd-workflow.md` 而不是 `workflow.md`
-* 名称与文件名匹配
+### 권장 사항 (Dos)
+
+* 기여 내용을 집중적이고 모듈화된 상태로 유지하십시오.
+* 명확한 설명을 포함하십시오.
+* 제출 전 반드시 테스트하십시오.
+* 기존 패턴을 따르십시오.
+* 의존성을 기록하십시오.
+
+### 금지 사항 (Don'ts)
+
+* 민감한 데이터(API 키, 토큰, 경로)를 포함하지 마십시오.
+* 너무 복잡하거나 지엽적인 설정을 추가하지 마십시오.
+* 테스트되지 않은 기여를 제출하지 마십시오.
+* 기존 기능과 중복되는 내용을 만들지 마십시오.
 
 ***
 
-## 有问题吗？
+## 파일 명명 규칙
 
-* **问题：** [github.com/affaan-m/everything-claude-code/issues](https://github.com/affaan-m/everything-claude-code/issues)
-* **X/Twitter：** [@affaanmustafa](https://x.com/affaanmustafa)
+* 소문자 및 하이픈 사용: `python-reviewer.md`
+* 구체적으로 명명: `workflow.md` 대신 `tdd-workflow.md`
+* 에이전트 이름과 파일 이름을 일치시킴
 
 ***
 
-感谢您的贡献！让我们共同构建一个出色的资源。
+## 문의 사항
+
+* **이슈:** [github.com/affaan-m/everything-claude-code/issues](https://github.com/affaan-m/everything-claude-code/issues)
+* **X/Twitter:** [@affaanmustafa](https://x.com/affaanmustafa)
+
+***
+
+기여해 주셔서 감사합니다! 함께 훌륭한 리소스를 만들어 나갑시다.

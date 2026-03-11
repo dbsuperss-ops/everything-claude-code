@@ -1,28 +1,28 @@
 ---
-name: instinct-import
-description: Import instincts from file or URL into project/global scope
-command: true
+이름: instinct-import
+설명: 파일 또는 URL에서 본능(instincts)을 프로젝트/글로벌 범위로 가져옵니다.
+명령어 사용 가능: true
 ---
 
-# Instinct Import Command
+# Instinct Import 명령어 (본능 가져오기)
 
-## Implementation
+## 구현 방법
 
-Run the instinct CLI using the plugin root path:
-
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/continuous-learning-v2/scripts/instinct-cli.py" import <file-or-url> [--dry-run] [--force] [--min-confidence 0.7] [--scope project|global]
-```
-
-Or if `CLAUDE_PLUGIN_ROOT` is not set (manual installation):
+플러그인 루트 경로를 사용하여 instinct CLI를 실행합니다:
 
 ```bash
-python3 ~/.claude/skills/continuous-learning-v2/scripts/instinct-cli.py import <file-or-url>
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/continuous-learning-v2/scripts/instinct-cli.py" import <파일-또는-URL> [--dry-run] [--force] [--min-confidence 0.7] [--scope project|global]
 ```
 
-Import instincts from local file paths or HTTP(S) URLs.
+`CLAUDE_PLUGIN_ROOT`가 설정되지 않은 경우 (수동 설치 시):
 
-## Usage
+```bash
+python3 ~/.claude/skills/continuous-learning-v2/scripts/instinct-cli.py import <파일-또는-URL>
+```
+
+로컬 파일 경로 또는 HTTP(S) URL에서 본능을 가져옵니다.
+
+## 사용법
 
 ```
 /instinct-import team-instincts.yaml
@@ -31,58 +31,58 @@ Import instincts from local file paths or HTTP(S) URLs.
 /instinct-import team-instincts.yaml --scope global --force
 ```
 
-## What to Do
+## 처리 단계
 
-1. Fetch the instinct file (local path or URL)
-2. Parse and validate the format
-3. Check for duplicates with existing instincts
-4. Merge or add new instincts
-5. Save to inherited instincts directory:
-   - Project scope: `~/.claude/homunculus/projects/<project-id>/instincts/inherited/`
-   - Global scope: `~/.claude/homunculus/instincts/inherited/`
+1. 본능 파일 가져오기 (로컬 경로 또는 URL)
+2. 형식 파싱 및 유효성 검사
+3. 기존 본능과 중복 여부 확인
+4. 새로운 본능 병합 또는 추가
+5. 상속된(inherited) 본능 디렉토리에 저장:
+   - 프로젝트 범위: `~/.claude/homunculus/projects/<project-id>/instincts/inherited/`
+   - 글로벌 범위: `~/.claude/homunculus/instincts/inherited/`
 
-## Import Process
+## 가져오기 프로세스 예시
 
 ```
-📥 Importing instincts from: team-instincts.yaml
+📥 본능 가져오는 중: team-instincts.yaml
 ================================================
 
-Found 12 instincts to import.
+가져올 본능 12개를 찾았습니다.
 
-Analyzing conflicts...
+충돌 분석 중...
 
-## New Instincts (8)
-These will be added:
-  ✓ use-zod-validation (confidence: 0.7)
-  ✓ prefer-named-exports (confidence: 0.65)
-  ✓ test-async-functions (confidence: 0.8)
-  ...
+## 새로운 본능 (8개)
+다음을 추가합니다:
+   ✓ use-zod-validation (신뢰도: 0.7)
+   ✓ prefer-named-exports (신뢰도: 0.65)
+   ✓ test-async-functions (신뢰도: 0.8)
+   ...
 
-## Duplicate Instincts (3)
-Already have similar instincts:
+## 중복된 본능 (3개)
+이미 유사한 본능이 있습니다:
   ⚠️ prefer-functional-style
-     Local: 0.8 confidence, 12 observations
-     Import: 0.7 confidence
-     → Keep local (higher confidence)
+     로컬: 0.8 신뢰도, 12회 관찰
+     가져오기: 0.7 신뢰도
+     → 로컬 유지 (더 높은 신뢰도)
 
   ⚠️ test-first-workflow
-     Local: 0.75 confidence
-     Import: 0.9 confidence
-     → Update to import (higher confidence)
+     로컬: 0.75 신뢰도
+     가져오기: 0.9 신뢰도
+     → 가져온 것으로 업데이트 (더 높은 신뢰도)
 
-Import 8 new, update 1?
+새로운 본능 8개 추가, 1개 업데이트하시겠습니까?
 ```
 
-## Merge Behavior
+## 병합 규칙 (Merge Behavior)
 
-When importing an instinct with an existing ID:
-- Higher-confidence import becomes an update candidate
-- Equal/lower-confidence import is skipped
-- User confirms unless `--force` is used
+이미 존재하는 ID의 본능을 가져올 때:
+- 더 높은 신뢰도의 본능이 업데이트 후보가 됩니다.
+- 동일하거나 낮은 신뢰도의 본능은 건너뜁니다.
+- `--force` 플래그를 사용하지 않는 한 사용자의 확인을 거칩니다.
 
-## Source Tracking
+## 출처 추적 (Source Tracking)
 
-Imported instincts are marked with:
+가져온 본능은 다음 정보와 함께 저장됩니다:
 ```yaml
 source: inherited
 scope: project
@@ -91,24 +91,24 @@ project_id: "a1b2c3d4e5f6"
 project_name: "my-project"
 ```
 
-## Flags
+## 플래그 (Flags)
 
-- `--dry-run`: Preview without importing
-- `--force`: Skip confirmation prompt
-- `--min-confidence <n>`: Only import instincts above threshold
-- `--scope <project|global>`: Select target scope (default: `project`)
+- `--dry-run`: 실제 가져오기 없이 미리보기만 수행
+- `--force`: 확인 프롬프트 생략
+- `--min-confidence <n>`: 임계값 이상의 신뢰도를 가진 본능만 가져옴
+- `--scope <project|global>`: 대상 범위 선택 (기본값: `project`)
 
-## Output
+## 출력 결과
 
-After import:
+가져오기 완료 후:
 ```
-✅ Import complete!
+✅ 가져오기 완료!
 
-Added: 8 instincts
-Updated: 1 instinct
-Skipped: 3 instincts (equal/higher confidence already exists)
+추가됨: 본능 8개
+업데이트됨: 본능 1개
+건너뜀: 본능 3개 (동일하거나 높은 신뢰도가 이미 존재함)
 
-New instincts saved to: ~/.claude/homunculus/instincts/inherited/
+새로운 본능이 저장된 위치: ~/.claude/homunculus/instincts/inherited/
 
-Run /instinct-status to see all instincts.
+/instinct-status를 실행하여 모든 본능을 확인하세요.
 ```

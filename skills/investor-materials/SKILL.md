@@ -1,96 +1,64 @@
 ---
 name: investor-materials
-description: Create and update pitch decks, one-pagers, investor memos, accelerator applications, financial models, and fundraising materials. Use when the user needs investor-facing documents, projections, use-of-funds tables, milestone plans, or materials that must stay internally consistent across multiple fundraising assets.
+description: 피치 덱, 원 페이저(One-pager), 투자 메모, 액셀러레이터 지원서, 재무 모델 및 펀드레이징 자료를 작성하고 업데이트합니다. 투자자용 문서, 추정치, 자금 사용 계획, 마일스톤 계획 등이 필요할 때 사용하십시오.
 origin: ECC
 ---
 
-# Investor Materials
+# 투자자용 자료 (Investor Materials)
 
-Build investor-facing materials that are consistent, credible, and easy to defend.
+일관성 있고 신뢰할 수 있으며 논리적으로 방어 가능한 투자자용 자료를 구축합니다.
 
-## When to Activate
+## 활성화 시점
 
-- creating or revising a pitch deck
-- writing an investor memo or one-pager
-- building a financial model, milestone plan, or use-of-funds table
-- answering accelerator or incubator application questions
-- aligning multiple fundraising docs around one source of truth
+- 피치 덱(Pitch deck)을 작성하거나 수정할 때
+- 투자 메모 또는 원 페이저(One-pager)를 작성할 때
+- 재무 모델, 마일스톤 계획 또는 자금 사용 계획(Use-of-funds)을 구축할 때
+- 액셀러레이터 또는 인큐베이터 지원서 질문에 답변할 때
+- 여러 펀드레이징 문서 간의 수치를 하나의 진실된 근거(Source of truth)로 일치시킬 때
 
-## Golden Rule
+## 황금률 (Golden Rule)
 
-All investor materials must agree with each other.
+모든 투자자용 자료의 수치는 서로 일치해야 합니다.
 
-Create or confirm a single source of truth before writing:
-- traction metrics
-- pricing and revenue assumptions
-- raise size and instrument
-- use of funds
-- team bios and titles
-- milestones and timelines
+작성 전 다음 항목들에 대해 단일한 근거를 확인하십시오:
+- 지표 및 성과 (Traction metrics)
+- 가격 책정 및 매출 가정
+- 투자 유치 규모 및 방식 (Raise size and instrument)
+- 자금 사용 계획
+- 팀원 이력 및 직함
+- 마일스톤 및 타임라인
 
-If conflicting numbers appear, stop and resolve them before drafting.
+만약 수치가 충돌한다면 작업을 멈추고 이를 먼저 해결하십시오.
 
-## Core Workflow
+## 핵심 워크플로우
 
-1. inventory the canonical facts
-2. identify missing assumptions
-3. choose the asset type
-4. draft the asset with explicit logic
-5. cross-check every number against the source of truth
+1. 공식적인 팩트(Canonical facts) 목록을 작성합니다.
+2. 누락된 가정(Assumptions)을 식별합니다.
+3. 자산 유형을 선택합니다.
+4. 명확한 논리를 바탕으로 초안을 작성합니다.
+5. 모든 수치를 근거 자료와 대조하여 교차 검증합니다.
 
-## Asset Guidance
+## 자산별 가이드
 
-### Pitch Deck
-Recommended flow:
-1. company + wedge
-2. problem
-3. solution
-4. product / demo
-5. market
-6. business model
-7. traction
-8. team
-9. competition / differentiation
-10. ask
-11. use of funds / milestones
-12. appendix
+### 피치 덱 (Pitch Deck)
+권장 흐름: 회사 소개 → 문제 정의 → 솔루션 → 제품/데모 → 시장 규모 → 비즈니스 모델 → 성과(Traction) → 팀 소개 → 경쟁 우위 → 투자 요청(Ask) → 자금 사용 계획 → 부록.
 
-If the user wants a web-native deck, pair this skill with `frontend-slides`.
+### 원 페이저 / 메모 (One-pager / Memo)
+한 문장으로 명확하게 회사가 하는 일을 정의하고, "왜 지금인가?"를 보여주며, 성과 지표를 초반에 배치하십시오.
 
-### One-Pager / Memo
-- state what the company does in one clean sentence
-- show why now
-- include traction and proof points early
-- make the ask precise
-- keep claims easy to verify
+### 재무 모델 (Financial Model)
+명시적인 가정, 낙관/보통/비관 케이스, 단계별 매출 논리, 마일스톤과 연계된 지출 계획을 포함하십시오.
 
-### Financial Model
-Include:
-- explicit assumptions
-- bear / base / bull cases when useful
-- clean layer-by-layer revenue logic
-- milestone-linked spending
-- sensitivity analysis where the decision hinges on assumptions
+### 액셀러레이터 지원서
+질문에 정확히 답변하고, 지표/통찰/팀의 강점을 우선순위로 두십시오. 과장된 표현을 피하고 내부 지표를 일관되게 유지하십시오.
 
-### Accelerator Applications
-- answer the exact question asked
-- prioritize traction, insight, and team advantage
-- avoid puffery
-- keep internal metrics consistent with the deck and model
+## 피해야 할 위험 신호 (Red Flags)
 
-## Red Flags to Avoid
+- 검증 불가능한 주장
+- 가정 없는 모호한 시장 규모 산정
+- 일관성 없는 팀 역할이나 직함
+- 합계가 맞지 않는 매출 계산
+- 근거가 빈약한 과도한 확신
 
-- unverifiable claims
-- fuzzy market sizing without assumptions
-- inconsistent team roles or titles
-- revenue math that does not sum cleanly
-- inflated certainty where assumptions are fragile
-
-## Quality Gate
-
-Before delivering:
-- every number matches the current source of truth
-- use of funds and revenue layers sum correctly
-- assumptions are visible, not buried
-- the story is clear without hype language
-- the final asset is defensible in a partner meeting
+**기억하십시오**: 투자자용 자료는 단순히 예쁘게 만드는 것이 아니라, 투자 심사역의 날카로운 질문에 방어할 수 있는 논리적 기반을 만드는 것입니다. 모든 수치의 근거를 명확히 하십시오.
+    

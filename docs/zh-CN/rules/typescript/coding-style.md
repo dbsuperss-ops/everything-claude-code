@@ -6,22 +6,22 @@ paths:
   - "**/*.jsx"
 ---
 
-# TypeScript/JavaScript 编码风格
+# TypeScript/JavaScript 코딩 스타일 (Coding Style)
 
-> 本文件基于 [common/coding-style.md](../common/coding-style.md) 扩展，包含 TypeScript/JavaScript 特定内容。
+> 이 문서는 [common/coding-style.md](../common/coding-style.md)의 내용을 바탕으로 TypeScript/JavaScript에 특화된 내용을 확장합니다.
 
-## 不可变性
+## 불변성 (Immutability)
 
-使用展开运算符进行不可变更新：
+불변 상태 업데이트를 위해 전개 연산자(Spread operator)를 사용하십시오:
 
 ```typescript
-// WRONG: Mutation
+// 잘못된 예: 상태 변경(Mutation)
 function updateUser(user, name) {
-  user.name = name  // MUTATION!
+  user.name = name  // 직접 수정 금지!
   return user
 }
 
-// CORRECT: Immutability
+// 올바른 예: 불변성 유지
 function updateUser(user, name) {
   return {
     ...user,
@@ -30,23 +30,23 @@ function updateUser(user, name) {
 }
 ```
 
-## 错误处理
+## 에러 처리
 
-使用 async/await 配合 try-catch：
+`try-catch`와 함께 `async/await`를 사용하십시오:
 
 ```typescript
 try {
   const result = await riskyOperation()
   return result
 } catch (error) {
-  console.error('Operation failed:', error)
-  throw new Error('Detailed user-friendly message')
+  console.error('작업 실패:', error)
+  throw new Error('사용자 친화적인 상세 오류 메시지')
 }
 ```
 
-## 输入验证
+## 입력값 검증
 
-使用 Zod 进行基于模式的验证：
+스키마 기반 검증을 위해 **Zod**를 사용하십시오:
 
 ```typescript
 import { z } from 'zod'
@@ -59,8 +59,8 @@ const schema = z.object({
 const validated = schema.parse(input)
 ```
 
-## Console.log
+## Console.log 금지
 
-* 生产代码中不允许出现 `console.log` 语句
-* 请使用适当的日志库替代
-* 查看钩子以进行自动检测
+* 프로덕션 코드에서는 `console.log` 사용이 허용되지 않습니다.
+* 대신 적절한 로깅 라이브러리를 사용하십시오.
+* 자동 감지를 위해 후크(Hooks) 설정을 확인하십시오.

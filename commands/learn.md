@@ -1,70 +1,70 @@
-# /learn - Extract Reusable Patterns
+# /learn - 재사용 가능한 패턴 추출
 
-Analyze the current session and extract any patterns worth saving as skills.
+현재 세션을 분석하여 스킬로 저장할 가치가 있는 패턴을 추출합니다.
 
-## Trigger
+## 트리거
 
-Run `/learn` at any point during a session when you've solved a non-trivial problem.
+중요한 문제를 해결한 후 세션의 어느 시점에서나 `/learn`을 실행하십시오.
 
-## What to Extract
+## 추출 대상
 
-Look for:
+다음을 찾으십시오:
 
-1. **Error Resolution Patterns**
-   - What error occurred?
-   - What was the root cause?
-   - What fixed it?
-   - Is this reusable for similar errors?
+1. **에러 해결 패턴**
+   - 어떤 에러가 발생했는가?
+   - 근본 원인은 무엇이었는가?
+   - 어떻게 수정했는가?
+   - 유사한 에러에 대해 재사용 가능한가?
 
-2. **Debugging Techniques**
-   - Non-obvious debugging steps
-   - Tool combinations that worked
-   - Diagnostic patterns
+2. **디버깅 기법**
+   - 일반적이지 않은 디버깅 단계
+   - 효과적이었던 도구 조합
+   - 진단 패턴
 
-3. **Workarounds**
-   - Library quirks
-   - API limitations
-   - Version-specific fixes
+3. **해결 방법 (Workarounds)**
+   - 라이브러리 특이점
+   - API 제한 사항
+   - 버전 전용 수정 사항
 
-4. **Project-Specific Patterns**
-   - Codebase conventions discovered
-   - Architecture decisions made
-   - Integration patterns
+4. **프로젝트 전용 패턴**
+   - 발견된 코드베이스 컨벤션
+   - 결정된 아키텍처 구조
+   - 통합 패턴
 
-## Output Format
+## 출력 형식
 
-Create a skill file at `~/.claude/skills/learned/[pattern-name].md`:
+`~/.claude/skills/learned/[패턴-이름].md` 경로에 스킬 파일을 생성합니다:
 
 ```markdown
-# [Descriptive Pattern Name]
+# [설명적인 패턴 이름]
 
-**Extracted:** [Date]
-**Context:** [Brief description of when this applies]
+**추출일:** [날짜]
+**컨텍스트:** [이 패턴이 적용되는 상황에 대한 간략한 설명]
 
-## Problem
-[What problem this solves - be specific]
+## 문제 (Problem)
+[이 패턴이 해결하는 문제 - 구체적으로 작성]
 
-## Solution
-[The pattern/technique/workaround]
+## 해결책 (Solution)
+[패턴/기법/해결 방법]
 
-## Example
-[Code example if applicable]
+## 예시 (Example)
+[적용 가능한 경우 코드 예시]
 
-## When to Use
-[Trigger conditions - what should activate this skill]
+## 사용 시점
+[트리거 조건 - 이 스킬을 활성화해야 하는 상황]
 ```
 
-## Process
+## 프로세스
 
-1. Review the session for extractable patterns
-2. Identify the most valuable/reusable insight
-3. Draft the skill file
-4. Ask user to confirm before saving
-5. Save to `~/.claude/skills/learned/`
+1. 세션을 검토하여 추출 가능한 패턴을 찾습니다.
+2. 가장 가치 있고 재사용 가능성이 높은 인사이트를 식별합니다.
+3. 스킬 파일 초안을 작성합니다.
+4. 저장 전 사용자에게 확인을 요청합니다.
+5. `~/.claude/skills/learned/`에 저장합니다.
 
-## Notes
+## 주의 사항
 
-- Don't extract trivial fixes (typos, simple syntax errors)
-- Don't extract one-time issues (specific API outages, etc.)
-- Focus on patterns that will save time in future sessions
-- Keep skills focused - one pattern per skill
+- 사소한 수정(오타, 단순 구문 에러)은 추출하지 마십시오.
+- 일회성 이슈(특정 API 일시 장애 등)는 추출하지 마십시오.
+- 향후 세션에서 시간을 절약해 줄 패턴에 집중하십시오.
+- 스킬의 초점을 명확히 유지하십시오 — 스킬당 하나의 패턴만 다룹니다.

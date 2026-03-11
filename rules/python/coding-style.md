@@ -3,18 +3,18 @@ paths:
   - "**/*.py"
   - "**/*.pyi"
 ---
-# Python Coding Style
+# Python 코딩 스타일 (Python Coding Style)
 
-> This file extends [common/coding-style.md](../common/coding-style.md) with Python specific content.
+> 이 파일은 [common/coding-style.md](../common/coding-style.md)을 Python 전용 내용으로 확장합니다.
 
-## Standards
+## 표준
 
-- Follow **PEP 8** conventions
-- Use **type annotations** on all function signatures
+- **PEP 8** 컨벤션을 따르십시오.
+- 모든 함수 시그니처에 **타입 어노테이션(Type annotations)**을 사용하십시오.
 
-## Immutability
+## 불변성
 
-Prefer immutable data structures:
+불변 데이터 구조를 선호하십시오:
 
 ```python
 from dataclasses import dataclass
@@ -31,12 +31,12 @@ class Point(NamedTuple):
     y: float
 ```
 
-## Formatting
+## 포매팅
 
-- **black** for code formatting
-- **isort** for import sorting
-- **ruff** for linting
+- 코드 포매팅을 위해 **black** 사용
+- 임포트 정렬을 위해 **isort** 사용
+- 린팅을 위해 **ruff** 사용
 
-## Reference
+## 참조
 
-See skill: `python-patterns` for comprehensive Python idioms and patterns.
+포괄적인 Python 관용구 및 패턴에 대해서는 `python-patterns` 스킬을 참조하십시오.

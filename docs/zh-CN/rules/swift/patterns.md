@@ -4,13 +4,13 @@ paths:
   - "**/Package.swift"
 ---
 
-# Swift 模式
+# Swift 패턴 (Patterns)
 
-> 此文件使用 Swift 特定内容扩展了 [common/patterns.md](../common/patterns.md)。
+> 이 문서는 [common/patterns.md](../common/patterns.md)의 내용을 바탕으로 Swift에 특화된 내용을 확장합니다.
 
-## 面向协议的设计
+## 프로토콜 지향 설계 (Protocol-Oriented Design)
 
-定义小型、专注的协议。使用协议扩展来提供共享的默认实现：
+작고 집중된 프로토콜을 정의하십시오. 프로토콜 익스텐션(Extension)을 사용하여 공통된 기본 구현을 제공하십시오:
 
 ```swift
 protocol Repository: Sendable {
@@ -20,10 +20,10 @@ protocol Repository: Sendable {
 }
 ```
 
-## 值类型
+## 값 타입 (Value Types)
 
-* 使用结构体（struct）作为数据传输对象和模型
-* 使用带有关联值的枚举（enum）来建模不同的状态：
+* 데이터 전송 객체(DTO)와 모델에는 구조체(struct)를 사용하십시오.
+* 서로 다른 상태를 모델링할 때는 연관 값(Associated values)을 가진 열거형(enum)을 사용하십시오:
 
 ```swift
 enum LoadState<T: Sendable>: Sendable {
@@ -34,9 +34,9 @@ enum LoadState<T: Sendable>: Sendable {
 }
 ```
 
-## Actor 模式
+## 액터(Actor) 패턴
 
-使用 actor 来处理共享可变状态，而不是锁或调度队列：
+잠금(Lock)이나 디스패치 큐(DispatchQueue) 대신 공유 가변 상태를 처리하기 위해 `Actor`를 사용하십시오:
 
 ```swift
 actor Cache<Key: Hashable & Sendable, Value: Sendable> {
@@ -47,9 +47,9 @@ actor Cache<Key: Hashable & Sendable, Value: Sendable> {
 }
 ```
 
-## 依赖注入
+## 의존성 주입 (Dependency Injection)
 
-使用默认参数注入协议 —— 生产环境使用默认值，测试时注入模拟对象：
+프로토콜 주입 시 기본 파라미터를 사용하십시오. 프로덕션 환경에서는 기본값을 사용하고, 테스트 시에는 모의 객체(Mock)를 주입합니다:
 
 ```swift
 struct UserService {
@@ -61,7 +61,7 @@ struct UserService {
 }
 ```
 
-## 参考
+## 참고 자료
 
-查看技能：`swift-actor-persistence` 以了解基于 actor 的持久化模式。
-查看技能：`swift-protocol-di-testing` 以了解基于协议的依赖注入和测试。
+* 액터 기반의 영속성 패턴은 `swift-actor-persistence` 스킬을 참조하십시오.
+* 프로토콜 기반의 의존성 주입 및 테스트 방법은 `swift-protocol-di-testing` 스킬을 참조하십시오.

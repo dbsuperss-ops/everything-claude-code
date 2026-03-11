@@ -1,37 +1,37 @@
 ---
 name: clickhouse-io
-description: ClickHouse数据库模式、查询优化、分析以及高性能分析工作负载的数据工程最佳实践。
+description: ClickHouse 데이터베이스 스키마, 쿼리 최적화, 분석 및 고성능 분석 워크로드를 위한 데이터 엔지니어링 베스트 프랙티스입니다.
 origin: ECC
 ---
 
-# ClickHouse 分析模式
+# ClickHouse 분석 패턴
 
-用于高性能分析和数据工程的 ClickHouse 特定模式。
+고성능 분석 및 데이터 엔지니어링을 위한 ClickHouse 특화 패턴입니다.
 
-## 何时激活
+## 적용 시점
 
-* 设计 ClickHouse 表架构（MergeTree 引擎选择）
-* 编写分析查询（聚合、窗口函数、连接）
-* 优化查询性能（分区裁剪、投影、物化视图）
-* 摄取大量数据（批量插入、Kafka 集成）
-* 为分析目的从 PostgreSQL/MySQL 迁移到 ClickHouse
-* 实现实时仪表板或时间序列分析
+* ClickHouse 테이블 구조를 설계할 때 (MergeTree 엔진 선택 등)
+* 분석 쿼리(집계, 윈도우 함수, 조인 등)를 작성할 때
+* 쿼리 성능을 최적화할 때 (파티션 프루닝, 프로젝션, 구체화된 뷰 활용)
+* 대량의 데이터를 수집할 때 (배치 삽입, Kafka 연동 등)
+* 분석 목적으로 PostgreSQL/MySQL에서 ClickHouse로 데이터를 마이그레이션할 때
+* 실시간 대시보드 또는 시계열 데이터 분석을 구현할 때
 
-## 概述
+## 개요
 
-ClickHouse 是一个用于在线分析处理 (OLAP) 的列式数据库管理系统 (DBMS)。它针对大型数据集上的快速分析查询进行了优化。
+ClickHouse는 온라인 분석 처리(OLAP)를 위한 컬럼 지향 데이터베이스 관리 시스템(DBMS)입니다. 대규모 데이터셋에 대한 빠른 분석 쿼리 수행에 최적화되어 있습니다.
 
-**关键特性:**
+**주요 특징:**
 
-* 列式存储
-* 数据压缩
-* 并行查询执行
-* 分布式查询
-* 实时分析
+* 컬럼 지향 저장 방식 (Columnar Storage)
+* 강력한 데이터 압축
+* 병렬 쿼리 실행
+* 분산 쿼리 지원
+* 실시간 분석 가능
 
-## 表设计模式
+## 테이블 설계 패턴
 
-### MergeTree 引擎 (最常用)
+### MergeTree 엔진 (가장 일반적임)
 
 ```sql
 CREATE TABLE markets_analytics (
@@ -49,10 +49,10 @@ ORDER BY (date, market_id)
 SETTINGS index_granularity = 8192;
 ```
 
-### ReplacingMergeTree (去重)
+### ReplacingMergeTree (중복 제거)
 
 ```sql
--- For data that may have duplicates (e.g., from multiple sources)
+-- 여러 소스에서 데이터가 유입되어 중복이 발생할 수 있는 경우 사용
 CREATE TABLE user_events (
     event_id String,
     user_id String,
@@ -65,10 +65,10 @@ ORDER BY (user_id, event_id, timestamp)
 PRIMARY KEY (user_id, event_id);
 ```
 
-### AggregatingMergeTree (预聚合)
+### AggregatingMergeTree (사전 집계)
 
 ```sql
--- For maintaining aggregated metrics
+-- 집계된 메트릭을 유지 관리할 때 사용
 CREATE TABLE market_stats_hourly (
     hour DateTime,
     market_id String,
@@ -79,7 +79,7 @@ CREATE TABLE market_stats_hourly (
 PARTITION BY toYYYYMM(hour)
 ORDER BY (hour, market_id);
 
--- Query aggregated data
+-- 집계된 데이터 쿼리 예시
 SELECT
     hour,
     market_id,
@@ -92,12 +92,12 @@ GROUP BY hour, market_id
 ORDER BY hour DESC;
 ```
 
-## 查询优化模式
+## 쿼리 최적화 패턴
 
-### 高效过滤
+### 효율적인 필터링
 
 ```sql
--- ✅ GOOD: Use indexed columns first
+-- ✅ 좋은 예: 인덱싱된 컬럼을 먼저 조건에 사용
 SELECT *
 FROM markets_analytics
 WHERE date >= '2025-01-01'
@@ -106,7 +106,7 @@ WHERE date >= '2025-01-01'
 ORDER BY date DESC
 LIMIT 100;
 
--- ❌ BAD: Filter on non-indexed columns first
+-- ❌ 나쁜 예: 인덱싱되지 않은 컬럼을 먼저 필터링
 SELECT *
 FROM markets_analytics
 WHERE volume > 1000
@@ -114,10 +114,10 @@ WHERE volume > 1000
   AND date >= '2025-01-01';
 ```
 
-### 聚合
+### 집계 (Aggregation)
 
 ```sql
--- ✅ GOOD: Use ClickHouse-specific aggregation functions
+-- ✅ 좋은 예: ClickHouse 전용 집계 함수 사용
 SELECT
     toStartOfDay(created_at) AS day,
     market_id,
@@ -130,7 +130,7 @@ WHERE created_at >= today() - INTERVAL 7 DAY
 GROUP BY day, market_id
 ORDER BY day DESC, total_volume DESC;
 
--- ✅ Use quantile for percentiles (more efficient than percentile)
+-- ✅ 백분위수(Percentiles) 계산 시 quantile 함수 사용 (효율적임)
 SELECT
     quantile(0.50)(trade_size) AS median,
     quantile(0.95)(trade_size) AS p95,
@@ -139,10 +139,10 @@ FROM trades
 WHERE created_at >= now() - INTERVAL 1 HOUR;
 ```
 
-### 窗口函数
+### 윈도우 함수 (Window Functions)
 
 ```sql
--- Calculate running totals
+-- 누적 합계(Running totals) 계산
 SELECT
     date,
     market_id,
@@ -157,9 +157,9 @@ WHERE date >= today() - INTERVAL 30 DAY
 ORDER BY market_id, date;
 ```
 
-## 数据插入模式
+## 데이터 삽입 패턴
 
-### 批量插入 (推荐)
+### 배치 삽입 (권장)
 
 ```typescript
 import { ClickHouse } from 'clickhouse'
@@ -173,7 +173,7 @@ const clickhouse = new ClickHouse({
   }
 })
 
-// ✅ Batch insert (efficient)
+// ✅ 효율적인 배치 삽입
 async function bulkInsertTrades(trades: Trade[]) {
   const values = trades.map(trade => `(
     '${trade.id}',
@@ -189,19 +189,19 @@ async function bulkInsertTrades(trades: Trade[]) {
   `).toPromise()
 }
 
-// ❌ Individual inserts (slow)
+// ❌ 나쁜 예: 개별 행 단위 삽입 (매우 느림)
 async function insertTrade(trade: Trade) {
-  // Don't do this in a loop!
+  // 루프 안에서 이런 식으로 처리하지 마십시오!
   await clickhouse.query(`
     INSERT INTO trades VALUES ('${trade.id}', ...)
   `).toPromise()
 }
 ```
 
-### 流式插入
+### 스트리밍 삽입
 
 ```typescript
-// For continuous data ingestion
+// 지속적인 데이터 수집을 위한 스트리밍 방식
 import { createWriteStream } from 'fs'
 import { pipeline } from 'stream/promises'
 
@@ -216,12 +216,12 @@ async function streamInserts() {
 }
 ```
 
-## 物化视图
+## 구체화된 뷰 (Materialized Views)
 
-### 实时聚合
+### 실시간 집계
 
 ```sql
--- Create materialized view for hourly stats
+-- 시간별 통계를 위한 구체화된 뷰 생성
 CREATE MATERIALIZED VIEW market_stats_hourly_mv
 TO market_stats_hourly
 AS SELECT
@@ -233,7 +233,7 @@ AS SELECT
 FROM trades
 GROUP BY hour, market_id;
 
--- Query the materialized view
+-- 구체화된 뷰 쿼리 예시
 SELECT
     hour,
     market_id,
@@ -245,12 +245,12 @@ WHERE hour >= now() - INTERVAL 24 HOUR
 GROUP BY hour, market_id;
 ```
 
-## 性能监控
+## 성능 모니터링
 
-### 查询性能
+### 쿼리 성능 확인
 
 ```sql
--- Check slow queries
+-- 느린 쿼리 확인
 SELECT
     query_id,
     user,
@@ -267,10 +267,10 @@ ORDER BY query_duration_ms DESC
 LIMIT 10;
 ```
 
-### 表统计信息
+### 테이블 통계 확인
 
 ```sql
--- Check table sizes
+-- 테이블 크기 확인
 SELECT
     database,
     table,
@@ -283,12 +283,12 @@ GROUP BY database, table
 ORDER BY sum(bytes) DESC;
 ```
 
-## 常见分析查询
+## 일반적인 분석 쿼리 예시
 
-### 时间序列分析
+### 시계열 분석
 
 ```sql
--- Daily active users
+-- 일일 활성 사용자(DAU)
 SELECT
     toDate(timestamp) AS date,
     uniq(user_id) AS daily_active_users
@@ -297,7 +297,7 @@ WHERE timestamp >= today() - INTERVAL 30 DAY
 GROUP BY date
 ORDER BY date;
 
--- Retention analysis
+-- 잔存(Retention) 분석
 SELECT
     signup_date,
     countIf(days_since_signup = 0) AS day_0,
@@ -317,10 +317,10 @@ GROUP BY signup_date
 ORDER BY signup_date DESC;
 ```
 
-### 漏斗分析
+### 퍼널(Funnel) 분석
 
 ```sql
--- Conversion funnel
+-- 전환 퍼널
 SELECT
     countIf(step = 'viewed_market') AS viewed,
     countIf(step = 'clicked_trade') AS clicked,
@@ -338,10 +338,10 @@ FROM (
 GROUP BY session_id;
 ```
 
-### 队列分析
+### 코호트(Cohort) 분석
 
 ```sql
--- User cohorts by signup month
+-- 가입 월별 사용자 코호트
 SELECT
     toStartOfMonth(signup_date) AS cohort,
     toStartOfMonth(activity_date) AS month,
@@ -358,17 +358,17 @@ GROUP BY cohort, month, months_since_signup
 ORDER BY cohort, months_since_signup;
 ```
 
-## 数据流水线模式
+## 데이터 파이프라인 패턴
 
-### ETL 模式
+### ETL 패턴
 
 ```typescript
-// Extract, Transform, Load
+// 추출(Extract), 변환(Transform), 로드(Load)
 async function etlPipeline() {
-  // 1. Extract from source
+  // 1. 소스에서 추출
   const rawData = await extractFromPostgres()
 
-  // 2. Transform
+  // 2. 변환
   const transformed = rawData.map(row => ({
     date: new Date(row.created_at).toISOString().split('T')[0],
     market_id: row.market_slug,
@@ -376,18 +376,18 @@ async function etlPipeline() {
     trades: parseInt(row.trade_count)
   }))
 
-  // 3. Load to ClickHouse
+  // 3. ClickHouse로 로드
   await bulkInsertToClickHouse(transformed)
 }
 
-// Run periodically
-setInterval(etlPipeline, 60 * 60 * 1000)  // Every hour
+// 매 시간 주기적으로 실행
+setInterval(etlPipeline, 60 * 60 * 1000)
 ```
 
-### 变更数据捕获 (CDC)
+### 변경 데이터 캡처 (CDC)
 
 ```typescript
-// Listen to PostgreSQL changes and sync to ClickHouse
+// PostgreSQL의 변경 사항을 감지하여 ClickHouse에 동기화
 import { Client } from 'pg'
 
 const pgClient = new Client({ connectionString: process.env.DATABASE_URL })
@@ -408,38 +408,33 @@ pgClient.on('notification', async (msg) => {
 })
 ```
 
-## 最佳实践
+## 베스트 프랙티스 요약
 
-### 1. 分区策略
+### 1. 파티션 전략
+* 시간 단위(보통 월 또는 일)로 파티션을 구성하십시오.
+* 파티션이 너무 많아지면 성능이 저하되므로 주의하십시오.
+* 파티션 키에는 `DATE` 타입을 사용하십시오.
 
-* 按时间分区 (通常是月或日)
-* 避免过多分区 (影响性能)
-* 对分区键使用 DATE 类型
+### 2. 정렬 키 (Sorting Keys)
+* 필터링 조건에 가장 자주 쓰이는 컬럼을 앞에 두십시오.
+* 카디널리티가 높은 컬럼을 우선 고려하십시오.
+* 정렬 상태는 데이터 압축 효율에 영향을 줍니다.
 
-### 2. 排序键
+### 3. 데이터 타입 선택
+* 가능한 가장 작은 적절한 타입을 사용하십시오 (UInt32 vs UInt64).
+* 반복되는 문자열에는 `LowCardinality`를 사용하십시오.
+* 범주형 데이터에는 `Enum` 타입을 사용하십시오.
 
-* 将最常过滤的列放在前面
-* 考虑基数 (高基数优先)
-* 排序影响压缩
+### 4. 피해야 할 사항
+* `SELECT *` 사용 지양 (필요한 컬럼만 명시)
+* `FINAL` 구문 과용 금지 (대신 쿼리 전 데이터 병합 고려)
+* 과도한 `JOIN` 사용 지양 (분석용은 반정규화 권장)
+* 빈번한 소량의 삽입 금지 (반드시 배치 처리)
 
-### 3. 数据类型
+### 5. 모니터링
+* 쿼리 성능을 정기적으로 추적하십시오.
+* 디스크 사용량을 모니터링하십시오.
+* 병합(Merge) 작업 현황을 확인하십시오.
+* 느린 쿼리 로그를 수시로 점검하십시오.
 
-* 使用最合适的较小类型 (UInt32 对比 UInt64)
-* 对重复字符串使用 LowCardinality
-* 对分类数据使用 Enum
-
-### 4. 避免
-
-* SELECT \* (指定列)
-* FINAL (改为在查询前合并数据)
-* 过多的 JOIN (分析场景下进行反规范化)
-* 频繁的小批量插入 (改为批量)
-
-### 5. 监控
-
-* 跟踪查询性能
-* 监控磁盘使用情况
-* 检查合并操作
-* 查看慢查询日志
-
-**记住**: ClickHouse 擅长分析工作负载。根据查询模式设计表，批量插入，并利用物化视图进行实时聚合。
+**핵심**: ClickHouse는 분석 워크로드에 최적화되어 있습니다. 쿼리 패턴에 맞춰 테이블을 설계하고, 대량으로 삽입하며, 구체화된 뷰를 적극적으로 활용하여 실시간 집계 성능을 확보하십시오.

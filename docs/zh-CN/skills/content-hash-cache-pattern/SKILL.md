@@ -1,36 +1,35 @@
 ---
 name: content-hash-cache-pattern
-description: 使用SHA-256内容哈希缓存昂贵的文件处理结果——路径无关、自动失效、服务层分离。
+description: SHA-256 콘텐츠 해시를 사용하여 비용이 많이 드는 파일 처리 결과를 캐싱합니다. 경로와 무관하고 자동 실효 기능이 포함된 서비스 레이어 분리 패턴입니다.
 origin: ECC
 ---
 
-# 内容哈希文件缓存模式
+# 콘텐츠 해시 파일 캐시 패턴
 
-使用 SHA-256 内容哈希作为缓存键，缓存昂贵的文件处理结果（PDF 解析、文本提取、图像分析）。与基于路径的缓存不同，此方法在文件移动/重命名后仍然有效，并在内容更改时自动失效。
+SHA-256 콘텐츠 해시를 캐시 키로 사용하여 비용이 많이 드는 파일 처리 작업(PDF 파싱, 텍스트 추출, 이미지 분석 등)의 결과를 캐싱합니다. 경로 기반 캐싱과 달리, 이 방식은 파일을 이동하거나 이름을 바꿔도 유효하며 내용이 변경되면 자동으로 캐시가 실효(Invalidation)됩니다.
 
-## 何时激活
+## 적용 시점
 
-* 构建文件处理管道时（PDF、图像、文本提取）
-* 处理成本高且同一文件被重复处理时
-* 需要一个 `--cache/--no-cache` CLI 选项时
-* 希望在不修改现有纯函数的情况下为其添加缓存时
+* 파일 처리 파이프라인(PDF, 이미지, 텍스트 추출 등)을 구축할 때
+* 처리 비용은 높지만 동일한 파일이 반복적으로 처리되는 경우
+* `--cache/--no-cache`와 같은 CLI 옵션이 필요한 경우
+* 기존 순수 함수(Pure function)를 수정하지 않고 캐싱 기능을 추가하고 싶을 때
 
-## 核心模式
+## 핵심 패턴
 
-### 1. 基于内容哈希的缓存键
-
-使用文件内容（而非路径）作为缓存键：
+### 1. 콘텐츠 해시 기반 캐시 키
+파일 경로가 아닌 파일 내용 자체를 해싱하여 캐시 키로 사용합니다.
 
 ```python
 import hashlib
 from pathlib import Path
 
-_HASH_CHUNK_SIZE = 65536  # 64KB chunks for large files
+_HASH_CHUNK_SIZE = 65536  # 대용량 파일을 위한 64KB 청크
 
 def compute_file_hash(path: Path) -> str:
-    """SHA-256 of file contents (chunked for large files)."""
+    """파일 내용의 SHA-256 해시를 계산합니다 (대용량 파일 대응)."""
     if not path.is_file():
-        raise FileNotFoundError(f"File not found: {path}")
+        raise FileNotFoundError(f"파일을 찾을 수 없습니다: {path}")
     sha256 = hashlib.sha256()
     with open(path, "rb") as f:
         while True:
@@ -41,9 +40,9 @@ def compute_file_hash(path: Path) -> str:
     return sha256.hexdigest()
 ```
 
-**为什么使用内容哈希？** 文件重命名/移动 = 缓存命中。内容更改 = 自动失效。无需索引文件。
+**왜 콘텐츠 해시인가?** 파일 이름을 바꾸거나 이동해도 캐시 적중(Hit)이 발생합니다. 내용이 조금이라도 바뀌면 자동으로 캐시가 무효화됩니다. 인덱스 파일이 따로 필요하지 않습니다.
 
-### 2. 用于缓存条目的冻结数据类
+### 2. 캐시 항목을 위한 불변 데이터 클래스 (Frozen Dataclass)
 
 ```python
 from dataclasses import dataclass
@@ -52,12 +51,11 @@ from dataclasses import dataclass
 class CacheEntry:
     file_hash: str
     source_path: str
-    document: ExtractedDocument  # The cached result
+    document: ExtractedDocument  # 캐싱될 결과물
 ```
 
-### 3. 基于文件的缓存存储
-
-每个缓存条目都存储为 `{hash}.json` —— 通过哈希实现 O(1) 查找，无需索引文件。
+### 3. 파일 기반 캐시 저장소
+각 캐시 항목은 `{hash}.json` 형태로 저장됩니다. 해시값으로 인덱스 파일 없이 O(1) 조회가 가능합니다.
 
 ```python
 import json
@@ -78,12 +76,11 @@ def read_cache(cache_dir: Path, file_hash: str) -> CacheEntry | None:
         data = json.loads(raw)
         return deserialize_entry(data)
     except (json.JSONDecodeError, ValueError, KeyError):
-        return None  # Treat corruption as cache miss
+        return None  # 데이터 손상 시 캐시 미스(Miss)로 처리
 ```
 
-### 4. 服务层包装器（单一职责原则）
-
-保持处理函数的纯净性。将缓存作为一个单独的服务层添加。
+### 4. 서비스 레이어 래퍼 (단일 책임 원칙)
+실제 데이터 처리 함수의 순수성을 유지하십시오. 캐싱은 별도의 서비스 레이어로 추가합니다.
 
 ```python
 def extract_with_cache(
@@ -92,70 +89,68 @@ def extract_with_cache(
     cache_enabled: bool = True,
     cache_dir: Path = Path(".cache"),
 ) -> ExtractedDocument:
-    """Service layer: cache check -> extraction -> cache write."""
+    """서비스 레이어: 캐시 확인 -> 추출 실행 -> 결과 저장."""
     if not cache_enabled:
-        return extract_text(file_path)  # Pure function, no cache knowledge
+        return extract_text(file_path)  # 순수 함수 호출, 캐시 로직 없음
 
     file_hash = compute_file_hash(file_path)
 
-    # Check cache
+    # 캐시 확인
     cached = read_cache(cache_dir, file_hash)
     if cached is not None:
-        logger.info("Cache hit: %s (hash=%s)", file_path.name, file_hash[:12])
+        logger.info("캐시 적중(Hit): %s (hash=%s)", file_path.name, file_hash[:12])
         return cached.document
 
-    # Cache miss -> extract -> store
-    logger.info("Cache miss: %s (hash=%s)", file_path.name, file_hash[:12])
+    # 캐시 미스 -> 추출 -> 저장
+    logger.info("캐시 미스(Miss): %s (hash=%s)", file_path.name, file_hash[:12])
     doc = extract_text(file_path)
     entry = CacheEntry(file_hash=file_hash, source_path=str(file_path), document=doc)
     write_cache(cache_dir, entry)
     return doc
 ```
 
-## 关键设计决策
+## 주요 설계 원칙
 
-| 决策 | 理由 |
+| 결정 사항 | 이유 |
 |----------|-----------|
-| SHA-256 内容哈希 | 与路径无关，内容更改时自动失效 |
-| `{hash}.json` 文件命名 | O(1) 查找，无需索引文件 |
-| 服务层包装器 | 单一职责原则：提取功能保持纯净，缓存是独立的关注点 |
-| 手动 JSON 序列化 | 完全控制冻结数据类的序列化 |
-| 损坏时返回 `None` | 优雅降级，在下次运行时重新处理 |
-| `cache_dir.mkdir(parents=True)` | 在首次写入时惰性创建目录 |
+| SHA-256 콘텐츠 해시 | 경로 무관성 확보, 내용 변경 시 자동 무효화 |
+| `{hash}.json` 파일 명명 | 별도 인덱스 없이 O(1) 조회 가능 |
+| 서비스 레이어 래퍼 | 단일 책임 원칙(SRP): 추출 로직은 순수하게 유지, 캐싱은 별도 관심사로 분리 |
+| 수동 JSON 직렬화 | 불변 데이터 클래스의 직렬화 방식 정밀 제어 |
+| 손상 시 `None` 반환 | 점진적 기능 저하(Graceful degradation), 다음 실행 시 재처리 |
+| `cache_dir.mkdir(parents=True)` | 첫 쓰기 발생 시점에 디렉토리 생성(Lazy creation) |
 
-## 最佳实践
+## 베스트 프랙티스
 
-* **哈希内容，而非路径** —— 路径会变，内容标识不变
-* 对大文件进行哈希时**分块处理** —— 避免将整个文件加载到内存中
-* **保持处理函数的纯净性** —— 它们不应了解任何关于缓存的信息
-* **记录缓存命中/未命中**，并使用截断的哈希值以便调试
-* **优雅地处理损坏** —— 将无效的缓存条目视为未命中，永不崩溃
+* **경로가 아닌 내용(Contents)을 해싱하십시오** — 경로는 변하지만 내용 식별자는 변하지 않습니다.
+* **대용량 파일 해싱 시 청크(Chunk) 단위로 처리하십시오** — 파일 전체를 메모리에 올리지 마십시오.
+* **데이터 처리 함수를 순수하게 유지하십시오** — 해당 함수들은 캐시의 존재를 몰라야 합니다.
+* **캐시 적중/미스 여부를 로깅하십시오** — 디버깅을 위해 단축된 해시값을 함께 출력하십시오.
+* **데이터 손상을 유연하게 처리하십시오** — 유효하지 않은 캐시 파일은 미스로 간주하고 프로그램을 종료시키지 마십시오.
 
-## 应避免的反模式
+## 피해야 할 안티 패턴
 
 ```python
-# BAD: Path-based caching (breaks on file move/rename)
+# ❌ 나쁜 예: 경로 기반 캐싱 (파일 이동/이름 변경 시 캐시 깨짐)
 cache = {"/path/to/file.pdf": result}
 
-# BAD: Adding cache logic inside the processing function (SRP violation)
+# ❌ 나쁜 예: 처리 함수 내부에 캐시 로직 추가 (단일 책임 원칙 위반)
 def extract_text(path, *, cache_enabled=False, cache_dir=None):
-    if cache_enabled:  # Now this function has two responsibilities
+    if cache_enabled:  # 이제 이 함수는 두 가지 책임을 갖게 됨
         ...
 
-# BAD: Using dataclasses.asdict() with nested frozen dataclasses
-# (can cause issues with complex nested types)
-data = dataclasses.asdict(entry)  # Use manual serialization instead
+# ❌ 나쁜 예: 복잡하게 중첩된 데이터 클래스에 dataclasses.asdict() 사용
+# (복잡한 타입에서 문제가 발생할 수 있음)
+data = dataclasses.asdict(entry)  # 대신 수동 직렬화(Manual serialization) 권장
 ```
 
-## 适用场景
+## 적용 가능한 케이스
+* 파일 처리 파이프라인 (PDF 파싱, OCR, 텍스트 추출, 이미지 분석 등)
+* `--cache/--no-cache` 옵션이 있는 CLI 도구
+* 여러 번 실행되는 배치 프로세스 내의 중복 파일 처리
+* 기존 순수 함수를 건드리지 않고 성능을 개선하고 싶을 때
 
-* 文件处理管道（PDF 解析、OCR、文本提取、图像分析）
-* 受益于 `--cache/--no-cache` 选项的 CLI 工具
-* 跨多次运行出现相同文件的批处理
-* 在不修改现有纯函数的情况下为其添加缓存
-
-## 不适用场景
-
-* 必须始终保持最新的数据（实时数据流）
-* 缓存条目可能极其庞大的情况（应考虑使用流式处理）
-* 结果依赖于文件内容之外参数的情况（例如，不同的提取配置）
+## 적용하기 어려운 케이스
+* 항상 최신 상태여야 하는 실시간 데이터 스트림
+* 캐시 결과물이 너무 거대한 경우 (스트리밍 방식 고려 필요)
+* 결과가 파일 내용 외의 다른 파라미터(예: 추출 설정값 등)에 의존하는 경우

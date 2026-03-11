@@ -1,57 +1,45 @@
 ---
 name: continuous-learning-v2
-description: Instinct-based learning system that observes sessions via hooks, creates atomic instincts with confidence scoring, and evolves them into skills/commands/agents. v2.1 adds project-scoped instincts to prevent cross-project contamination.
+description: 훅(Hook)을 통해 세션을 관찰하고, 확신도 점수가 포함된 원자적 본능(Instincts)을 생성하며, 이를 스킬/명령어/에이전트로 진화시키는 본능 기반 학습 시스템입니다. v2.1에서는 프로젝트 간 오염을 방지하기 위해 프로젝트 범위 본능 기능이 추가되었습니다.
 origin: ECC
 version: 2.1.0
 ---
 
-# Continuous Learning v2.1 - Instinct
--Based Architecture
+# 지속적 학습 v2.1 - 본능 기반 아키텍처
 
-An advanced learning system that turns your Claude Code sessions into reusable knowledge through atomic "instincts" - small learned behaviors with confidence scoring.
+Claude Code 세션을 원자적 "본능(Instincts)" — 확신도 점수가 포함된 작은 학습된 행동 — 으로 변환하여 재사용 가능한 지식으로 만드는 고급 학습 시스템입니다.
 
-**v2.1** adds **project-scoped instincts** — React patterns stay in your React project, Python conventions stay in your Python project, and universal patterns (like "always validate input") are shared globally.
+**v2.1**에서는 **프로젝트 범위 본능(Project-scoped instincts)** 기능이 추가되었습니다. React 패턴은 React 프로젝트에, Python 컨벤션은 Python 프로젝트에만 머무르며, "항상 입력을 검증하라"와 같은 보편적 패턴만 전역(Global)으로 공유됩니다.
 
-## When to Activate
+## 활성화 시점
 
-- Setting up automatic learning from Claude Code sessions
-- Configuring instinct-based behavior extraction via hooks
-- Tuning confidence thresholds for learned behaviors
-- Reviewing, exporting, or importing instinct libraries
-- Evolving instincts into full skills, commands, or agents
-- Managing project-scoped vs global instincts
-- Promoting instincts from project to global scope
+- Claude Code 세션에서 자동 학습 설정을 할 때
+- 훅을 통해 본능 기반 행동 추출을 구성할 때
+- 학습된 행동의 확신도 임계값을 조정할 때
+- 본능 라이브러리를 검토, 내보내기 또는 가져올 때
+- 본능을 완전한 스킬, 명령어 또는 에이전트로 진화시킬 때
+- 프로젝트 전용 본능과 전역 본능을 관리할 때
+- 특정 프로젝트 본능을 전역 범위로 승격(Promote)시키고 싶을 때
 
-## What's New in v2.1
+## v2.1의 새로운 기능 (vs v2.0)
 
-| Feature | v2.0 | v2.1 |
+| 기능 | v2.0 | v2.1 |
 |---------|------|------|
-| Storage | Global (~/.claude/homunculus/) | Project-scoped (projects/<hash>/) |
-| Scope | All instincts apply everywhere | Project-scoped + global |
-| Detection | None | git remote URL / repo path |
-| Promotion | N/A | Project → global when seen in 2+ projects |
-| Commands | 4 (status/evolve/export/import) | 6 (+promote/projects) |
-| Cross-project | Contamination risk | Isolated by default |
+| 저장 위치 | 전역 (~/.claude/homunculus/) | 프로젝트별 (projects/<hash>/) |
+| 범위 | 모든 본능이 모든 곳에 적용됨 | 프로젝트 전용 + 전역 |
+| 감지 방식 | 없음 | git 원격 URL / 저장소 경로 |
+| 승격 | 해당 없음 | 2개 이상의 프로젝트에서 발견 시 전역으로 승격 |
+| 명령어 | 4개 (status/evolve/export/import) | 6개 (+promote/projects 추가) |
+| 프로젝트 간 간섭 | 오염 위험 있음 | 기본적으로 격리됨 |
 
-## What's New in v2 (vs v1)
+## 본능(Instinct) 모델
 
-| Feature | v1 | v2 |
-|---------|----|----|
-| Observation | Stop hook (session end) | PreToolUse/PostToolUse (100% reliable) |
-| Analysis | Main context | Background agent (Haiku) |
-| Granularity | Full skills | Atomic "instincts" |
-| Confidence | None | 0.3-0.9 weighted |
-| Evolution | Direct to skill | Instincts -> cluster -> skill/command/agent |
-| Sharing | None | Export/import instincts |
-
-## The Instinct Model
-
-An instinct is a small learned behavior:
+본능은 학습된 작은 행동 단위입니다:
 
 ```yaml
 ---
 id: prefer-functional-style
-trigger: "when writing new functions"
+trigger: "새로운 함수를 작성할 때"
 confidence: 0.7
 domain: "code-style"
 source: "session-observation"
@@ -60,305 +48,83 @@ project_id: "a1b2c3d4e5f6"
 project_name: "my-react-app"
 ---
 
-# Prefer Functional Style
+# 함수형 스타일 선호
 
-## Action
-Use functional patterns over classes when appropriate.
+## 액션
+적절한 경우 클래스보다 함수형 패턴을 사용하십시오.
 
-## Evidence
-- Observed 5 instances of functional pattern preference
-- User corrected class-based approach to functional on 2025-01-15
+## 증거
+- 함수형 패턴 선호 사례 5회 관찰됨
+- 2025-01-15에 사용자가 클래스 기반 접근 방식을 함수형으로 교정함
 ```
 
-**Properties:**
-- **Atomic** -- one trigger, one action
-- **Confidence-weighted** -- 0.3 = tentative, 0.9 = near certain
-- **Domain-tagged** -- code-style, testing, git, debugging, workflow, etc.
-- **Evidence-backed** -- tracks what observations created it
-- **Scope-aware** -- `project` (default) or `global`
+**특성:**
+- **원자적(Atomic)** -- 하나의 트리거, 하나의 액션
+- **확신도 가중치** -- 0.3(시도 단계) ~ 0.9(확정 단계)
+- **도메인 태그** -- code-style, testing, git, debugging, workflow 등
+- **증거 기반** -- 어떤 관찰을 통해 생성되었는지 추적
+- **범위 인식** -- `project`(기본값) 또는 `global`
 
-## How It Works
+## 작동 원리
 
-```
-Session Activity (in a git repo)
-      |
-      | Hooks capture prompts + tool use (100% reliable)
-      | + detect project context (git remote / repo path)
-      v
-+---------------------------------------------+
-|  projects/<project-hash>/observations.jsonl  |
-|   (prompts, tool calls, outcomes, project)   |
-+---------------------------------------------+
-      |
-      | Observer agent reads (background, Haiku)
-      v
-+---------------------------------------------+
-|          PATTERN DETECTION                   |
-|   * User corrections -> instinct             |
-|   * Error resolutions -> instinct            |
-|   * Repeated workflows -> instinct           |
-|   * Scope decision: project or global?       |
-+---------------------------------------------+
-      |
-      | Creates/updates
-      v
-+---------------------------------------------+
-|  projects/<project-hash>/instincts/personal/ |
-|   * prefer-functional.yaml (0.7) [project]   |
-|   * use-react-hooks.yaml (0.9) [project]     |
-+---------------------------------------------+
-|  instincts/personal/  (GLOBAL)               |
-|   * always-validate-input.yaml (0.85) [global]|
-|   * grep-before-edit.yaml (0.6) [global]     |
-+---------------------------------------------+
-      |
-      | /evolve clusters + /promote
-      v
-+---------------------------------------------+
-|  projects/<hash>/evolved/ (project-scoped)   |
-|  evolved/ (global)                           |
-|   * commands/new-feature.md                  |
-|   * skills/testing-workflow.md               |
-|   * agents/refactor-specialist.md            |
-+---------------------------------------------+
-```
+1. **세션 활동**: git 저장소에서의 활동 발생
+2. **훅 캡처**: 프롬프트와 도구 사용을 100% 신뢰도로 캡처하고 프로젝트 컨텍스트를 감지함
+3. **관찰 로그 저장**: `projects/<project-hash>/observations.jsonl`에 저장
+4. **패턴 감지**: 백그라운드 에이전트(Haiku)가 로그를 읽어 사용자 교정, 에러 해결, 반복 워크플로우 등을 본능으로 추출
+5. **본능 생성/업데이트**: 프로젝트 전용 또는 전역 본능 저장소에 반영
+6. **진화**: `/evolve` 명령어로 본능들을 클러스터링하여 스킬/명령어/에이전트로 발전시킴
 
-## Project Detection
+## 프로젝트 감지
 
-The system automatically detects your current project:
+시스템은 다음 순서로 현재 프로젝트를 자동 감지합니다:
+1. `CLAUDE_PROJECT_DIR` 환경 변수 (최우선)
+2. `git remote get-url origin` -- 해싱하여 고유 ID 생성 (다른 기기에서도 동일 저장소면 동일 ID)
+3. `git rev-parse --show-toplevel` -- 저장소 경로 기반 (기기 종속적)
+4. **전역 폴백** -- 프로젝트 감지 실패 시 전역 범위로 처리
 
-1. **`CLAUDE_PROJECT_DIR` env var** (highest priority)
-2. **`git remote get-url origin`** -- hashed to create a portable project ID (same repo on different machines gets the same ID)
-3. **`git rev-parse --show-toplevel`** -- fallback using repo path (machine-specific)
-4. **Global fallback** -- if no project is detected, instincts go to global scope
+## 빠른 시작
 
-Each project gets a 12-character hash ID (e.g., `a1b2c3d4e5f6`). A registry file at `~/.claude/homunculus/projects.json` maps IDs to human-readable names.
+### 1. 관찰 훅 활성화
 
-## Quick Start
+`~/.claude/settings.json`에 훅 설정을 추가하십시오. (플러그인으로 설치한 경우 `${CLAUDE_PLUGIN_ROOT}` 경로 사용, 수동 설치 시 `~/.claude/skills` 경로 사용)
 
-### 1. Enable Observation Hooks
+### 2. 디렉토리 구조 초기화
 
-Add to your `~/.claude/settings.json`.
+시스템이 처음 사용될 때 자동으로 생성하지만, 수동으로 생성할 수도 있습니다:
+`mkdir -p ~/.claude/homunculus/{instincts/{personal,inherited},evolved/{agents,skills,commands},projects}`
 
-**If installed as a plugin** (recommended):
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "${CLAUDE_PLUGIN_ROOT}/skills/continuous-learning-v2/hooks/observe.sh"
-      }]
-    }],
-    "PostToolUse": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "${CLAUDE_PLUGIN_ROOT}/skills/continuous-learning-v2/hooks/observe.sh"
-      }]
-    }]
-  }
-}
-```
-
-**If installed manually** to `~/.claude/skills`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "~/.claude/skills/continuous-learning-v2/hooks/observe.sh"
-      }]
-    }],
-    "PostToolUse": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "~/.claude/skills/continuous-learning-v2/hooks/observe.sh"
-      }]
-    }]
-  }
-}
-```
-
-### 2. Initialize Directory Structure
-
-The system creates directories automatically on first use, but you can also create them manually:
+### 3. 본능 명령어 사용
 
 ```bash
-# Global directories
-mkdir -p ~/.claude/homunculus/{instincts/{personal,inherited},evolved/{agents,skills,commands},projects}
-
-# Project directories are auto-created when the hook first runs in a git repo
+/instinct-status     # 학습된 본능 표시 (프로젝트 + 전역)
+/evolve              # 관련 본능들을 스킬/명령어로 클러스터링
+/instinct-export     # 본능을 파일로 내보내기
+/instinct-import     # 외부 본능 가져오기
+/promote             # 프로젝트 본능을 전역 범위로 승격
+/projects            # 알려진 모든 프로젝트와 본능 개수 목록 표시
 ```
 
-### 3. Use the Instinct Commands
+## 본능 승격 (프로젝트 -> 전역)
 
-```bash
-/instinct-status     # Show learned instincts (project + global)
-/evolve              # Cluster related instincts into skills/commands
-/instinct-export     # Export instincts to file
-/instinct-import     # Import instincts from others
-/promote             # Promote project instincts to global scope
-/projects            # List all known projects and their instinct counts
-```
+동일한 본능이 여러 프로젝트에서 높은 확신도로 나타나면 전역 범위 승격 후보가 됩니다.
+- **자동 승격 기준**: 2개 이상의 프로젝트에서 동일 ID 본능 발견, 평균 확신도 0.8 이상
 
-## Commands
+## 확신도 점수 (Confidence Scoring)
 
-| Command | Description |
-|---------|-------------|
-| `/instinct-status` | Show all instincts (project-scoped + global) with confidence |
-| `/evolve` | Cluster related instincts into skills/commands, suggest promotions |
-| `/instinct-export` | Export instincts (filterable by scope/domain) |
-| `/instinct-import <file>` | Import instincts with scope control |
-| `/promote [id]` | Promote project instincts to global scope |
-| `/projects` | List all known projects and their instinct counts |
-
-## Configuration
-
-Edit `config.json` to control the background observer:
-
-```json
-{
-  "version": "2.1",
-  "observer": {
-    "enabled": false,
-    "run_interval_minutes": 5,
-    "min_observations_to_analyze": 20
-  }
-}
-```
-
-| Key | Default | Description |
-|-----|---------|-------------|
-| `observer.enabled` | `false` | Enable the background observer agent |
-| `observer.run_interval_minutes` | `5` | How often the observer analyzes observations |
-| `observer.min_observations_to_analyze` | `20` | Minimum observations before analysis runs |
-
-Other behavior (observation capture, instinct thresholds, project scoping, promotion criteria) is configured via code defaults in `instinct-cli.py` and `observe.sh`.
-
-## File Structure
-
-```
-~/.claude/homunculus/
-+-- identity.json           # Your profile, technical level
-+-- projects.json           # Registry: project hash -> name/path/remote
-+-- observations.jsonl      # Global observations (fallback)
-+-- instincts/
-|   +-- personal/           # Global auto-learned instincts
-|   +-- inherited/          # Global imported instincts
-+-- evolved/
-|   +-- agents/             # Global generated agents
-|   +-- skills/             # Global generated skills
-|   +-- commands/           # Global generated commands
-+-- projects/
-    +-- a1b2c3d4e5f6/       # Project hash (from git remote URL)
-    |   +-- observations.jsonl
-    |   +-- observations.archive/
-    |   +-- instincts/
-    |   |   +-- personal/   # Project-specific auto-learned
-    |   |   +-- inherited/  # Project-specific imported
-    |   +-- evolved/
-    |       +-- skills/
-    |       +-- commands/
-    |       +-- agents/
-    +-- f6e5d4c3b2a1/       # Another project
-        +-- ...
-```
-
-## Scope Decision Guide
-
-| Pattern Type | Scope | Examples |
-|-------------|-------|---------|
-| Language/framework conventions | **project** | "Use React hooks", "Follow Django REST patterns" |
-| File structure preferences | **project** | "Tests in `__tests__`/", "Components in src/components/" |
-| Code style | **project** | "Use functional style", "Prefer dataclasses" |
-| Error handling strategies | **project** | "Use Result type for errors" |
-| Security practices | **global** | "Validate user input", "Sanitize SQL" |
-| General best practices | **global** | "Write tests first", "Always handle errors" |
-| Tool workflow preferences | **global** | "Grep before Edit", "Read before Write" |
-| Git practices | **global** | "Conventional commits", "Small focused commits" |
-
-## Instinct Promotion (Project -> Global)
-
-When the same instinct appears in multiple projects with high confidence, it's a candidate for promotion to global scope.
-
-**Auto-promotion criteria:**
-- Same instinct ID in 2+ projects
-- Average confidence >= 0.8
-
-**How to promote:**
-
-```bash
-# Promote a specific instinct
-python3 instinct-cli.py promote prefer-explicit-errors
-
-# Auto-promote all qualifying instincts
-python3 instinct-cli.py promote
-
-# Preview without changes
-python3 instinct-cli.py promote --dry-run
-```
-
-The `/evolve` command also suggests promotion candidates.
-
-## Confidence Scoring
-
-Confidence evolves over time:
-
-| Score | Meaning | Behavior |
+| 점수 | 의미 | 동작 방식 |
 |-------|---------|----------|
-| 0.3 | Tentative | Suggested but not enforced |
-| 0.5 | Moderate | Applied when relevant |
-| 0.7 | Strong | Auto-approved for application |
-| 0.9 | Near-certain | Core behavior |
+| 0.3 | 시도적 (Tentative) | 제안되지만 강제되지는 않음 |
+| 0.5 | 보통 (Moderate) | 관련 있는 상황에서 적용됨 |
+| 0.7 | 강함 (Strong) | 적용 시 자동 승인됨 |
+| 0.9 | 확정적 (Near-certain) | 핵심 행동으로 간주됨 |
 
-**Confidence increases** when:
-- Pattern is repeatedly observed
-- User doesn't correct the suggested behavior
-- Similar instincts from other sources agree
+## 왜 훅(Hooks)인가? (vs 스킬)
 
-**Confidence decreases** when:
-- User explicitly corrects the behavior
-- Pattern isn't observed for extended periods
-- Contradicting evidence appears
+> "v1은 스킬을 통해 관찰했습니다. 스킬은 확률적입니다—Claude의 판단에 따라 약 50-80% 확률로 작동합니다."
 
-## Why Hooks vs Skills for Observation?
-
-> "v1 relied on skills to observe. Skills are probabilistic -- they fire ~50-80% of the time based on Claude's judgment."
-
-Hooks fire **100% of the time**, deterministically. This means:
-- Every tool call is observed
-- No patterns are missed
-- Learning is comprehensive
-
-## Backward Compatibility
-
-v2.1 is fully compatible with v2.0 and v1:
-- Existing global instincts in `~/.claude/homunculus/instincts/` still work as global instincts
-- Existing `~/.claude/skills/learned/` skills from v1 still work
-- Stop hook still runs (but now also feeds into v2)
-- Gradual migration: run both in parallel
-
-## Privacy
-
-- Observations stay **local** on your machine
-- Project-scoped instincts are isolated per project
-- Only **instincts** (patterns) can be exported — not raw observations
-- No actual code or conversation content is shared
-- You control what gets exported and promoted
-
-## Related
-
-- [Skill Creator](https://skill-creator.app) - Generate instincts from repo history
-- Homunculus - Community project that inspired the v2 instinct-based architecture (atomic observations, confidence scoring, instinct evolution pipeline)
-- [The Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352) - Continuous learning section
+훅은 **100% 확률로** 결정론적으로 작동합니다. 즉, 모든 도구 호출이 관찰되며 누락되는 패턴 없이 포괄적인 학습이 가능합니다.
 
 ---
 
-*Instinct-based learning: teaching Claude your patterns, one project at a time.*
+*본능 기반 학습: 프로젝트별로 Claude에게 당신의 패턴을 가르치십시오.*
+    

@@ -1,54 +1,54 @@
-# Claude Code 简明指南
+# Claude Code 요약 가이드
 
-![标题：Anthropic 黑客马拉松获胜者 - Claude Code 技巧与窍门](../../assets/images/shortform/00-header.png)
-
-***
-
-**自 2 月实验性推出以来，我一直是 Claude Code 的忠实用户，并凭借 [zenith.chat](https://zenith.chat) 与 [@DRodriguezFX](https://x.com/DRodriguezFX) 一起赢得了 Anthropic x Forum Ventures 的黑客马拉松——完全使用 Claude Code。**
-
-经过 10 个月的日常使用，以下是我的完整设置：技能、钩子、子代理、MCP、插件以及实际有效的方法。
+![Header: Anthropic Hackathon Winner - Claude Code Tips & Tricks](../../assets/images/shortform/00-header.png)
 
 ***
 
-## 技能和命令
+**저는 지난 2월 실험 단계부터 Claude Code를 사용해 왔으며, [@DRodriguezFX](https://x.com/DRodriguezFX)와 함께 [zenith.chat](https://zenith.chat)을 만들어 Anthropic x Forum Ventures 해커톤에서 우승했습니다. 오직 Claude Code만을 사용해서 말이죠.**
 
-技能就像规则，受限于特定的范围和流程。当你需要执行特定工作流时，它们是提示词的简写。
+10개월간 매일 사용하며 정립한 저의 전체 설정(스킬, 후크, 서브 에이전트, MCP, 플러그인 등)과 실제로 효과가 있었던 방법들을 공유합니다.
 
-在使用 Opus 4.5 长时间编码后，你想清理死代码和松散的 .md 文件吗？运行 `/refactor-clean`。需要测试吗？`/tdd`、`/e2e`、`/test-coverage`。技能也可以包含代码地图——一种让 Claude 快速浏览你的代码库而无需消耗上下文进行探索的方式。
+***
 
-![显示链式命令的终端](../../assets/images/shortform/02-chaining-commands.jpeg)
-*将命令链接在一起*
+## 스킬(Skills) 및 명령어(Commands)
 
-命令是通过斜杠命令执行的技能。它们有重叠但存储方式不同：
+스킬은 특정 범위와 프로세스로 제한된 '규칙'과 같습니다. 특정 워크플로우를 실행해야 할 때 사용하는 프롬프트의 단축어라고 이해하시면 됩니다.
 
-* **技能**: `~/.claude/skills/` - 更广泛的工作流定义
-* **命令**: `~/.claude/commands/` - 快速可执行的提示词
+Opus 4.5로 긴 코딩 작업을 마친 후 쓰지 않는 코드나 흩어진 `.md` 파일들을 정리하고 싶으신가요? `/refactor-clean`을 실행하세요. 테스트가 필요한가요? `/tdd`, `/e2e`, `/test-coverage`가 있습니다. 스킬에는 '코드 맵'을 포함할 수도 있습니다. 이는 Claude가 컨텍스트를 소모하며 탐색할 필요 없이 코드베이스를 빠르게 훑어볼 수 있게 해주는 방식입니다.
+
+![터미널에서 체이닝된 명령어 실행 모습](../../assets/images/shortform/02-chaining-commands.jpeg)
+*명령어들을 체이닝하여 실행하기*
+
+명령어는 슬래시(`/`) 명령을 통해 실행되는 스킬입니다. 스킬과 겹치는 부분이 있지만 저장 위치가 다릅니다:
+
+* **스킬(Skills)**: `~/.claude/skills/` - 더 넓은 범위의 워크플로우 정의
+* **명령어(Commands)**: `~/.claude/commands/` - 빠르게 실행 가능한 프롬프트
 
 ```bash
-# Example skill structure
+# 스킬 구조 예시
 ~/.claude/skills/
-  pmx-guidelines.md      # Project-specific patterns
-  coding-standards.md    # Language best practices
-  tdd-workflow/          # Multi-file skill with README.md
-  security-review/       # Checklist-based skill
+  pmx-guidelines.md      # 프로젝트별 패턴
+  coding-standards.md    # 언어별 베스트 프랙티스
+  tdd-workflow/          # README.md를 포함한 다중 파일 스킬
+  security-review/       # 체크리스트 기반 스킬
 ```
 
 ***
 
-## 钩子
+## 후크(Hooks)
 
-钩子是基于触发的自动化，在特定事件发生时触发。与技能不同，它们受限于工具调用和生命周期事件。
+후크는 특정 이벤트가 발생할 때 실행되는 트리거 기반 자동화입니다. 스킬과 달리 도구 호출(Tool Call)이나 생명주기 이벤트에 결합됩니다.
 
-**钩子类型：**
+**후크 유형:**
 
-1. **PreToolUse** - 工具执行前（验证、提醒）
-2. **PostToolUse** - 工具完成后（格式化、反馈循环）
-3. **UserPromptSubmit** - 当你发送消息时
-4. **Stop** - 当 Claude 完成响应时
-5. **PreCompact** - 上下文压缩前
-6. **Notification** - 权限请求
+1. **PreToolUse** - 도구 실행 전 (검증, 경고 등)
+2. **PostToolUse** - 도구 실행 후 (포매팅, 피드백 루프 등)
+3. **UserPromptSubmit** - 사용자가 메시지를 보낼 때
+4. **Stop** - Claude가 응답을 마쳤을 때
+5. **PreCompact** - 컨텍스트 압축(Compaction) 전
+6. **Notification** - 권한 요청 시
 
-**示例：长时间运行命令前的 tmux 提醒**
+**예시: 장시간 실행되는 명령어 전 tmux 확인 경고**
 
 ```json
 {
@@ -58,7 +58,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "if [ -z \"$TMUX\" ]; then echo '[Hook] Consider tmux for session persistence' >&2; fi"
+          "command": "if [ -z \"$TMUX\" ]; then echo '[Hook] 세션 유지를 위해 tmux 사용을 고려해보세요' >&2; fi"
         }
       ]
     }
@@ -66,367 +66,295 @@
 }
 ```
 
-![PostToolUse 钩子反馈](../../assets/images/shortform/03-posttooluse-hook.png)
-*在 Claude Code 中运行 PostToolUse 钩子时获得的反馈示例*
+![PostToolUse 후크 피드백](../../assets/images/shortform/03-posttooluse-hook.png)
+*Claude Code에서 PostToolUse 후크 실행 시 나타나는 피드백 예시*
 
-**专业提示：** 使用 `hookify` 插件以对话方式创建钩子，而不是手动编写 JSON。运行 `/hookify` 并描述你想要什么。
+**전문가 팁:** JSON을 직접 작성하는 대신 `hookify` 플러그인을 사용하여 대화식으로 후크를 만드세요. `/hookify`를 실행하고 원하는 내용을 설명하기만 하면 됩니다.
 
 ***
 
-## 子代理
+## 서브 에이전트(Sub-agents)
 
-子代理是你的编排器（主 Claude）可以委托任务给它的、具有有限范围的进程。它们可以在后台或前台运行，为主代理释放上下文。
+서브 에이전트는 메인 에이전트(Orchestrator)가 작업을 위임할 수 있는 제한된 범위의 프로세스입니다. 백그라운드나 포그라운드에서 실행되며 메인 에이전트의 컨텍스트를 확보해 줍니다.
 
-子代理与技能配合得很好——一个能够执行你技能子集的子代理可以被委托任务并自主使用这些技能。它们也可以用特定的工具权限进行沙盒化。
+서브 에이전트는 스킬과 함께 사용할 때 강력합니다. 특정 스킬 세트를 가진 서브 에이전트에게 작업을 위임하면 자율적으로 해당 스킬을 사용해 작업을 완수합니다. 또한 특정 도구 권한만 부여하여 샌드박스화할 수도 있습니다.
 
 ```bash
-# Example subagent structure
+# 서브 에이전트 구조 예시
 ~/.claude/agents/
-  planner.md           # Feature implementation planning
-  architect.md         # System design decisions
-  tdd-guide.md         # Test-driven development
-  code-reviewer.md     # Quality/security review
-  security-reviewer.md # Vulnerability analysis
+  planner.md           # 기능 구현 계획 수립
+  architect.md         # 시스템 설계 결정
+  tdd-guide.md         # 테스트 주도 개발 가이드
+  code-reviewer.md     # 품질 및 보안 리뷰
+  security-reviewer.md # 취약점 분석
   build-error-resolver.md
   e2e-runner.md
   refactor-cleaner.md
 ```
 
-为每个子代理配置允许的工具、MCP 和权限，以实现适当的范围界定。
+각 에이전트에게 허용된 도구, MCP, 권한을 설정하여 적절한 범위를 지정해 주세요.
 
 ***
 
-## 规则和记忆
+## 규칙(Rules) 및 기억(Memory)
 
-你的 `.rules` 文件夹包含 `.md` 文件，其中是 Claude 应始终遵循的最佳实践。有两种方法：
+`.rules` 폴더에는 Claude가 항상 준수해야 할 베스트 프랙티스를 담은 `.md` 파일들이 들어갑니다. 두 가지 방식이 있습니다:
 
-1. **单一 CLAUDE.md** - 所有内容在一个文件中（用户或项目级别）
-2. **规则文件夹** - 按关注点分组的模块化 `.md` 文件
+1. **단일 CLAUDE.md**: 모든 내용을 하나의 파일에 작성 (사용자 또는 프로젝트 레벨)
+2. **규칙 폴더(Rules Folder)**: 관심사별로 모듈화된 `.md` 파일들로 구성
 
 ```bash
 ~/.claude/rules/
-  security.md      # No hardcoded secrets, validate inputs
-  coding-style.md  # Immutability, file organization
-  testing.md       # TDD workflow, 80% coverage
-  git-workflow.md  # Commit format, PR process
-  agents.md        # When to delegate to subagents
-  performance.md   # Model selection, context management
+  security.md      # 하드코딩된 비밀정보 금지, 입력값 검증 등
+  coding-style.md  # 불변성, 파일 구성 방식 등
+  testing.md       # TDD 워크플로우, 커버리지 80% 등
+  git-workflow.md  # 커밋 형식, PR 프로세스 등
+  agents.md        # 서브 에이전트 위임 기준
+  performance.md   # 모델 선택, 컨텍스트 관리 등
 ```
 
-**规则示例：**
-
-* 代码库中不使用表情符号
-* 前端避免使用紫色色调
-* 部署前始终测试代码
-* 优先考虑模块化代码而非巨型文件
-* 绝不提交 console.log
+**규칙 예시:**
+* 코드베이스에 이모지 사용 금지
+* 프런트엔드에서 보라색 계열 사용 지양
+* 배포 전 항상 코드 테스트 수행
+* 거대 파일보다는 모듈화된 코드 선호
+* 절대로 `console.log`를 커밋하지 말 것
 
 ***
 
-## MCP（模型上下文协议）
+## MCP (Model Context Protocol)
 
-MCP 将 Claude 直接连接到外部服务。它不是 API 的替代品——而是围绕 API 的提示驱动包装器，允许在导航信息时具有更大的灵活性。
+MCP는 Claude를 외부 서비스에 직접 연결합니다. 단순한 API 대체제가 아니라, 정보를 탐색할 때 더 큰 유연성을 제공하는 프롬프트 기반의 API 래퍼입니다.
 
-**示例：** Supabase MCP 允许 Claude 提取特定数据，直接在上游运行 SQL 而无需复制粘贴。数据库、部署平台等也是如此。
+**예시:** Supabase MCP를 사용하면 Claude가 복사-붙여넣기 없이 직접 특정 데이터를 추출하거나 상류(upstream)에서 SQL을 실행할 수 있습니다. 데이터베이스나 배포 플랫폼 등에서도 동일하게 적용됩니다.
 
-![Supabase MCP 列出表](../../assets/images/shortform/04-supabase-mcp.jpeg)
-*Supabase MCP 列出公共模式内表的示例*
+![Supabase MCP 테이블 목록](../../assets/images/shortform/04-supabase-mcp.jpeg)
+*Supabase MCP를 사용하여 public 스키마 내 테이블을 나열하는 모습*
 
-**Claude 中的 Chrome：** 是一个内置的插件 MCP，允许 Claude 自主控制你的浏览器——点击查看事物如何工作。
+**Claude 내 Chrome:** 브라우저를 직접 제어할 수 있게 해주는 내장 플러그인 MCP입니다. 클릭 등을 통해 기능이 어떻게 작동하는지 직접 확인할 수 있습니다.
 
-**关键：上下文窗口管理**
+**핵심: 컨텍스트 윈도우 관리**
+MCP 사용에는 신중해야 합니다. 저는 사용자 설정에 모든 MCP를 보관하지만, **쓰지 않는 것은 모두 비활성화**해 둡니다. `/plugins`에서 아래로 스크롤하거나 `/mcp`를 실행하여 관리하세요.
 
-对 MCP 要挑剔。我将所有 MCP 保存在用户配置中，但**禁用所有未使用的**。导航到 `/plugins` 并向下滚动，或运行 `/mcp`。
+![/plugins 인터페이스 화면](../../assets/images/shortform/05-plugins-interface.jpeg)
+*현재 설치된 플러그인과 상태를 확인하기 위해 /plugins를 실행한 모습*
 
-![/plugins 界面](../../assets/images/shortform/05-plugins-interface.jpeg)
-*使用 /plugins 导航到 MCP 以查看当前安装了哪些插件及其状态*
+20만 토큰의 컨텍스트 윈도우라 할지라도 너무 많은 도구가 활성화되어 있으면 실제 가용량은 7만 토큰 정도로 줄어들 수 있습니다. 이는 성능 저하로 직결됩니다.
 
-在压缩之前，你的 200k 上下文窗口如果启用了太多工具，可能只有 70k。性能会显著下降。
-
-**经验法则：** 在配置中保留 20-30 个 MCP，但保持启用状态少于 10 个 / 活动工具少于 80 个。
+**권장 사항:** 설정에는 20~30개의 MCP를 두되, 활성화는 10개 미만, 활성 도구는 80개 미만으로 유지하십시오.
 
 ```bash
-# Check enabled MCPs
+# 활성화된 MCP 확인
 /mcp
 
-# Disable unused ones in ~/.claude.json under projects.disabledMcpServers
+# ~/.claude.json의 projects.disabledMcpServers에서 미사용 서버 비활성화
 ```
 
 ***
 
-## 插件
+## 플러그인(Plugins)
 
-插件将工具打包以便于安装，而不是繁琐的手动设置。一个插件可以是技能和 MCP 的组合，或者是捆绑在一起的钩子/工具。
+플러그인은 매번 수동으로 설정해야 하는 도구들을 설치하기 쉽게 패키지화한 것입니다. 스킬과 MCP의 조합일 수도 있고, 후크나 도구들의 묶음일 수도 있습니다.
 
-**安装插件：**
+**플러그인 설치:**
 
 ```bash
-# Add a marketplace
-# mgrep plugin by @mixedbread-ai
+# 마켓플레이스 추가 예시
+# mixedbread-ai의 mgrep 플러그인
 claude plugin marketplace add https://github.com/mixedbread-ai/mgrep
 
-# Open Claude, run /plugins, find new marketplace, install from there
+# Claude 실행 후 /plugins에서 마켓플레이스를 찾아 설치
 ```
 
-![显示 mgrep 的市场选项卡](../../assets/images/shortform/06-marketplaces-mgrep.jpeg)
-*显示新安装的 Mixedbread-Grep 市场*
+![mgrep 마켓플레이스 탭](../../assets/images/shortform/06-marketplaces-mgrep.jpeg)
+*새로 설치된 Mixedbread-Grep 마켓플레이스 화면*
 
-**LSP 插件** 如果你经常在编辑器之外运行 Claude Code，则特别有用。语言服务器协议为 Claude 提供实时类型检查、跳转到定义和智能补全，而无需打开 IDE。
+**LSP 플러그인**은 IDE 밖에서 Claude Code를 자주 사용할 때 특히 유용합니다. IDE를 열지 않고도 실시간 타입 체크, 정의 이동, 자동 완성 기능을 제공합니다.
 
 ```bash
-# Enabled plugins example
-typescript-lsp@claude-plugins-official  # TypeScript intelligence
-pyright-lsp@claude-plugins-official     # Python type checking
-hookify@claude-plugins-official         # Create hooks conversationally
-mgrep@Mixedbread-Grep                   # Better search than ripgrep
+# 활성화된 플러그인 예시
+typescript-lsp@claude-plugins-official  # TypeScript 지능형 기능
+pyright-lsp@claude-plugins-official     # Python 타입 체크
+hookify@claude-plugins-official         # 대화식 후크 생성
+mgrep@Mixedbread-Grep                   # ripgrep보다 강력한 검색
 ```
 
-与 MCP 相同的警告——注意你的上下文窗口。
+MCP와 마찬가지로 컨텍스트 윈도우 소모에 주의하세요.
 
 ***
 
-## 技巧和窍门
+## 팁과 요령
 
-### 键盘快捷键
+### 단축키
+* `Ctrl+U`: 줄 전체 삭제 (백스페이스보다 빠름)
+* `!`: 빠른 bash 명령어 실행 접두사
+* `@`: 파일 검색
+* `/`: 슬래시 명령어 시작
+* `Shift+Enter`: 여러 줄 입력
+* `Tab`: 추론 과정(Thought) 표시 전환
+* `Esc Esc`: Claude 중단 / 코드 복구
 
-* `Ctrl+U` - 删除整行（比反复按退格键快）
-* `!` - 快速 bash 命令前缀
-* `@` - 搜索文件
-* `/` - 发起斜杠命令
-* `Shift+Enter` - 多行输入
-* `Tab` - 切换思考显示
-* `Esc Esc` - 中断 Claude / 恢复代码
-
-### 并行工作流
-
-* **分叉** (`/fork`) - 分叉对话以并行执行不重叠的任务，而不是在队列中堆积消息
-* **Git Worktrees** - 用于重叠的并行 Claude 而不产生冲突。每个工作树都是一个独立的检出
+### 병렬 워크플로우
+* **포크(Fork)**: `/fork`를 사용해 대화를 분기하여 여러 작업을 동시에 수행하세요. 메시지를 쌓아두는 것보다 빠릅니다.
+* **Git Worktrees**: 충돌 없이 여러 Claude 인스턴스를 띄울 때 유용합니다. 각 워크트리는 독립된 체크아웃처럼 작동합니다.
 
 ```bash
 git worktree add ../feature-branch feature-branch
-# Now run separate Claude instances in each worktree
+# 각 워크트리에서 별도의 Claude 실행
 ```
 
-### 用于长时间运行命令的 tmux
-
-流式传输和监视 Claude 运行的日志/bash 进程：
+### 장시간 작업용 tmux
+로그나 bash 프로세스를 모니터링하며 Claude를 실행할 수 있습니다.
 
 https://github.com/user-attachments/assets/shortform/07-tmux-video.mp4
 
 ```bash
 tmux new -s dev
-# Claude runs commands here, you can detach and reattach
+# 여기서 Claude 명령 실행, 세션 분리(detach) 및 재연결 가능
 tmux attach -t dev
 ```
 
 ### mgrep > grep
-
-`mgrep` 是对 ripgrep/grep 的显著改进。通过插件市场安装，然后使用 `/mgrep` 技能。适用于本地搜索和网络搜索。
+`mgrep`은 ripgrep이나 grep보다 훨씬 뛰어납니다. 마켓플레이스에서 설치 후 `/mgrep` 스킬로 로컬 및 웹 검색에 활용하세요.
 
 ```bash
-mgrep "function handleSubmit"  # Local search
-mgrep --web "Next.js 15 app router changes"  # Web search
+mgrep "function handleSubmit"  # 로컬 검색
+mgrep --web "Next.js 15 app router changes"  # 웹 검색
 ```
 
-### 其他有用的命令
-
-* `/rewind` - 回到之前的状态
-* `/statusline` - 用分支、上下文百分比、待办事项进行自定义
-* `/checkpoints` - 文件级别的撤销点
-* `/compact` - 手动触发上下文压缩
+### 유용한 추가 명령어
+* `/rewind`: 이전 상태로 되돌리기
+* `/statusline`: 브랜치, 컨테이너 정보 등으로 상태바 커스텀
+* `/checkpoints`: 파일 단위의 실행 취소 지점 생성
+* `/compact`: 수동으로 컨텍스트 압축 실행
 
 ### GitHub Actions CI/CD
+PR에 Claude 자동 리뷰를 설정할 수 있습니다. 설정 후에는 Claude 봇이 자동으로 PR을 검토하고 의견을 남깁니다.
 
-使用 GitHub Actions 在你的 PR 上设置代码审查。配置后，Claude 可以自动审查 PR。
+![Claude 봇의 PR 승인 모습](../../assets/images/shortform/08-github-pr-review.jpeg)
+*버그 수정 PR을 승인하는 Claude 봇*
 
-![Claude 机器人批准 PR](../../assets/images/shortform/08-github-pr-review.jpeg)
-*Claude 批准一个错误修复 PR*
-
-### 沙盒化
-
-对风险操作使用沙盒模式——Claude 在受限环境中运行，不影响你的实际系统。
+### 샌드박스화(Sandboxing)
+리스크가 있는 작업은 샌드박스 모드로 실행하세요. 실제 시스템에 영향을 주지 않는 제한된 환경에서 작동합니다.
 
 ***
 
-## 关于编辑器
+## 에디터에 관하여
 
-你的编辑器选择显著影响 Claude Code 的工作流。虽然 Claude Code 可以在任何终端中工作，但将其与功能强大的编辑器配对可以解锁实时文件跟踪、快速导航和集成命令执行。
+어떤 에디터를 쓰느냐가 Claude Code 워크플로우에 큰 영향을 줍니다. Claude Code는 어떤 터미널에서도 작동하지만, 강력한 에디터와 함께 사용하면 실시간 파일 추적, 빠른 탐색, 통합 명령 실행 등의 이점을 누릴 수 있습니다.
 
-### Zed（我的偏好）
+### Zed (필자의 추천)
+저는 [Zed](https://zed.dev)를 즐겨 사용합니다. Rust로 작성되어 정말 빠르고 리소스를 거의 차지하지 않습니다.
 
-我使用 [Zed](https://zed.dev) —— 用 Rust 编写，所以它真的很快。立即打开，轻松处理大型代码库，几乎不占用系统资源。
+**Zed + Claude Code 조합이 좋은 이유:**
+* **속도**: Claude가 파일을 빠르게 수정할 때 에디터가 따라오지 못하는 지연이 없습니다.
+* **에이전트 패널 통합**: Claude가 작업하는 파일의 변화를 실시간으로 추적하고 해당 파일로 바로 이동할 수 있습니다.
+* **CMD+Shift+R 명령 팔레트**: 커스텀 슬래시 명령어, 디버거 등을 검색 가능한 UI에서 빠르게 실행합니다.
+* **최소한의 리소스**: 무거운 작업 중에도 Claude와 CPU/RAM 경쟁을 하지 않습니다. Opus 모델을 쓸 때 중요합니다.
+* **Vim 모드 지원**: Vim 키 바인딩을 선호한다면 완벽합니다.
 
-**为什么 Zed + Claude Code 是绝佳组合：**
+![Zed 에디터와 커스텀 명령어](../../assets/images/shortform/09-zed-editor.jpeg)
+*CMD+Shift+R 키로 커스텀 명령어 메뉴를 띄운 Zed 에디터. 우측 하단의 과녁 아이콘은 팔로우 모드 활성화를 나타냅니다.*
 
-* **速度** - 基于 Rust 的性能意味着当 Claude 快速编辑文件时没有延迟。你的编辑器能跟上
-* **代理面板集成** - Zed 的 Claude 集成允许你在 Claude 编辑时实时跟踪文件变化。无需离开编辑器即可跳转到 Claude 引用的文件
-* **CMD+Shift+R 命令面板** - 快速访问所有自定义斜杠命令、调试器、构建脚本，在可搜索的 UI 中
-* **最小的资源使用** - 在繁重操作期间不会与 Claude 竞争 RAM/CPU。运行 Opus 时很重要
-* **Vim 模式** - 完整的 vim 键绑定，如果你喜欢的话
-
-![带有自定义命令的 Zed 编辑器](../../assets/images/shortform/09-zed-editor.jpeg)
-*使用 CMD+Shift+R 调出带有自定义命令下拉菜单的 Zed 编辑器。右下角的靶心图标表示跟随模式已启用。*
-
-**编辑器无关提示：**
-
-1. **分割你的屏幕** - 一侧是带 Claude Code 的终端，另一侧是编辑器
-2. **Ctrl + G** - 在 Zed 中快速打开 Claude 当前正在处理的文件
-3. **自动保存** - 启用自动保存，以便 Claude 的文件读取始终是最新的
-4. **Git 集成** - 使用编辑器的 git 功能在提交前审查 Claude 的更改
-5. **文件监视器** - 大多数编辑器自动重新加载更改的文件，请验证是否已启用
+**에디터 공통 팁:**
+1. **화면 분할**: 한쪽엔 Claude Code 터미널, 다른 쪽엔 에디터를 띄우세요.
+2. **Ctrl + G**: Zed에서 Claude가 현재 작업 중인 파일로 빠르게 이동합니다.
+3. **자동 저장**: 에디터의 자동 저장 기능을 켜서 Claude가 항상 최신 파일 내용을 읽게 하세요.
+4. **Git 통합**: 커밋 전 에디터의 Git 기능을 이용해 Claude가 수정한 내용을 최종 검토하세요.
 
 ### VSCode / Cursor
+전통적이고 훌륭한 선택지입니다. 터미널 포맷이나 `\ide` 명령을 통해 LSP 기능을 연동할 수도 있고, 전용 확장 프로그램(Extension)을 사용해 더 통합된 UI를 누릴 수도 있습니다.
 
-这也是一个可行的选择，并且与 Claude Code 配合良好。你可以使用终端格式，通过 `\ide` 与你的编辑器自动同步以启用 LSP 功能（现在与插件有些冗余）。或者你可以选择扩展，它更集成于编辑器并具有匹配的 UI。
-
-![VS Code Claude Code 扩展](../../assets/images/shortform/10-vscode-extension.jpeg)
-*VS Code 扩展为 Claude Code 提供了原生图形界面，直接集成到你的 IDE 中。*
+![VS Code용 Claude Code 확장 프로그램](../../assets/images/shortform/10-vscode-extension.jpeg)
+*VS Code 확장은 IDE 내부에 통합된 그래픽 인터페이스를 제공합니다.*
 
 ***
 
-## 我的设置
+## 저의 설정 구성
 
-### 插件
-
-**已安装：**（我通常一次只启用其中的 4-5 个）
-
+### 플러그인 목록
+(보통 한 번에 4~5개만 활성화해서 사용합니다)
 ```markdown
-ralph-wiggum@claude-code-plugins       # 循环自动化
-frontend-design@claude-code-plugins    # UI/UX 模式
-commit-commands@claude-code-plugins    # Git 工作流
-security-guidance@claude-code-plugins  # 安全检查
-pr-review-toolkit@claude-code-plugins  # PR 自动化
-typescript-lsp@claude-plugins-official # TS 智能
-hookify@claude-plugins-official        # Hook 创建
-code-simplifier@claude-plugins-official
-feature-dev@claude-code-plugins
-explanatory-output-style@claude-code-plugins
-code-review@claude-code-plugins
-context7@claude-plugins-official       # 实时文档
-pyright-lsp@claude-plugins-official    # Python 类型
-mgrep@Mixedbread-Grep                  # 更好的搜索
-
+ralph-wiggum@claude-code-plugins       # 자동화 루프
+frontend-design@claude-code-plugins    # UI/UX 패턴
+commit-commands@claude-code-plugins    # Git 워크플로우
+security-guidance@claude-code-plugins  # 보안 점검
+pr-review-toolkit@claude-code-plugins  # PR 자동화
+typescript-lsp@claude-plugins-official # TS 지능적 기능
+hookify@claude-plugins-official        # 후크 생성 보조
+context7@claude-plugins-official       # 실시간 문서화
+mgrep@Mixedbread-Grep                   # 더 나은 검색
 ```
 
-### MCP 服务器
-
-**已配置（用户级别）：**
-
+### MCP 서버 설정 (사용자 레벨)
 ```json
 {
   "github": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"] },
   "firecrawl": { "command": "npx", "args": ["-y", "firecrawl-mcp"] },
-  "supabase": {
-    "command": "npx",
-    "args": ["-y", "@supabase/mcp-server-supabase@latest", "--project-ref=YOUR_REF"]
-  },
+  "supabase": { "command": "npx", "args": ["-y", "@supabase/mcp-server-supabase@latest", "--project-ref=YOUR_REF"] },
   "memory": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-memory"] },
-  "sequential-thinking": {
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
-  },
+  "sequential-thinking": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"] },
   "vercel": { "type": "http", "url": "https://mcp.vercel.com" },
   "railway": { "command": "npx", "args": ["-y", "@railway/mcp-server"] },
-  "cloudflare-docs": { "type": "http", "url": "https://docs.mcp.cloudflare.com/mcp" },
-  "cloudflare-workers-bindings": {
-    "type": "http",
-    "url": "https://bindings.mcp.cloudflare.com/mcp"
-  },
   "clickhouse": { "type": "http", "url": "https://mcp.clickhouse.cloud/mcp" },
-  "AbletonMCP": { "command": "uvx", "args": ["ableton-mcp"] },
   "magic": { "command": "npx", "args": ["-y", "@magicuidesign/mcp@latest"] }
 }
 ```
+핵심은 **설정은 많되, 프로젝트별 활성화는 5~6개로 제한**하여 컨텍스트 가용량을 지키는 것입니다.
 
-这是关键——我配置了 14 个 MCP，但每个项目只启用约 5-6 个。保持上下文窗口健康。
-
-### 关键钩子
-
+### 주요 후크 설정
 ```json
 {
   "PreToolUse": [
-    { "matcher": "npm|pnpm|yarn|cargo|pytest", "hooks": ["tmux reminder"] },
-    { "matcher": "Write && .md file", "hooks": ["block unless README/CLAUDE"] },
-    { "matcher": "git push", "hooks": ["open editor for review"] }
+    { "matcher": "npm|pnpm|yarn|cargo|pytest", "hooks": ["tmux 확인 경고"] },
+    { "matcher": "Write && .md 파일", "hooks": ["README/CLAUDE 제외 차단"] },
+    { "matcher": "git push", "hooks": ["리뷰용 에디터 열기"] }
   ],
   "PostToolUse": [
     { "matcher": "Edit && .ts/.tsx/.js/.jsx", "hooks": ["prettier --write"] },
     { "matcher": "Edit && .ts/.tsx", "hooks": ["tsc --noEmit"] },
-    { "matcher": "Edit", "hooks": ["grep console.log warning"] }
+    { "matcher": "Edit", "hooks": ["console.log 경고 탐색"] }
   ],
   "Stop": [
-    { "matcher": "*", "hooks": ["check modified files for console.log"] }
+    { "matcher": "*", "hooks": ["수정된 파일 내 console.log 최종 확인"] }
   ]
 }
 ```
 
-### 自定义状态行
+### 커스텀 상태 라인 (Statusline)
+브랜치, 컨텍스트 잔량, 모델, 시간, 할 일 목록 등을 표시합니다:
 
-显示用户、目录、带脏标记的 git 分支、剩余上下文百分比、模型、时间和待办事项计数：
-
-![自定义状态行](../../assets/images/shortform/11-statusline.jpeg)
-*我的 Mac 根目录下的状态行示例*
+![커스텀 상태바 레이아웃](../../assets/images/shortform/11-statusline.jpeg)
 
 ```
 affoon:~ ctx:65% Opus 4.5 19:52
 ▌▌ plan mode on (shift+tab to cycle)
 ```
 
-### 规则结构
+***
 
-```
-~/.claude/rules/
-  security.md      # Mandatory security checks
-  coding-style.md  # Immutability, file size limits
-  testing.md       # TDD, 80% coverage
-  git-workflow.md  # Conventional commits
-  agents.md        # Subagent delegation rules
-  patterns.md      # API response formats
-  performance.md   # Model selection (Haiku vs Sonnet vs Opus)
-  hooks.md         # Hook documentation
-```
-
-### 子代理
-
-```
-~/.claude/agents/
-  planner.md           # Break down features
-  architect.md         # System design
-  tdd-guide.md         # Write tests first
-  code-reviewer.md     # Quality review
-  security-reviewer.md # Vulnerability scan
-  build-error-resolver.md
-  e2e-runner.md        # Playwright tests
-  refactor-cleaner.md  # Dead code removal
-  doc-updater.md       # Keep docs synced
-```
+## 핵심 요약
+1. **지나치게 복잡하게 만들지 마세요** - 설정은 '미세 조정'이지 건축이 아닙니다.
+2. **컨텍스트 윈도우는 소중합니다** - 미사용 MCP와 플러그인은 끄세요.
+3. **병렬로 작업하세요** - 대화 포크와 git worktree를 활용하세요.
+4. **반복 작업은 자동화하세요** - 포매팅, 린팅, 경고 등에 후크를 쓰세요.
+5. **서브 에이전트의 범위를 좁히세요** - 제한된 도구가 집중력을 높입니다.
 
 ***
 
-## 关键要点
-
-1. **不要过度复杂化** - 将配置视为微调，而非架构
-2. **上下文窗口很宝贵** - 禁用未使用的 MCP 和插件
-3. **并行执行** - 分叉对话，使用 git worktrees
-4. **自动化重复性工作** - 用于格式化、代码检查、提醒的钩子
-5. **界定子代理范围** - 有限的工具 = 专注的执行
-
-***
-
-## 参考资料
-
-* [插件参考](https://code.claude.com/docs/en/plugins-reference)
-* [钩子文档](https://code.claude.com/docs/en/hooks)
-* [检查点](https://code.claude.com/docs/en/checkpointing)
-* [交互模式](https://code.claude.com/docs/en/interactive-mode)
-* [记忆系统](https://code.claude.com/docs/en/memory)
-* [子代理](https://code.claude.com/docs/en/sub-agents)
-* [MCP 概述](https://code.claude.com/docs/en/mcp-overview)
+## 참고 자료
+* [플러그인 레퍼런스](https://code.claude.com/docs/en/plugins-reference)
+* [후크 가이드](https://code.claude.com/docs/en/hooks)
+* [체크포인트 시스템](https://code.claude.com/docs/en/checkpointing)
+* [인터랙티브 모드](https://code.claude.com/docs/en/interactive-mode)
+* [기억(Memory) 시스템](https://code.claude.com/docs/en/memory)
+* [서브 에이전트 가이드](https://code.claude.com/docs/en/sub-agents)
+* [MCP 개요](https://code.claude.com/docs/en/mcp-overview)
 
 ***
 
-**注意：** 这是细节的一个子集。关于高级模式，请参阅 [长篇指南](the-longform-guide.md)。
+더 상세하고 고급화된 패턴은 [상세 가이드](the-longform-guide.md)를 참조하십시오.
 
 ***
 
-*在纽约与 [@DRodriguezFX](https://x.com/DRodriguezFX) 一起构建 [zenith.chat](https://zenith.chat) 赢得了 Anthropic x Forum Ventures 黑客马拉松*
+*뉴욕에서 [@DRodriguezFX](https://x.com/DRodriguezFX)와 함께 [zenith.chat](https://zenith.chat)을 개발하여 Anthropic x Forum Ventures 해커톤에서 우승했습니다.*

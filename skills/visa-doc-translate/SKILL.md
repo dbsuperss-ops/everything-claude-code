@@ -1,117 +1,42 @@
 ---
 name: visa-doc-translate
-description: Translate visa application documents (images) to English and create a bilingual PDF with original and translation
+description: 비자 신청 서류(이미지)를 영어로 번역하고, 원본과 번역본이 포함된 이중 언어 PDF를 생성합니다.
 ---
 
-You are helping translate visa application documents for visa applications.
+귀하는 비자 신청용 서류 번역을 돕는 역할을 수행합니다.
 
-## Instructions
+## 안내 사항
 
-When the user provides an image file path, AUTOMATICALLY execute the following steps WITHOUT asking for confirmation:
+사용자가 이미지 파일 경로를 제공하면, 별도의 확인 절차 없이 다음 단계들을 **자동으로** 실행하십시오.
 
-1. **Image Conversion**: If the file is HEIC, convert it to PNG using `sips -s format png <input> --out <output>`
+1. **이미지 변환**: 파일이 HEIC 형식인 경우, `sips` 명령어를 사용하여 PNG로 변환하십시오.
+2. **이미지 회전**: EXIF 데이터를 확인하여 이미지를 자동으로 정렬하십시오. 문서가 거꾸로 보이면 추가로 180도 회전 등을 시도하십시오.
+3. **OCR 텍스트 추출**: 다음 방법들을 순차적으로 시도하여 전체 텍스트를 추출하십시오.
+   - macOS Vision 프레임워크 (macOS 우선)
+   - EasyOCR (크로스 플랫폼)
+   - Tesseract OCR (사용 가능한 경우)
+4. **번호 유형 식별**: 예금 증명서, 재직 증명서, 퇴직 증명서, 사업자 등록증 등 문서 유형을 식별하십시오.
+5. **번역**: 모든 내용을 전문적인 영어로 번역하십시오.
+   - 비자 신청에 적합한 전문 용어를 사용하십시오.
+   - 고유 명사는 원문을 유지하고 괄호 안에 영문을 병기하십시오. (예: 홍길동 (HONG Gil-dong))
+   - 숫자, 날짜, 금액은 정확하게 보존하십시오.
+6. **PDF 생성**: `PIL`과 `reportlab` 라이브러리를 사용하여 Python 스크립트를 작성하고 실행하십시오.
+   - 1페이지: 회전된 원본 이미지를 A4 크기에 맞춰 중앙 정렬하여 배치하십시오.
+   - 2페이지: 중앙 정렬된 굵은 제목과 함께 전문적인 레이아웃의 영문 번역본을 배치하십시오.
+   - 하단에 "This is a certified English translation of the original document" 문구를 추가하십시오.
+7. **출력**: 원본 파일명 뒤에 `_Translated.pdf`를 붙여 동일한 디렉토리에 저장하십시오.
 
-2. **Image Rotation**:
-   - Check EXIF orientation data
-   - Automatically rotate the image based on EXIF data
-   - If EXIF orientation is 6, rotate 90 degrees counterclockwise
-   - Apply additional rotation as needed (test 180 degrees if document appears upside down)
+## 지원 문서 목록
 
-3. **OCR Text Extraction**:
-   - Try multiple OCR methods automatically:
-     - macOS Vision framework (preferred for macOS)
-     - EasyOCR (cross-platform, no tesseract required)
-     - Tesseract OCR (if available)
-   - Extract all text information from the document
-   - Identify document type (deposit certificate, employment certificate, retirement certificate, etc.)
+- 은행 예금 잔액 증명서, 수입 증명서, 재직/퇴직 증명서, 부동산 등기부 등본, 사업자 등록증, 신분증 및 여권, 기타 공식 서류.
 
-4. **Translation**:
-   - Translate all text content to English professionally
-   - Maintain the original document structure and format
-   - Use professional terminology appropriate for visa applications
-   - Keep proper names in original language with English in parentheses
-   - For Chinese names, use pinyin format (e.g., WU Zhengye)
-   - Preserve all numbers, dates, and amounts accurately
+## 주요 가이드라인
 
-5. **PDF Generation**:
-   - Create a Python script using PIL and reportlab libraries
-   - Page 1: Display the rotated original image, centered and scaled to fit A4 page
-   - Page 2: Display the English translation with proper formatting:
-     - Title centered and bold
-     - Content left-aligned with appropriate spacing
-     - Professional layout suitable for official documents
-   - Add a note at the bottom: "This is a certified English translation of the original document"
-   - Execute the script to generate the PDF
+- 단계별로 사용자 확인을 요청하지 마십시오.
+- 최적의 회전 각도를 자동으로 판단하십시오.
+- 하나의 OCR 방법이 실패하면 다른 방법을 시도하십시오.
+- 수치와 날짜 정보의 정확성을 철저히 확인하십시오.
+- 호주, 미국, 캐나다, 영국 등 영문 번역 서류가 필요한 비자 신청에 최적화된 결과물을 제공하십시오.
 
-6. **Output**: Create a PDF file named `<original_filename>_Translated.pdf` in the same directory
-
-## Supported Documents
-
-- Bank deposit certificates (存款证明)
-- Income certificates (收入证明)
-- Employment certificates (在职证明)
-- Retirement certificates (退休证明)
-- Property certificates (房产证明)
-- Business licenses (营业执照)
-- ID cards and passports
-- Other official documents
-
-## Technical Implementation
-
-### OCR Methods (tried in order)
-
-1. **macOS Vision Framework** (macOS only):
-   ```python
-   import Vision
-   from Foundation import NSURL
-   ```
-
-2. **EasyOCR** (cross-platform):
-   ```bash
-   pip install easyocr
-   ```
-
-3. **Tesseract OCR** (if available):
-   ```bash
-   brew install tesseract tesseract-lang
-   pip install pytesseract
-   ```
-
-### Required Python Libraries
-
-```bash
-pip install pillow reportlab
-```
-
-For macOS Vision framework:
-```bash
-pip install pyobjc-framework-Vision pyobjc-framework-Quartz
-```
-
-## Important Guidelines
-
-- DO NOT ask for user confirmation at each step
-- Automatically determine the best rotation angle
-- Try multiple OCR methods if one fails
-- Ensure all numbers, dates, and amounts are accurately translated
-- Use clean, professional formatting
-- Complete the entire process and report the final PDF location
-
-## Example Usage
-
-```bash
-/visa-doc-translate RetirementCertificate.PNG
-/visa-doc-translate BankStatement.HEIC
-/visa-doc-translate EmploymentLetter.jpg
-```
-
-## Output Example
-
-The skill will:
-1. Extract text using available OCR method
-2. Translate to professional English
-3. Generate `<filename>_Translated.pdf` with:
-   - Page 1: Original document image
-   - Page 2: Professional English translation
-
-Perfect for visa applications to Australia, USA, Canada, UK, and other countries requiring translated documents.
+**기억하십시오**: 최종 결과물은 공식 서류로 제출될 수 있을 만큼 전문적이고 깔끔한 형태여야 합니다.
+    

@@ -4,17 +4,17 @@ paths:
   - "**/*.pyi"
 ---
 
-# Python 钩子
+# Python 후크 (Hooks)
 
-> 本文档扩展了 [common/hooks.md](../common/hooks.md) 中关于 Python 的特定内容。
+> 이 문서는 [common/hooks.md](../common/hooks.md)의 내용을 바탕으로 Python에 특화된 내용을 확장합니다.
 
-## PostToolUse 钩子
+## PostToolUse 후크
 
-在 `~/.claude/settings.json` 中配置：
+`~/.claude/settings.json` 파일에 다음 항목을 구성하십시오:
 
-* **black/ruff**：编辑后自动格式化 `.py` 文件
-* **mypy/pyright**：编辑 `.py` 文件后运行类型检查
+* **black/ruff**: `.py` 파일 편집 후 자동으로 포매팅을 수행합니다.
+* **mypy/pyright**: `.py` 파일 편집 후 타입 체크를 수행합니다.
 
-## 警告
+## 경고 사항
 
-* 对编辑文件中的 `print()` 语句发出警告（应使用 `logging` 模块替代）
+* 코드 내 `print()` 문 사용 시 경고를 표시합니다. (대신 `logging` 모듈을 사용해야 함)

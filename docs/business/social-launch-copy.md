@@ -1,62 +1,63 @@
-# Social Launch Copy (X + LinkedIn)
+# 소셜 출시 문구 (X + LinkedIn)
 
-Use these templates as launch-ready starting points. Replace placeholders before posting.
+이 템플릿들은 바로 사용할 수 있는 출시용 문구들입니다. 게시하기 전에 플레이스홀더를 실제 내용으로 바꾸십시오.
 
-## X Post: Release Announcement
+## X 게시물: 릴리스 공지
 
 ```text
-ECC v1.8.0 is live.
+ECC v1.8.0이 출시되었습니다.
 
-We moved from “config pack” to an agent harness performance system:
-- hook reliability fixes
-- new harness commands
-- cross-tool parity (Claude Code, Cursor, OpenCode, Codex)
+저희는 "설정 팩"에서 에이전트 하네스 성능 시스템으로 진화했습니다:
+- 후크 신뢰성 수정
+- 새로운 하네스 명령어 추가
+- 도구 간 호환성 확보 (Claude Code, Cursor, OpenCode, Codex)
 
-Start here: <repo-link>
+지금 시작하세요: <저장소 링크>
 ```
 
-## X Post: Proof + Metrics
+## X 게시물: 증거 + 지표
 
 ```text
-If you evaluate agent tooling, use blended distribution metrics:
-- npm installs (`ecc-universal`, `ecc-agentshield`)
-- GitHub App installs
-- repo adoption (stars/forks/contributors)
+에이전트 도구를 평가하고 계신다면, 다음의 혼합 배포 지표를 활용해 보세요:
+- npm 설치 수 (`ecc-universal`, `ecc-agentshield`)
+- GitHub 앱 설치 수
+- 저장소 도입 현황 (별/포크/기여자 수)
 
-We now track this monthly in-repo for sponsor transparency.
+저희는 후원자분들을 위한 투명성을 위해 저장소 내에서 매월 이러한 지표를 추적합니다.
 ```
 
-## X Quote Tweet: Eval Skills Article
+## X 인용 트윗: 평가 스킬(Eval Skills) 관련
 
 ```text
-Strong point on eval discipline.
+평가 훈련에 대한 핵심적인 지적입니다.
 
-In ECC we turned this into production checks via:
+ECC에서는 이를 다음을 통해 운영 단계의 체크 루틴으로 만들었습니다:
 - /harness-audit
 - /quality-gate
-- Stop-phase session summaries
+- 세션 종료 단계 요약
 
-This is where harness performance compounds over time.
+이 과정을 통해 하네스의 성능이 시간이 지남에 따라 점진적으로 향상됩니다.
 ```
 
-## X Quote Tweet: Plankton / deslop workflow
+## X 인용 트윗: Plankton / deslop 워크플로우 관련
 
 ```text
-This workflow direction is right: optimize the harness, not just prompts.
+워크플로우가 나아가야 할 방향이 맞습니다: 단순히 프롬프트만이 아닌, 하네스 자체를 최적화해야 합니다.
 
-Our v1.8.0 focus was reliability + parity + measurable quality gates across toolchains.
+저희 v1.8.0의 핵심은 툴체인 전반에서의 신뢰성, 호환성 및 측정 가능한 품질 게이트 확보였습니다.
 ```
 
-## LinkedIn Post: Partner-Friendly Summary
+## LinkedIn 게시물: 파트너 친화적인 요약
 
 ```text
-We shipped ECC v1.8.0 with one objective: improve agent harness performance in production.
+ECC v1.8.0을 단 하나의 목표와 함께 출시했습니다: 바로 운영 환경에서의 에이전트 하네스 성능 개선입니다.
 
-Highlights:
-- more reliable hook lifecycle behavior
-- new harness-level quality commands
-- parity across Claude Code, Cursor, OpenCode, and Codex
-- stronger sponsor-facing metrics tracking
+주요 내용:
+- 더 강력하고 신뢰성 높은 후크 라이프사이클 동작
+- 새로운 하네스 수준의 품질 관리 명령어
+- Claude Code, Cursor, OpenCode, Codex 간의 호환성 확보
+- 더욱 강화된 후원자 전용 지표 추적 시스템
 
-If your team runs AI coding agents daily, this is designed for operational use.
+개발팀에서 AI 코딩 에이전트를 매일 사용한다면, 실무 운영을 위해 설계된 이 도구를 확인해 보세요.
 ```
+    

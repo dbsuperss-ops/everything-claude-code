@@ -1,42 +1,43 @@
 ---
-description: Configure your preferred package manager (npm/pnpm/yarn/bun)
-disable-model-invocation: true
+이름: setup-pm
+설명: 선호하는 패키지 매니저 (npm/pnpm/yarn/bun)를 설정합니다.
+에이전트 호출 비활성화: true
 ---
 
-# Package Manager Setup
+# 패키지 매니저 설정 (Package Manager Setup)
 
-Configure your preferred package manager for this project or globally.
+프로젝트 또는 전역적으로 선호하는 패키지 매니저를 설정합니다.
 
-## Usage
+## 사용법
 
 ```bash
-# Detect current package manager
+# 현재 패키지 매니저 감지
 node scripts/setup-package-manager.js --detect
 
-# Set global preference
+# 전역 설정값 설정
 node scripts/setup-package-manager.js --global pnpm
 
-# Set project preference
+# 프로젝트별 설정값 설정
 node scripts/setup-package-manager.js --project bun
 
-# List available package managers
+# 사용 가능한 패키지 매니저 목록 확인
 node scripts/setup-package-manager.js --list
 ```
 
-## Detection Priority
+## 감지 우선순위 (Detection Priority)
 
-When determining which package manager to use, the following order is checked:
+사용할 패키지 매니저를 결정할 때 다음 순서대로 확인합니다:
 
-1. **Environment variable**: `CLAUDE_PACKAGE_MANAGER`
-2. **Project config**: `.claude/package-manager.json`
-3. **package.json**: `packageManager` field
-4. **Lock file**: Presence of package-lock.json, yarn.lock, pnpm-lock.yaml, or bun.lockb
-5. **Global config**: `~/.claude/package-manager.json`
-6. **Fallback**: First available package manager (pnpm > bun > yarn > npm)
+1. **환경 변수**: `CLAUDE_PACKAGE_MANAGER`
+2. **프로젝트 설정**: `.claude/package-manager.json`
+3. **package.json**: `packageManager` 필드
+4. **락 파일 (Lock file)**: package-lock.json, yarn.lock, pnpm-lock.yaml, 또는 bun.lockb의 존재 여부
+5. **전역 설정**: `~/.claude/package-manager.json`
+6. **폴백 (Fallback)**: 사용 가능한 첫 번째 패키지 매니저 (pnpm > bun > yarn > npm)
 
-## Configuration Files
+## 설정 파일
 
-### Global Configuration
+### 전역 설정 (Global Configuration)
 ```json
 // ~/.claude/package-manager.json
 {
@@ -44,7 +45,7 @@ When determining which package manager to use, the following order is checked:
 }
 ```
 
-### Project Configuration
+### 프로젝트 설정 (Project Configuration)
 ```json
 // .claude/package-manager.json
 {
@@ -59,9 +60,9 @@ When determining which package manager to use, the following order is checked:
 }
 ```
 
-## Environment Variable
+## 환경 변수
 
-Set `CLAUDE_PACKAGE_MANAGER` to override all other detection methods:
+다른 모든 감지 방법을 무시하도록 `CLAUDE_PACKAGE_MANAGER`를 설정할 수 있습니다:
 
 ```bash
 # Windows (PowerShell)
@@ -71,9 +72,9 @@ $env:CLAUDE_PACKAGE_MANAGER = "pnpm"
 export CLAUDE_PACKAGE_MANAGER=pnpm
 ```
 
-## Run the Detection
+## 감지 실행
 
-To see current package manager detection results, run:
+현재 패키지 매니저 감지 결과를 확인하려면 다음을 실행하십시오:
 
 ```bash
 node scripts/setup-package-manager.js --detect

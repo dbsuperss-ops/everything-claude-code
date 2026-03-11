@@ -1,103 +1,44 @@
 ---
 name: strategic-compact
-description: Suggests manual context compaction at logical intervals to preserve context through task phases rather than arbitrary auto-compaction.
+description: 프로젝트 작업 단계(연구, 계획, 구현, 테스트 등)의 논리적인 시점에 맞춰 수동으로 컨텍스트를 압축(/compact)하도록 제안합니다. 임의의 자동 압축보다 컨텍스트 보존에 더 유리합니다.
 origin: ECC
 ---
 
-# Strategic Compact Skill
+# 전략적 압축 스킬 (Strategic Compact Skill)
 
-Suggests manual `/compact` at strategic points in your workflow rather than relying on arbitrary auto-compaction.
+워크플로우 상의 논리적인 시점에 맞춰 수동으로 `/compact` 커맨드를 사용하도록 제안합니다. 이는 임의로 발생하는 자동 압축보다 효율적입니다.
 
-## When to Activate
+## 활성화 시점
 
-- Running long sessions that approach context limits (200K+ tokens)
-- Working on multi-phase tasks (research → plan → implement → test)
-- Switching between unrelated tasks within the same session
-- After completing a major milestone and starting new work
-- When responses slow down or become less coherent (context pressure)
+- 컨텍스트 제한(20만 토큰 이상)에 도달하기 전의 긴 세션 작업 시
+- 다단계 작업(연구 → 계획 → 구현 → 테스트) 중 각 단계가 전환될 때
+- 동일 세션 내에서 서로 연관 없는 작업으로 전활할 때
+- 주요 마일스톤을 달성하고 새로운 작업을 시작할 때
+- 응답 속도가 느려지거나 일관성이 떨어질 때 (컨텍스트 압박)
 
-## Why Strategic Compaction?
+## 왜 전략적 압축인가?
 
-Auto-compaction triggers at arbitrary points:
-- Often mid-task, losing important context
-- No awareness of logical task boundaries
-- Can interrupt complex multi-step operations
+자동 압축은 시스템에서 임의의 시점에 실행되므로:
+- 작업 도중에 발생하여 중요한 맥락을 잃을 수 있습니다.
+- 논리적인 작업 경계(Boundary)를 인식하지 못합니다.
+- 복잡한 다단계 작업을 방해할 수 있습니다.
 
-Strategic compaction at logical boundaries:
-- **After exploration, before execution** — Compact research context, keep implementation plan
-- **After completing a milestone** — Fresh start for next phase
-- **Before major context shifts** — Clear exploration context before different task
+전략적 압축은 다음과 같은 시점에 권장됩니다:
+- **탐색(Research) 완료 후, 실행 전**: 방대한 연구 데이터를 압축하고 결과물인 구현 계획만 남깁니다.
+- **마일스톤 완료 후**: 다음 단계를 위해 신선한 상태로 시작합니다.
+- **작업 성격이 크게 바꿀 때**: 이전 비즈니스 로직 조사가 끝난 후 전혀 다른 작업을 시작하기 전.
 
-## How It Works
+## 결정 가이드 (언제 압축할까?)
 
-The `suggest-compact.js` script runs on PreToolUse (Edit/Write) and:
+- **연구 → 계획**: **예**. 연구 데이터는 무겁지만 계획은 정제된 결과물이므로 압축해도 무방합니다.
+- **계획 → 구현**: **예**. 계획이 파일로 작성되었다면 컨텍스트를 비워 코드 작성에 집중하십시오.
+- **구현 중**: **아니오**. 변수명, 파일 경로, 부분적인 상태 정보를 잃을 위험이 큽니다.
+- **실패한 접근법 이후**: **예**. 잘못된 논리 흐름을 비우고 새로운 접근법으로 시작하십시오.
 
-1. **Tracks tool calls** — Counts tool invocations in session
-2. **Threshold detection** — Suggests at configurable threshold (default: 50 calls)
-3. **Periodic reminders** — Reminds every 25 calls after threshold
+## 압축 후에도 남는 것 vs 사라지는 것
 
-## Hook Setup
+- **남는 것**: `CLAUDE.md`, `MEMORY.md`, 할 일 목록(`TodoWrite`), 파일에 저장된 내용, Git 상태.
+- **사라지는 것**: 중간 추론 과정 및 분석 데이터, 이전에 읽은 파일의 세부 내용, 대화 히스토리, 도구 호출 기록.
 
-Add to your `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit",
-        "hooks": [{ "type": "command", "command": "node ~/.claude/skills/strategic-compact/suggest-compact.js" }]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [{ "type": "command", "command": "node ~/.claude/skills/strategic-compact/suggest-compact.js" }]
-      }
-    ]
-  }
-}
-```
-
-## Configuration
-
-Environment variables:
-- `COMPACT_THRESHOLD` — Tool calls before first suggestion (default: 50)
-
-## Compaction Decision Guide
-
-Use this table to decide when to compact:
-
-| Phase Transition | Compact? | Why |
-|-----------------|----------|-----|
-| Research → Planning | Yes | Research context is bulky; plan is the distilled output |
-| Planning → Implementation | Yes | Plan is in TodoWrite or a file; free up context for code |
-| Implementation → Testing | Maybe | Keep if tests reference recent code; compact if switching focus |
-| Debugging → Next feature | Yes | Debug traces pollute context for unrelated work |
-| Mid-implementation | No | Losing variable names, file paths, and partial state is costly |
-| After a failed approach | Yes | Clear the dead-end reasoning before trying a new approach |
-
-## What Survives Compaction
-
-Understanding what persists helps you compact with confidence:
-
-| Persists | Lost |
-|----------|------|
-| CLAUDE.md instructions | Intermediate reasoning and analysis |
-| TodoWrite task list | File contents you previously read |
-| Memory files (`~/.claude/memory/`) | Multi-step conversation context |
-| Git state (commits, branches) | Tool call history and counts |
-| Files on disk | Nuanced user preferences stated verbally |
-
-## Best Practices
-
-1. **Compact after planning** — Once plan is finalized in TodoWrite, compact to start fresh
-2. **Compact after debugging** — Clear error-resolution context before continuing
-3. **Don't compact mid-implementation** — Preserve context for related changes
-4. **Read the suggestion** — The hook tells you *when*, you decide *if*
-5. **Write before compacting** — Save important context to files or memory before compacting
-6. **Use `/compact` with a summary** — Add a custom message: `/compact Focus on implementing auth middleware next`
-
-## Related
-
-- [The Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352) — Token optimization section
-- Memory persistence hooks — For state that survives compaction
-- `continuous-learning` skill — Extracts patterns before session ends
+**기억하십시오**: 압축하기 전에 중요한 정보는 파일이나 메모리에 기록하십시오. 압축할 때는 `/compact 다음은 인증 미들웨어 구현에 집중합니다`와 같이 요약을 덧붙여 흐름을 이어가십시오.
+    

@@ -1,126 +1,51 @@
 ---
 name: verification-loop
-description: "A comprehensive verification system for Claude Code sessions."
+description: Claude Code 세션을 위한 종합 검증 시스템 가이드입니다. 기능 구현, 리팩토링, 또는 PR 생성 전에 빌드, 타입 체크, 린트, 테스트 및 변경 사항 검토를 수행합니다.
 origin: ECC
 ---
 
-# Verification Loop Skill
+# 검증 루프 스킬 (Verification Loop Skill)
 
-A comprehensive verification system for Claude Code sessions.
+Claude Code 세션을 위한 종합적인 검증 시스템입니다.
 
-## When to Use
+## 활성화 시점
 
-Invoke this skill:
-- After completing a feature or significant code change
-- Before creating a PR
-- When you want to ensure quality gates pass
-- After refactoring
+- 기능 구현 또는 중요한 코드 변경을 완료했을 때
+- Pull Request(PR)를 생성하기 직전
+- 품질 관문(Quality gates)을 통과하는지 확인하고 싶을 때
+- 리팩토링 수행 후
 
-## Verification Phases
+## 검증 단계 (Phase)
 
-### Phase 1: Build Verification
-```bash
-# Check if project builds
-npm run build 2>&1 | tail -20
-# OR
-pnpm build 2>&1 | tail -20
-```
+### 1단계: 빌드 검증 (Build)
+- `npm run build` 또는 `pnpm build`를 실행하여 프로젝트가 정상적으로 빌드되는지 확인하십시오.
+- 빌드가 실패하면 즉시 중단하고 수정하십시오.
 
-If build fails, STOP and fix before continuing.
+### 2단계: 타입 체크 (Type Check)
+- **TypeScript**: `tsc --noEmit`을 실행하여 타입 에러를 보고하십시오.
+- **Python**: `pyright`를 통해 정적 타입 검사를 수행하십시오.
 
-### Phase 2: Type Check
-```bash
-# TypeScript projects
-npx tsc --noEmit 2>&1 | head -30
+### 3단계: 린트 체크 (Lint)
+- `npm run lint`나 `ruff check .`를 사용하여 코드 스타일과 잠재적 이슈를 확인하십시오.
 
-# Python projects
-pyright . 2>&1 | head -30
-```
+### 4단계: 테스트 스위트 (Test Suite)
+- 테스트를 실행하고 커버리지를 확인하십시오. 전체 테스트 수, 패스/실패 결과, 그리고 최소 80% 이상의 커버리지 달성 여부를 보고하십시오.
 
-Report all type errors. Fix critical ones before continuing.
+### 5단계: 보안 스캔 (Security Scan)
+- 소스 코드 내에 API 키(`sk-`, `api_key` 등)나 불필요한 디버깅 로그(`console.log`)가 남아있는지 `grep` 등으로 검색하십시오.
 
-### Phase 3: Lint Check
-```bash
-# JavaScript/TypeScript
-npm run lint 2>&1 | head -30
+### 6단계: 디프(Diff) 검토
+- `git diff`를 통해 변경된 내용을 최종 검토하십시오. 의도하지 않은 변경, 누락된 에러 처리, 잠재적인 엣지 케이스가 없는지 확인하십시오.
 
-# Python
-ruff check . 2>&1 | head -30
-```
+## 검증 결과 보고 양식 (예시)
 
-### Phase 4: Test Suite
-```bash
-# Run tests with coverage
-npm run test -- --coverage 2>&1 | tail -50
+- **빌드**: [성공/실패]
+- **타입**: [성공/실패] (에러 N개)
+- **린트**: [성공/실패] (경고 N개)
+- **테스트**: [성공/실패] (성공X/전체Y, 커버리지 Z%)
+- **보안**: [성공/실패] (이슈 N개)
+- **변경 사항**: [N개 파일 변경됨]
+- **종합 판정**: [PR 준비 완료 / 수정 필요]
 
-# Check coverage threshold
-# Target: 80% minimum
-```
-
-Report:
-- Total tests: X
-- Passed: X
-- Failed: X
-- Coverage: X%
-
-### Phase 5: Security Scan
-```bash
-# Check for secrets
-grep -rn "sk-" --include="*.ts" --include="*.js" . 2>/dev/null | head -10
-grep -rn "api_key" --include="*.ts" --include="*.js" . 2>/dev/null | head -10
-
-# Check for console.log
-grep -rn "console.log" --include="*.ts" --include="*.tsx" src/ 2>/dev/null | head -10
-```
-
-### Phase 6: Diff Review
-```bash
-# Show what changed
-git diff --stat
-git diff HEAD~1 --name-only
-```
-
-Review each changed file for:
-- Unintended changes
-- Missing error handling
-- Potential edge cases
-
-## Output Format
-
-After running all phases, produce a verification report:
-
-```
-VERIFICATION REPORT
-==================
-
-Build:     [PASS/FAIL]
-Types:     [PASS/FAIL] (X errors)
-Lint:      [PASS/FAIL] (X warnings)
-Tests:     [PASS/FAIL] (X/Y passed, Z% coverage)
-Security:  [PASS/FAIL] (X issues)
-Diff:      [X files changed]
-
-Overall:   [READY/NOT READY] for PR
-
-Issues to Fix:
-1. ...
-2. ...
-```
-
-## Continuous Mode
-
-For long sessions, run verification every 15 minutes or after major changes:
-
-```markdown
-Set a mental checkpoint:
-- After completing each function
-- After finishing a component
-- Before moving to next task
-
-Run: /verify
-```
-
-## Integration with Hooks
-
-This skill complements PostToolUse hooks but provides deeper verification.
-Hooks catch issues immediately; this skill provides comprehensive review.
+**기억하십시오**: 잦은 검증이 나중의 큰 고생을 덜어줍니다. 긴 세션에서는 15분마다 또는 주요 기능이 끝날 때마다 `/verify` 루프를 실행해 보십시오.
+    

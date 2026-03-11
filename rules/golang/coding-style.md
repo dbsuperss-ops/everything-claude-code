@@ -4,29 +4,29 @@ paths:
   - "**/go.mod"
   - "**/go.sum"
 ---
-# Go Coding Style
+# Go 코딩 스타일 (Go Coding Style)
 
-> This file extends [common/coding-style.md](../common/coding-style.md) with Go specific content.
+> 이 파일은 [common/coding-style.md](../common/coding-style.md)을 Go 전용 내용으로 확장합니다.
 
-## Formatting
+## 포매팅
 
-- **gofmt** and **goimports** are mandatory — no style debates
+- **gofmt** 및 **goimports** 사용은 필수입니다 — 스타일 논쟁은 하지 않습니다.
 
-## Design Principles
+## 설계 원칙
 
-- Accept interfaces, return structs
-- Keep interfaces small (1-3 methods)
+- 인터페이스를 받고, 구조체를 반환하십시오.
+- 인터페이스를 작게 유지하십시오 (1~3개 메서드).
 
-## Error Handling
+## 에러 처리
 
-Always wrap errors with context:
+항상 맥락과 함께 에러를 래핑하십시오:
 
 ```go
 if err != nil {
-    return fmt.Errorf("failed to create user: %w", err)
+    return fmt.Errorf("유저 생성 실패: %w", err)
 }
 ```
 
-## Reference
+## 참조
 
-See skill: `golang-patterns` for comprehensive Go idioms and patterns.
+포괄적인 Go 관용구 및 패턴에 대해서는 `golang-patterns` 스킬을 참조하십시오.

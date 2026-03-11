@@ -3,23 +3,23 @@ paths:
   - "**/*.py"
   - "**/*.pyi"
 ---
-# Python Testing
+# Python 테스트 (Python Testing)
 
-> This file extends [common/testing.md](../common/testing.md) with Python specific content.
+> 이 파일은 [common/testing.md](../common/testing.md)을 Python 전용 내용으로 확장합니다.
 
-## Framework
+## 프레임워크
 
-Use **pytest** as the testing framework.
+테스트 프레임워크로 **pytest**를 사용하십시오.
 
-## Coverage
+## 커버리지
 
 ```bash
 pytest --cov=src --cov-report=term-missing
 ```
 
-## Test Organization
+## 테스트 구성
 
-Use `pytest.mark` for test categorization:
+테스트 분류를 위해 `pytest.mark`를 사용하십시오:
 
 ```python
 import pytest
@@ -33,6 +33,6 @@ def test_database_connection():
     ...
 ```
 
-## Reference
+## 참조
 
-See skill: `python-testing` for detailed pytest patterns and fixtures.
+상세한 pytest 패턴 및 피스처(Fixture)에 대해서는 `python-testing` 스킬을 참조하십시오.

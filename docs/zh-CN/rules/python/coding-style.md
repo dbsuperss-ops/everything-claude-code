@@ -4,18 +4,18 @@ paths:
   - "**/*.pyi"
 ---
 
-# Python 编码风格
+# Python 코딩 스타일 (Coding Style)
 
-> 本文件在 [common/coding-style.md](../common/coding-style.md) 的基础上扩展了 Python 特定的内容。
+> 이 문서는 [common/coding-style.md](../common/coding-style.md)의 내용을 바탕으로 Python에 특화된 내용을 확장합니다.
 
-## 标准
+## 표준 (Standards)
 
-* 遵循 **PEP 8** 规范
-* 在所有函数签名上使用 **类型注解**
+* **PEP 8** 명세 보급을 따릅니다.
+* 모든 함수 시그니처에 **타입 힌트(Type Annotations)**를 사용하십시오.
 
-## 不变性
+## 불변성 (Immutability)
 
-优先使用不可变数据结构：
+불변 데이터 구조 사용을 우선시하십시오:
 
 ```python
 from dataclasses import dataclass
@@ -32,12 +32,12 @@ class Point(NamedTuple):
     y: float
 ```
 
-## 格式化
+## 포매팅 (Formatting)
 
-* 使用 **black** 进行代码格式化
-* 使用 **isort** 进行导入排序
-* 使用 **ruff** 进行代码检查
+* **black**을 사용하여 코드를 포매팅하십시오.
+* **isort**를 사용하여 임포트(import) 순서를 정렬하십시오.
+* **ruff**를 사용하여 코드 린팅(linting)을 수행하십시오.
 
-## 参考
+## 참고 자료
 
-查看技能：`python-patterns` 以获取全面的 Python 惯用法和模式。
+Python의 종합적인 관례와 패턴에 대해서는 `python-patterns` 스킬을 참조하십시오.

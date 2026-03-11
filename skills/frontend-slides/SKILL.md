@@ -1,184 +1,54 @@
 ---
 name: frontend-slides
-description: Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files. Use when the user wants to build a presentation, convert a PPT/PPTX to web, or create slides for a talk/pitch. Helps non-designers discover their aesthetic through visual exploration rather than abstract choices.
+description: 처음부터 새로 만들거나 PowerPoint 파일을 변환하여 애니메이션이 풍부한 멋진 HTML 프레젠테이션을 제작합니다. 프레젠테이션 구축, PPT/PPTX의 웹 변환, 발표 또는 피칭용 슬라이드 제작 시 사용하십시오.
 origin: ECC
 ---
 
-# Frontend Slides
+# 프론트엔드 슬라이드 (Frontend Slides)
 
-Create zero-dependency, animation-rich HTML presentations that run entirely in the browser.
+브라우저에서 완전히 실행되는 외부 의존성 없는(Zero-dependency) 애니메이션 중심의 HTML 프레젠테이션을 제작합니다.
 
-Inspired by the visual exploration approach showcased in work by zarazhangrui (credit: @zarazhangrui).
+## 활성화 시점
 
-## When to Activate
+- 발표 자료, 피치 덱(Pitch deck), 워크숍 Deck 또는 내부 프레젠테이션 제작 시
+- `.ppt` 또는 `.pptx` 슬라이드를 HTML 프레젠테이션으로 변환할 때
+- 기존 HTML 프레젠테이션의 레이아웃, 모션, 타이포그래피를 개선하고 싶을 때
+- 디자인 취향이 확고하지 않은 사용자에게 다양한 스타일 제안이 필요할 때
 
-- Creating a talk deck, pitch deck, workshop deck, or internal presentation
-- Converting `.ppt` or `.pptx` slides into an HTML presentation
-- Improving an existing HTML presentation's layout, motion, or typography
-- Exploring presentation styles with a user who does not know their design preference yet
+## 철칙 (Non-Negotiables)
 
-## Non-Negotiables
+1. **의존성 제로**: 인라인 CSS와 JS를 포함한 단일 자기 완비형(Self-contained) HTML 파일이 기본입니다.
+2. **뷰포트 최적화 필수**: 모든 슬라이드는 내부 스크롤 없이 하나의 뷰포트에 딱 맞아야 합니다.
+3. **말보다 시각물 개시**: 추상적인 질문 대신 시각적인 프리뷰를 먼저 보여주십시오.
+4. **차별화된 디자인**: 흔한 보라색 그라데이션이나 기본 템플릿 느낌을 피하십시오.
+5. **프로덕션 품질**: 코드 주석, 접근성, 반응형 대응 및 성능을 최상으로 유지하십시오.
 
-1. **Zero dependencies**: default to one self-contained HTML file with inline CSS and JS.
-2. **Viewport fit is mandatory**: every slide must fit inside one viewport with no internal scrolling.
-3. **Show, don't tell**: use visual previews instead of abstract style questionnaires.
-4. **Distinctive design**: avoid generic purple-gradient, Inter-on-white, template-looking decks.
-5. **Production quality**: keep code commented, accessible, responsive, and performant.
+## 워크플로우
 
-Before generating, read `STYLE_PRESETS.md` for the viewport-safe CSS base, density limits, preset catalog, and CSS gotchas.
+1. **모드 감지**: 신규 제작, PPT 변환, 또는 기존 슬라이드 개선 중 하나를 선택합니다.
+2. **내용 파악**: 목적(피칭, 강의 등), 길이, 현재 내용 상태(개요만 있는지 등)를 파악합니다.
+3. **스타일 탐색**: 사용자의 선호 분위기(지적인, 에너제틱한 등)에 맞춰 3가지 정도의 프리뷰 슬라이드를 생성하여 선택하게 합니다.
+4. **빌드**: `presentation.html` 파일을 생성합니다. 키보드/마우스 휠/터치 내비게이션, 애니메이션 트리거 등을 포함합니다.
+5. **뷰포트 검증**: 수직 스크롤바가 생기지 않도록 `clamp()` 등을 사용하여 텍스트와 간격을 조절합니다.
+6. **최종 전달**: 임시 프리뷰 파일을 삭제하고 사용된 프리셋, 사용자 정의 방법 등을 요약하여 전달합니다.
 
-## Workflow
+## PPT / PPTX 변환
 
-### 1. Detect Mode
+- `python-pptx` 라이브러리를 사용하여 텍스트, 이미지 및 발표자 노트를 추출합니다.
+- 추출 후 동일하게 스타일 선택 과정을 거쳐 세련된 HTML 슬라이드로 재구성합니다.
 
-Choose one path:
-- **New presentation**: user has a topic, notes, or full draft
-- **PPT conversion**: user has `.ppt` or `.pptx`
-- **Enhancement**: user already has HTML slides and wants improvements
+## 구현 요구사항
 
-### 2. Discover Content
+- **HTML/CSS**: 단일 파일 구성을 선호하며, 추상적인 도형, 그라데이션, 그리드, 노이즈 등을 활용하여 분위기를 연출합니다.
+- **JavaScript**: 키보드/터치/휠 내비게이션, 진행 상태 표시기, 요소 등장 애니메이션(Intersection Observer)을 포함합니다.
+- **접근성**: 의미론적 HTML 구조를 사용하고, 키보드 전용 내비게이션 제어 및 고대비 가독성을 보장합니다.
 
-Ask only the minimum needed:
-- purpose: pitch, teaching, conference talk, internal update
-- length: short (5-10), medium (10-20), long (20+)
-- content state: finished copy, rough notes, topic only
+## 슬라이드당 콘텐츠 밀도 제한
 
-If the user has content, ask them to paste it before styling.
+- **제목**: 제목 1 + 부제 1 + 옵션 태그라인
+- **내용**: 제목 1 + 불렛 4-6개 또는 짧은 문단 2개
+- **코드**: 최대 8-10줄 (스크롤 없이 보일 것)
+- **이미지**: 뷰포트 내에 고정된 1개
 
-### 3. Discover Style
-
-Default to visual exploration.
-
-If the user already knows the desired preset, skip previews and use it directly.
-
-Otherwise:
-1. Ask what feeling the deck should create: impressed, energized, focused, inspired.
-2. Generate **3 single-slide preview files** in `.ecc-design/slide-previews/`.
-3. Each preview must be self-contained, show typography/color/motion clearly, and stay under roughly 100 lines of slide content.
-4. Ask the user which preview to keep or what elements to mix.
-
-Use the preset guide in `STYLE_PRESETS.md` when mapping mood to style.
-
-### 4. Build the Presentation
-
-Output either:
-- `presentation.html`
-- `[presentation-name].html`
-
-Use an `assets/` folder only when the deck contains extracted or user-supplied images.
-
-Required structure:
-- semantic slide sections
-- a viewport-safe CSS base from `STYLE_PRESETS.md`
-- CSS custom properties for theme values
-- a presentation controller class for keyboard, wheel, and touch navigation
-- Intersection Observer for reveal animations
-- reduced-motion support
-
-### 5. Enforce Viewport Fit
-
-Treat this as a hard gate.
-
-Rules:
-- every `.slide` must use `height: 100vh; height: 100dvh; overflow: hidden;`
-- all type and spacing must scale with `clamp()`
-- when content does not fit, split into multiple slides
-- never solve overflow by shrinking text below readable sizes
-- never allow scrollbars inside a slide
-
-Use the density limits and mandatory CSS block in `STYLE_PRESETS.md`.
-
-### 6. Validate
-
-Check the finished deck at these sizes:
-- 1920x1080
-- 1280x720
-- 768x1024
-- 375x667
-- 667x375
-
-If browser automation is available, use it to verify no slide overflows and that keyboard navigation works.
-
-### 7. Deliver
-
-At handoff:
-- delete temporary preview files unless the user wants to keep them
-- open the deck with the platform-appropriate opener when useful
-- summarize file path, preset used, slide count, and easy theme customization points
-
-Use the correct opener for the current OS:
-- macOS: `open file.html`
-- Linux: `xdg-open file.html`
-- Windows: `start "" file.html`
-
-## PPT / PPTX Conversion
-
-For PowerPoint conversion:
-1. Prefer `python3` with `python-pptx` to extract text, images, and notes.
-2. If `python-pptx` is unavailable, ask whether to install it or fall back to a manual/export-based workflow.
-3. Preserve slide order, speaker notes, and extracted assets.
-4. After extraction, run the same style-selection workflow as a new presentation.
-
-Keep conversion cross-platform. Do not rely on macOS-only tools when Python can do the job.
-
-## Implementation Requirements
-
-### HTML / CSS
-
-- Use inline CSS and JS unless the user explicitly wants a multi-file project.
-- Fonts may come from Google Fonts or Fontshare.
-- Prefer atmospheric backgrounds, strong type hierarchy, and a clear visual direction.
-- Use abstract shapes, gradients, grids, noise, and geometry rather than illustrations.
-
-### JavaScript
-
-Include:
-- keyboard navigation
-- touch / swipe navigation
-- mouse wheel navigation
-- progress indicator or slide index
-- reveal-on-enter animation triggers
-
-### Accessibility
-
-- use semantic structure (`main`, `section`, `nav`)
-- keep contrast readable
-- support keyboard-only navigation
-- respect `prefers-reduced-motion`
-
-## Content Density Limits
-
-Use these maxima unless the user explicitly asks for denser slides and readability still holds:
-
-| Slide type | Limit |
-|------------|-------|
-| Title | 1 heading + 1 subtitle + optional tagline |
-| Content | 1 heading + 4-6 bullets or 2 short paragraphs |
-| Feature grid | 6 cards max |
-| Code | 8-10 lines max |
-| Quote | 1 quote + attribution |
-| Image | 1 image constrained by viewport |
-
-## Anti-Patterns
-
-- generic startup gradients with no visual identity
-- system-font decks unless intentionally editorial
-- long bullet walls
-- code blocks that need scrolling
-- fixed-height content boxes that break on short screens
-- invalid negated CSS functions like `-clamp(...)`
-
-## Related ECC Skills
-
-- `frontend-patterns` for component and interaction patterns around the deck
-- `liquid-glass-design` when a presentation intentionally borrows Apple glass aesthetics
-- `e2e-testing` if you need automated browser verification for the final deck
-
-## Deliverable Checklist
-
-- presentation runs from a local file in a browser
-- every slide fits the viewport without scrolling
-- style is distinctive and intentional
-- animation is meaningful, not noisy
-- reduced motion is respected
-- file paths and customization points are explained at handoff
+**기억하십시오**: 좋은 프레젠테이션은 청중의 시선을 사로잡는 동시에 정보를 명확하게 전달해야 합니다. 뷰포트 제한을 지키며 압도적인 시각적 경험을 제공하십시오.
+    

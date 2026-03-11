@@ -1,24 +1,24 @@
 ---
 name: docker-patterns
-description: 用于本地开发的Docker和Docker Compose模式，包括容器安全、网络、卷策略和多服务编排。
+description: 로컬 개발을 위한 Docker 및 Docker Compose 패턴입니다. 컨테이너 보안, 네트워크, 볼륨 전략 및 다중 서비스 오케스트레이션을 다룹니다.
 origin: ECC
 ---
 
-# Docker 模式
+# Docker 패턴
 
-适用于容器化开发的 Docker 和 Docker Compose 最佳实践。
+컨테이너 기반 개발을 위한 Docker 및 Docker Compose 베스트 프랙티스입니다.
 
-## 何时启用
+## 적용 시점
 
-* 为本地开发设置 Docker Compose
-* 设计多容器架构
-* 排查容器网络或卷问题
-* 审查 Dockerfile 的安全性和大小
-* 从本地开发迁移到容器化工作流
+* 로컬 개발 환경 구축을 위해 Docker Compose를 설정할 때
+* 다중 컨테이너(Multi-container) 아키텍처를 설계할 때
+* 컨테이너 네트워크 또는 볼륨 관련 문제를 해결(Troubleshooting)할 때
+* Dockerfile의 보안성 및 이미지 크기를 최적화하고 리뷰할 때
+* 로컬 개발 환경에서 컨테이너 기반 워크플로우로 이관할 때
 
-## 用于本地开发的 Docker Compose
+## 로컬 개발용 Docker Compose
 
-### 标准 Web 应用栈
+### 표준 웹 애플리케이션 스택 구성 예시
 
 ```yaml
 # docker-compose.yml
@@ -26,19 +26,19 @@ services:
   app:
     build:
       context: .
-      target: dev                     # Use dev stage of multi-stage Dockerfile
+      target: dev                     # 멀티 스테이지 Dockerfile의 dev 스테이지 사용
     ports:
       - "3000:3000"
     volumes:
-      - .:/app                        # Bind mount for hot reload
-      - /app/node_modules             # Anonymous volume -- preserves container deps
+      - .:/app                        # 소스 코드 핫 리로드(Hot reload)를 위한 바인드 마운트
+      - /app/node_modules             # 익명 볼륨 - 컨테이너 내부의 의존성 보존
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/app_dev
       - REDIS_URL=redis://redis:6379/0
       - NODE_ENV=development
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_healthy    # DB가 헬스체크를 통과한 후 실행
       redis:
         condition: service_started
     command: npm run dev
@@ -67,27 +67,27 @@ services:
     volumes:
       - redisdata:/data
 
-  mailpit:                            # Local email testing
+  mailpit:                            # 로컬 이메일 테스트 도구
     image: axllent/mailpit
     ports:
-      - "8025:8025"                   # Web UI
-      - "1025:1025"                   # SMTP
+      - "8025:8025"                   # 웹 UI
+      - "1025:1025"                   # SMTP 호스트
 
 volumes:
   pgdata:
   redisdata:
 ```
 
-### 开发与生产 Dockerfile
+### 개발(Dev) 및 운영(Prod) 공용 Dockerfile
 
 ```dockerfile
-# Stage: dependencies
+# 1단계: 의존성 설치 (deps)
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Stage: dev (hot reload, debug tools)
+# 2단계: 개발 환경 (dev - 핫 리로드, 디버그 도구 포함)
 FROM node:22-alpine AS dev
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -95,14 +95,14 @@ COPY . .
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
-# Stage: build
+# 3단계: 빌드 환경 (build)
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build && npm prune --production
 
-# Stage: production (minimal image)
+# 4단계: 운영 환경 (production - 최소화된 이미지)
 FROM node:22-alpine AS production
 WORKDIR /app
 RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001
@@ -116,19 +116,19 @@ HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/heal
 CMD ["node", "dist/server.js"]
 ```
 
-### 覆盖文件
+### 오버라이드(Override) 파일 활용
 
 ```yaml
-# docker-compose.override.yml (auto-loaded, dev-only settings)
+# docker-compose.override.yml (자동 로드됨, 개발 전용 설정)
 services:
   app:
     environment:
       - DEBUG=app:*
       - LOG_LEVEL=debug
     ports:
-      - "9229:9229"                   # Node.js debugger
+      - "9229:9229"                   # Node.js 디버거 포트
 
-# docker-compose.prod.yml (explicit for production)
+# docker-compose.prod.yml (운영 환경 전용 명시적 설정)
 services:
   app:
     build:
@@ -142,26 +142,25 @@ services:
 ```
 
 ```bash
-# Development (auto-loads override)
+# 개발 환경 (override 파일 자동 포함)
 docker compose up
 
-# Production
+# 운영 환경 (명시적으로 파일 지정)
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
-## 网络
+## 네트워크 (Networking)
 
-### 服务发现
-
-同一 Compose 网络中的服务可通过服务名解析：
+### 서비스 검색 (Service Discovery)
+동일한 Compose 네트워크 내부에서는 서비스 이름을 통해 통신이 가능합니다:
 
 ```
-# From "app" container:
-postgres://postgres:postgres@db:5432/app_dev    # "db" resolves to the db container
-redis://redis:6379/0                             # "redis" resolves to the redis container
+# "app" 컨테이너 내부에서 접근 시:
+postgres://postgres:postgres@db:5432/app_dev    # "db"가 DB 컨테이너 IP로 해석됨
+redis://redis:6379/0                             # "redis"가 Redis 컨테이너 IP로 해석됨
 ```
 
-### 自定义网络
+### 사용자 정의 네트워크 (Isolation)
 
 ```yaml
 services:
@@ -176,114 +175,42 @@ services:
 
   db:
     networks:
-      - backend-net              # Only reachable from api, not frontend
+      - backend-net              # API 컨테이너에서만 접근 가능, 프론트엔드에서는 접근 불가
 
 networks:
   frontend-net:
   backend-net:
 ```
 
-### 仅暴露所需内容
-
-```yaml
-services:
-  db:
-    ports:
-      - "127.0.0.1:5432:5432"   # Only accessible from host, not network
-    # Omit ports entirely in production -- accessible only within Docker network
-```
-
-## 卷策略
+## 볼륨 전략 (Volumes)
 
 ```yaml
 volumes:
-  # Named volume: persists across container restarts, managed by Docker
+  # 이름 있는 볼륨 (Named volume): 컨테이너 재시작 후에도 유지되며 Docker가 관리함
   pgdata:
 
-  # Bind mount: maps host directory into container (for development)
+  # 바인드 마운트 (Bind mount): 호스트의 디렉토리를 컨테이너에 매핑함 (개발용 코드 수정 반영)
   # - ./src:/app/src
 
-  # Anonymous volume: preserves container-generated content from bind mount override
+  # 익명 볼륨 (Anonymous volume): 바인드 마운트가 컨테이너 내부의 특정 폴더를 덮어쓰지 않도록 보호함
   # - /app/node_modules
 ```
 
-### 常见模式
+## 컨테이너 보안
 
-```yaml
-services:
-  app:
-    volumes:
-      - .:/app                   # Source code (bind mount for hot reload)
-      - /app/node_modules        # Protect container's node_modules from host
-      - /app/.next               # Protect build cache
+### Dockerfile 보안 강화 규칙
+1. **특정 버전 태그 사용**: `:latest`는 절대 사용하지 마십시오 (예: `node:22.12-alpine3.20`).
+2. **Non-root 계정 실행**: root가 아닌 전용 사용자를 생성하고 `USER` 명령으로 적용하십시오.
+3. **Capabilities 제한**: Compose 설정에서 불필요한 권한(`cap_drop`)을 제거하십시오.
+4. **읽기 전용 파일시스템**: 가능한 경우 `read_only: true` 설정을 적용하십시오.
+5. **이미지 레이어에 비밀 정보 포함 금지**: 빌드 시점에 API Key 등을 박아넣지 마십시오.
 
-  db:
-    volumes:
-      - pgdata:/var/lib/postgresql/data          # Persistent data
-      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql  # Init scripts
-```
+### 시크릿 및 환경 변수 관리
+* **권장**: 런타임에 주입되는 `.env` 파일(Git 제외 필수)이나 호스트 환경 변수를 사용하십시오.
+* **권장**: Docker 컨테이너 오케스트레이션 도구(Swarm, K8s)의 Secret 기능을 활용하십시오.
+* **금지**: Dockerfile 내부에 `ENV API_KEY=xxxx`와 같이 하드코딩하지 마십시오.
 
-## 容器安全
-
-### Dockerfile 加固
-
-```dockerfile
-# 1. Use specific tags (never :latest)
-FROM node:22.12-alpine3.20
-
-# 2. Run as non-root
-RUN addgroup -g 1001 -S app && adduser -S app -u 1001
-USER app
-
-# 3. Drop capabilities (in compose)
-# 4. Read-only root filesystem where possible
-# 5. No secrets in image layers
-```
-
-### Compose 安全
-
-```yaml
-services:
-  app:
-    security_opt:
-      - no-new-privileges:true
-    read_only: true
-    tmpfs:
-      - /tmp
-      - /app/.cache
-    cap_drop:
-      - ALL
-    cap_add:
-      - NET_BIND_SERVICE          # Only if binding to ports < 1024
-```
-
-### 密钥管理
-
-```yaml
-# GOOD: Use environment variables (injected at runtime)
-services:
-  app:
-    env_file:
-      - .env                     # Never commit .env to git
-    environment:
-      - API_KEY                  # Inherits from host environment
-
-# GOOD: Docker secrets (Swarm mode)
-secrets:
-  db_password:
-    file: ./secrets/db_password.txt
-
-services:
-  db:
-    secrets:
-      - db_password
-
-# BAD: Hardcoded in image
-# ENV API_KEY=sk-proj-xxxxx      # NEVER DO THIS
-```
-
-## .dockerignore
-
+## .dockerignore 설정 예시
 ```
 node_modules
 .git
@@ -300,66 +227,23 @@ README.md
 tests/
 ```
 
-## 调试
+## 디버깅 및 관리
 
-### 常用命令
+### 주요 명령어
+* **로그 확인**: `docker compose logs -f [서비스명]`
+* **컨테이너 진입**: `docker compose exec [서비스명] sh`
+* **상태 확인**: `docker compose ps`, `docker stats` (리소스 사용량)
+* **이미지 빌드**: `docker compose up --build`, `docker compose build --no-cache`
+* **정리**: `docker compose down -v` (볼륨까지 삭제 - 주의), `docker system prune`
 
-```bash
-# View logs
-docker compose logs -f app           # Follow app logs
-docker compose logs --tail=50 db     # Last 50 lines from db
+### 네트워크 트러블슈팅
+* **DNS 확인**: `docker compose exec app nslookup db`
+* **연결 확인**: `docker compose exec app wget -qO- http://api:3000/health`
 
-# Execute commands in running container
-docker compose exec app sh           # Shell into app
-docker compose exec db psql -U postgres  # Connect to postgres
+## 피해야 할 안티 패턴
 
-# Inspect
-docker compose ps                     # Running services
-docker compose top                    # Processes in each container
-docker stats                          # Resource usage
-
-# Rebuild
-docker compose up --build             # Rebuild images
-docker compose build --no-cache app   # Force full rebuild
-
-# Clean up
-docker compose down                   # Stop and remove containers
-docker compose down -v                # Also remove volumes (DESTRUCTIVE)
-docker system prune                   # Remove unused images/containers
-```
-
-### 调试网络问题
-
-```bash
-# Check DNS resolution inside container
-docker compose exec app nslookup db
-
-# Check connectivity
-docker compose exec app wget -qO- http://api:3000/health
-
-# Inspect network
-docker network ls
-docker network inspect <project>_default
-```
-
-## 反模式
-
-```
-# BAD: Using docker compose in production without orchestration
-# Use Kubernetes, ECS, or Docker Swarm for production multi-container workloads
-
-# BAD: Storing data in containers without volumes
-# Containers are ephemeral -- all data lost on restart without volumes
-
-# BAD: Running as root
-# Always create and use a non-root user
-
-# BAD: Using :latest tag
-# Pin to specific versions for reproducible builds
-
-# BAD: One giant container with all services
-# Separate concerns: one process per container
-
-# BAD: Putting secrets in docker-compose.yml
-# Use .env files (gitignored) or Docker secrets
-```
+* **운영 환경에서 단순 Compose 사용**: 운영 환경에서는 Kubernetes나 ECS 같은 오케스트레이션 도구를 권장합니다.
+* **볼륨 없이 데이터 저장**: 컨테이너는 일시적(Ephemeral)입니다. 볼륨 없이는 데이터가 유실됩니다.
+* **중복 계정(root) 사용**: 보안을 위해 항상 일반 사용자 계정을 사용하십시오.
+* **이미지 하나에 모든 서비스 구동**: '컨테이너당 하나의 프로세스' 원칙을 준수하여 서비스를 분리하십시오.
+* **시크릿 정보 노출**: `docker-compose.yml` 파일에 비밀번호를 직접 적지 마십시오.

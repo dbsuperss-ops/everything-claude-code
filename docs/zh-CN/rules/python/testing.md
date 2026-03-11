@@ -4,23 +4,23 @@ paths:
   - "**/*.pyi"
 ---
 
-# Python 测试
+# Python 테스트 (Testing)
 
-> 本文件在 [通用/测试.md](../common/testing.md) 的基础上扩展了 Python 特定的内容。
+> 이 문서는 [공통 테스트 가이드](../common/testing.md)의 내용을 바탕으로 Python에 특화된 내용을 확장합니다.
 
-## 框架
+## 프레임워크
 
-使用 **pytest** 作为测试框架。
+테스트 프레임워크로 **pytest**를 사용하십시오.
 
-## 覆盖率
+## 커버리지
 
 ```bash
 pytest --cov=src --cov-report=term-missing
 ```
 
-## 测试组织
+## 테스트 구성
 
-使用 `pytest.mark` 进行测试分类：
+`pytest.mark`를 사용하여 테스트를 카테고리별로 분류하십시오:
 
 ```python
 import pytest
@@ -34,6 +34,6 @@ def test_database_connection():
     ...
 ```
 
-## 参考
+## 참고 자료
 
-查看技能：`python-testing` 以获取详细的 pytest 模式和夹具信息。
+상세한 pytest 패턴 및 픽스처(Fixtures) 사용법은 `python-testing` 스킬을 참조하십시오.

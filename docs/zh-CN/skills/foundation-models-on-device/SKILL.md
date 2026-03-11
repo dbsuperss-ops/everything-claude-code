@@ -1,24 +1,25 @@
 ---
 name: foundation-models-on-device
-description: 苹果FoundationModels框架用于设备上的LLM——文本生成、使用@Generable进行引导生成、工具调用，以及在iOS 26+中的快照流。
+description: 기기용 LLM을 위한 애플의 FoundationModels 프레임워크 가이드입니다. 텍스트 생성, @Generable을 사용한 제어 생성, 도구 호출(Tool calling) 및 iOS 26+의 스냅샷 스트리밍을 다룹니다.
+origin: ECC
 ---
 
-# FoundationModels：设备端 LLM（iOS 26）
+# FoundationModels: 온디바이스(On-device) LLM (iOS 26)
 
-使用 FoundationModels 框架将苹果的设备端语言模型集成到应用中的模式。涵盖文本生成、使用 `@Generable` 的结构化输出、自定义工具调用以及快照流式传输——全部在设备端运行，以保护隐私并支持离线使用。
+애플의 온디바이스 언어 모델을 앱에 통합하기 위한 FoundationModels 프레임워크 활용 패턴입니다. 텍스트 생성, `@Generable`을 이용한 구조화된 출력, 커스텀 도구 호출 및 스냅샷 스트리밍을 다루며, 모든 작업은 개인정보 보호와 오프라인 지원을 위해 기기 내부에서 실행됩니다.
 
-## 何时启用
+## 적용 시점
 
-* 使用 Apple Intelligence 在设备端构建 AI 功能
-* 无需依赖云端即可生成或总结文本
-* 从自然语言输入中提取结构化数据
-* 为特定领域的 AI 操作实现自定义工具调用
-* 流式传输结构化响应以实现实时 UI 更新
-* 需要保护隐私的 AI（数据不离开设备）
+* Apple Intelligence를 사용하여 온디바이스 AI 기능을 구축할 때
+* 클라우드 의존 없이 텍스트 생성 또는 요약 기능을 구현할 때
+* 자연어 입력에서 구조화된 데이터를 추출할 때
+* 특정 도메인용 AI 작업을 위해 커스텀 도구 호출(Tool calling)을 구현할 때
+* 실시간 UI 업데이트를 위해 구조화된 응답을 스트리밍할 때
+* 데이터가 기기를 벗어나지 않는 개인정보 보호 중심 AI가 필요할 때
 
-## 核心模式 — 可用性检查
+## 핵심 패턴 — 가용성 확인 (Availability Check)
 
-在创建会话之前，始终检查模型可用性：
+세션을 생성하기 전에 반드시 모델의 가용성을 확인하십시오:
 
 ```swift
 struct GenerativeView: View {
@@ -29,93 +30,88 @@ struct GenerativeView: View {
         case .available:
             ContentView()
         case .unavailable(.deviceNotEligible):
-            Text("Device not eligible for Apple Intelligence")
+            Text("Apple Intelligence를 지원하지 않는 기기입니다.")
         case .unavailable(.appleIntelligenceNotEnabled):
-            Text("Please enable Apple Intelligence in Settings")
+            Text("설정에서 Apple Intelligence를 활성화해주세요.")
         case .unavailable(.modelNotReady):
-            Text("Model is downloading or not ready")
+            Text("모델 다운로드 중이거나 준비되지 않았습니다.")
         case .unavailable(let other):
-            Text("Model unavailable: \(other)")
+            Text("모델 사용 불가: \(other)")
         }
     }
 }
 ```
 
-## 核心模式 — 基础会话
+## 핵심 패턴 — 기본 세션 (Basic Session)
 
 ```swift
-// Single-turn: create a new session each time
+// 단발성(Single-turn): 매번 새로운 세션 생성
 let session = LanguageModelSession()
-let response = try await session.respond(to: "What's a good month to visit Paris?")
+let response = try await session.respond(to: "파리를 방문하기 좋은 달은 언제인가요?")
 print(response.content)
 
-// Multi-turn: reuse session for conversation context
+// 다회성(Multi-turn): 대화 맥락 유지를 위해 세션 재사용
 let session = LanguageModelSession(instructions: """
-    You are a cooking assistant.
-    Provide recipe suggestions based on ingredients.
-    Keep suggestions brief and practical.
+    당신은 요리 보조원입니다.
+    재료에 기반한 레시피 제안을 제공하십시오.
+    제안은 간결하고 실용적이어야 합니다.
     """)
 
-let first = try await session.respond(to: "I have chicken and rice")
-let followUp = try await session.respond(to: "What about a vegetarian option?")
+let first = try await session.respond(to: "닭고기와 쌀이 있습니다.")
+let followUp = try await session.respond(to: "채식 옵션은 어떤 게 있을까요?")
 ```
 
-指令的关键点：
+**지침(Instructions) 작성 팁:**
+* 모델의 역할 정의 ("당신은 튜터입니다")
+* 수행할 작업 명시 ("캘린더 일정 추출을 도와주세요")
+* 스타일 선호도 설정 ("가능한 짧게 답하세요")
+* 안전 장치 추가 ("위험한 요청에는 '도와드릴 수 없습니다'라고 답하세요")
 
-* 定义模型的角色（"你是一位导师"）
-* 指定要做什么（"帮助提取日历事件"）
-* 设置风格偏好（"尽可能简短地回答"）
-* 添加安全措施（"对于危险请求，回复'我无法提供帮助'"）
+## 핵심 패턴 — @Generable을 이용한 제어 생성
 
-## 核心模式 — 使用 @Generable 进行引导式生成
+원시 문자열 대신 구조화된 Swift 타입을 생성합니다:
 
-生成结构化的 Swift 类型，而不是原始字符串：
-
-### 1. 定义可生成类型
-
+### 1. 생성 가능한 타입 정의
 ```swift
-@Generable(description: "Basic profile information about a cat")
+@Generable(description: "고양이에 대한 기본 프로필 정보")
 struct CatProfile {
     var name: String
 
-    @Guide(description: "The age of the cat", .range(0...20))
+    @Guide(description: "고양이의 나이", .range(0...20))
     var age: Int
 
-    @Guide(description: "A one sentence profile about the cat's personality")
+    @Guide(description: "고양이의 성격에 대한 한 문장 소개")
     var profile: String
 }
 ```
 
-### 2. 请求结构化输出
-
+### 2. 구조화된 출력 요청
 ```swift
 let response = try await session.respond(
-    to: "Generate a cute rescue cat",
+    to: "귀여운 유기묘 한 마리를 생성해줘",
     generating: CatProfile.self
 )
 
-// Access structured fields directly
-print("Name: \(response.content.name)")
-print("Age: \(response.content.age)")
-print("Profile: \(response.content.profile)")
+// 구조화된 필드에 직접 접근
+print("이름: \(response.content.name)")
+print("나이: \(response.content.age)")
+print("소개: \(response.content.profile)")
 ```
 
-### 支持的 @Guide 约束
+**지원되는 @Guide 제약 조건:**
+* `.range(0...20)` — 수치 범위 제한
+* `.count(3)` — 배열 요소 개수 제한
+* `description:` — 생성 방향에 대한 의미적 가이드
 
-* `.range(0...20)` — 数值范围
-* `.count(3)` — 数组元素数量
-* `description:` — 生成的语义引导
+## 핵심 패턴 — 도구 호출 (Tool Calling)
 
-## 核心模式 — 工具调用
+모델이 특정 도메인 작업을 수행하기 위해 커스텀 코드를 호출하게 합니다:
 
-让模型调用自定义代码以执行特定领域的任务：
-
-### 1. 定义工具
-
+### 1. 도구 정의
 ```swift
 struct RecipeSearchTool: Tool {
     let name = "recipe_search"
-    let description = "Search for recipes matching a given term and return a list of results."
+    let description = "주어진 용어와 일치하는 레시피를 검색하고 결과 목록을 반환합니다."
 
     @Generable
     struct Arguments {
@@ -133,112 +129,79 @@ struct RecipeSearchTool: Tool {
 }
 ```
 
-### 2. 创建带工具的会话
-
+### 2. 도구가 포함된 세션 생성
 ```swift
 let session = LanguageModelSession(tools: [RecipeSearchTool()])
-let response = try await session.respond(to: "Find me some pasta recipes")
+let response = try await session.respond(to: "파스타 레시피 좀 찾아줘")
 ```
 
-### 3. 处理工具错误
+## 핵심 패턴 — 스냅샷 스트리밍 (Snapshot Streaming)
 
-```swift
-do {
-    let answer = try await session.respond(to: "Find a recipe for tomato soup.")
-} catch let error as LanguageModelSession.ToolCallError {
-    print(error.tool.name)
-    if case .databaseIsEmpty = error.underlyingError as? RecipeSearchToolError {
-        // Handle specific tool error
-    }
-}
-```
-
-## 核心模式 — 快照流式传输
-
-使用 `PartiallyGenerated` 类型为实时 UI 流式传输结构化响应：
+실시간 UI를 위해 `PartiallyGenerated` 타입을 사용하여 구조화된 응답을 스트리밍합니다:
 
 ```swift
 @Generable
 struct TripIdeas {
-    @Guide(description: "Ideas for upcoming trips")
+    @Guide(description: "추천 여행 아이디어 목록")
     var ideas: [String]
 }
 
 let stream = session.streamResponse(
-    to: "What are some exciting trip ideas?",
+    to: "흥미로운 여행지 아이디어를 알려줘",
     generating: TripIdeas.self
 )
 
 for try await partial in stream {
-    // partial: TripIdeas.PartiallyGenerated (all properties Optional)
+    // partial: TripIdeas.PartiallyGenerated (모든 속성이 Optional임)
     print(partial)
 }
 ```
 
-### SwiftUI 集成
-
+### SwiftUI 통합 예시
 ```swift
 @State private var partialResult: TripIdeas.PartiallyGenerated?
-@State private var errorMessage: String?
 
 var body: some View {
-    List {
-        ForEach(partialResult?.ideas ?? [], id: \.self) { idea in
-            Text(idea)
-        }
-    }
-    .overlay {
-        if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
+    List(partialResult?.ideas ?? [], id: \.self) { idea in
+        Text(idea)
     }
     .task {
-        do {
-            let stream = session.streamResponse(to: prompt, generating: TripIdeas.self)
-            for try await partial in stream {
-                partialResult = partial
-            }
-        } catch {
-            errorMessage = error.localizedDescription
+        let stream = session.streamResponse(to: prompt, generating: TripIdeas.self)
+        for try await partial in stream {
+            partialResult = partial
         }
     }
 }
 ```
 
-## 关键设计决策
+## 주요 설계 결정 사항
 
-| 决策 | 理由 |
+| 결정 사항 | 사유 |
 |----------|-----------|
-| 设备端执行 | 隐私性——数据不离开设备；支持离线工作 |
-| 4,096 个令牌限制 | 设备端模型约束；跨会话分块处理大数据 |
-| 快照流式传输（非增量） | 对结构化输出友好；每个快照都是一个完整的部分状态 |
-| `@Generable` 宏 | 为结构化生成提供编译时安全性；自动生成 `PartiallyGenerated` 类型 |
-| 每个会话单次请求 | `isResponding` 防止并发请求；如有需要，创建多个会话 |
-| `response.content`（而非 `.output`） | 正确的 API——始终通过 `.content` 属性访问结果 |
+| **온디바이스 실행** | 개인정보 보호(데이터 유출 방지), 오프라인 지원 |
+| **4,096 토큰 제한** | 온디바이스 모델의 한계; 큰 데이터는 세션을 나누어 처리 권장 |
+| **스냅샷 스트리밍** | 구조화된 출력에 적합; 각 스냅샷은 완성된 부분 상태를 제공 |
+| **@Generable 매크로** | 구조화된 생성에 대한 컴파일 시점 안전성 보장; `PartiallyGenerated` 타입 자동 생성 |
+| **세션당 단일 요청** | `isResponding` 속성으로 동시 요청 방지; 필요 시 다수 세션 생성 |
+| **response.content** | 결과 접근을 위해 항상 `.output` 대신 `.content` 속성 사용 |
 
-## 最佳实践
+## 베스트 프랙티스
 
-* 在创建会话之前**始终检查 `model.availability`**——处理所有不可用的情况
-* **使用 `instructions`** 来引导模型行为——它们的优先级高于提示词
-* 在发送新请求之前**检查 `isResponding`**——会话一次处理一个请求
-* 通过 `response.content` **访问结果**——而不是 `.output`
-* **将大型输入分块处理**——4,096 个令牌的限制适用于指令、提示词和输出的总和
-* 对于结构化输出**使用 `@Generable`**——比解析原始字符串提供更强的保证
-* **使用 `GenerationOptions(temperature:)`** 来调整创造力（值越高越有创意）
-* **使用 Instruments 进行监控**——使用 Xcode Instruments 来分析请求性能
+* 세션 생성 전 **항상 `model.availability`를 확인**하여 사용 불가 상황에 대응하십시오.
+* 모델 동작 제어를 위해 **`instructions`를 사용**하십시오 (프롬프트보다 우선순위가 높음).
+* 새로운 요청을 보내기 전 **`isResponding` 상태를 확인**하십시오. 세션은 한 번에 하나의 요청만 처리합니다.
+* 응답 데이터 접근 시 `.output` 대신 **`response.content`를 사용**하십시오.
+* **대량의 입력은 나누어서 처리**하십시오. 4,096 토큰 제한은 지침, 프롬프트, 출력을 모두 합친 크기입니다.
+* 구조화된 출력이 필요하면 **`@Generable`을 적극 활용**하십시오 (원시 문자열 파싱보다 안전함).
+* 창의성 조절을 위해 **`GenerationOptions(temperature:)`를 사용**하십시오 (높을수록 창의적).
+* Xcode의 **Instruments 도구**를 사용하여 요청 성능을 분석하십시오.
 
-## 应避免的反模式
+## 피해야 할 안티 패턴
 
-* 未先检查 `model.availability` 就创建会话
-* 发送超过 4,096 个令牌上下文窗口的输入
-* 尝试在单个会话上进行并发请求
-* 使用 `.output` 而不是 `.content` 来访问响应数据
-* 当 `@Generable` 结构化输出可行时，却去解析原始字符串响应
-* 在单个提示词中构建复杂的多步逻辑——将其拆分为多个聚焦的提示词
-* 假设模型始终可用——设备的资格和设置各不相同
-
-## 何时使用
-
-* 为注重隐私的应用进行设备端文本生成
-* 从用户输入（表单、自然语言命令）中提取结构化数据
-* 必须离线工作的 AI 辅助功能
-* 逐步显示生成内容的流式 UI
-* 通过工具调用（搜索、计算、查找）执行特定领域的 AI 操作
+* `model.availability` 확인 없이 세션을 생성하는 행위
+* 4,096 토큰 컨텍스트 윈도우를 초과하는 입력을 보내는 행위
+* 단일 세션에서 동시에 여러 요청을 시도하는 행위
+* 응답 데이터 접근에 `.content` 대신 `.output`을 사용하는 행위
+* 구조화된 출력이 가능한 상황에서 굳이 원시 문자열 응답을 파싱하려 하는 행위
+* 단일 프롬프트에 너무 복잡한 다단계 로직을 넣는 행위 (작고 집중된 프롬프트로 분리 권장)
+* 모델이 항상 사용 가능하다고 가정하는 행위 (기기 사양 및 설정에 따라 다름)

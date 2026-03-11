@@ -1,165 +1,51 @@
 ---
 name: security-scan
-description: Scan your Claude Code configuration (.claude/ directory) for security vulnerabilities, misconfigurations, and injection risks using AgentShield. Checks CLAUDE.md, settings.json, MCP servers, hooks, and agent definitions.
+description: AgentShield를 사용하여 Claude Code 설정(.claude/ 디렉토리)의 보안 취약점, 오설정 및 인젝션 리스크를 스캔합니다. CLAUDE.md, settings.json, MCP 서버, 후크 및 에이전트 정의를 점검합니다.
 origin: ECC
 ---
 
-# Security Scan Skill
+# 보안 스캔 스킬 (Security Scan Skill)
 
-Audit your Claude Code configuration for security issues using [AgentShield](https://github.com/affaan-m/agentshield).
+[AgentShield](https://github.com/affaan-m/agentshield)를 사용하여 Claude Code 설정의 보안 문제를 감사(Audit)합니다.
 
-## When to Activate
+## 활성화 시점
 
-- Setting up a new Claude Code project
-- After modifying `.claude/settings.json`, `CLAUDE.md`, or MCP configs
-- Before committing configuration changes
-- When onboarding to a new repository with existing Claude Code configs
-- Periodic security hygiene checks
+- 새로운 Claude Code 프로젝트를 설정할 때
+- `.claude/settings.json`, `CLAUDE.md`, 또는 MCP 설정을 수정한 후
+- 설정 변경 사항을 커밋하기 전
+- 기존 Claude Code 설정이 있는 새로운 레포지토리에 온보딩할 때
+- 정기적인 보안 위생 점검 시
 
-## What It Scans
+## 스캔 대상 및 항목
 
-| File | Checks |
-|------|--------|
-| `CLAUDE.md` | Hardcoded secrets, auto-run instructions, prompt injection patterns |
-| `settings.json` | Overly permissive allow lists, missing deny lists, dangerous bypass flags |
-| `mcp.json` | Risky MCP servers, hardcoded env secrets, npx supply chain risks |
-| `hooks/` | Command injection via interpolation, data exfiltration, silent error suppression |
-| `agents/*.md` | Unrestricted tool access, prompt injection surface, missing model specs |
+- **CLAUDE.md**: 하드코딩된 시크릿, 자동 실행 지침, 프롬프트 인젝션 패턴.
+- **settings.json**: 과도하게 허용된 화이트리스트, 누락된 차단 리스트(Deny list), 위험한 우회 플래그.
+- **mcp.json**: 위험한 MCP 서버, 하드코딩된 환경 변수 시크릿, npx 공급망 리스크.
+- **hooks/**: 보간(Interpolation)을 통한 명령 인젝션, 데이터 유출, 조용한 에러 억제.
+- **agents/*.md**: 무제한 도구 액세스, 프롬프트 인젝션 노출면, 모델 사양 누락.
 
-## Prerequisites
+## 주요 사용법
 
-AgentShield must be installed. Check and install if needed:
+### 1. 기본 스캔
+- `npx ecc-agentshield scan` 명령으로 현재 프로젝트를 스캔합니다.
+- 특정 경로 지정(`--path`)이나 최소 심각도 필터링(`--min-severity`)이 가능합니다.
 
-```bash
-# Check if installed
-npx ecc-agentshield --version
+### 2. 출력 형식 및 자동 수정
+- 터미널(기본), JSON, 마크다운, HTML 형식을 지원합니다.
+- `--fix` 옵션을 사용하여 환경 변수 참조 교체 등 자동 수정 가능한 항목을 처리할 수 있습니다.
 
-# Install globally (recommended)
-npm install -g ecc-agentshield
+### 3. 심층 분석 (Opus 4.6 Deep Analysis)
+- `--opus --stream` 옵션을 사용하여 공격자(Red Team), 방어자(Blue Team), 감사자(Auditor)로 구성된 3단계 에이전트 파이프라인으로 더 깊은 분석을 수행합니다. (ANTHROPIC_API_KEY 필요)
 
-# Or run directly via npx (no install needed)
-npx ecc-agentshield scan .
-```
+### 4. 설정 초기화 및 CI 통합
+- `npx ecc-agentshield init`으로 보안 최선 관행이 적용된 기본 설정을 생성할 수 있습니다.
+- GitHub Actions를 통해 CI 파이프라인에서 자동으로 스캔을 수행할 수 있습니다.
 
-## Usage
+## 결과 해석 (위험도별)
 
-### Basic Scan
+- **Critical (즉시 수정)**: 하드코딩된 API 키, 무제한 쉘 액세스(`Bash(*)`), 후크 내 명령 인젝션 취약점 등.
+- **High (운영 전 수정)**: CLAUDE.md 내 자동 실행 지침, 누락된 차단 리스트 등.
+- **Medium (권장)**: 조용한 에러 억제(`2>/dev/null` 등), MCP 설정의 `npx -y` 자동 설치 등.
 
-Run against the current project's `.claude/` directory:
-
-```bash
-# Scan current project
-npx ecc-agentshield scan
-
-# Scan a specific path
-npx ecc-agentshield scan --path /path/to/.claude
-
-# Scan with minimum severity filter
-npx ecc-agentshield scan --min-severity medium
-```
-
-### Output Formats
-
-```bash
-# Terminal output (default) — colored report with grade
-npx ecc-agentshield scan
-
-# JSON — for CI/CD integration
-npx ecc-agentshield scan --format json
-
-# Markdown — for documentation
-npx ecc-agentshield scan --format markdown
-
-# HTML — self-contained dark-theme report
-npx ecc-agentshield scan --format html > security-report.html
-```
-
-### Auto-Fix
-
-Apply safe fixes automatically (only fixes marked as auto-fixable):
-
-```bash
-npx ecc-agentshield scan --fix
-```
-
-This will:
-- Replace hardcoded secrets with environment variable references
-- Tighten wildcard permissions to scoped alternatives
-- Never modify manual-only suggestions
-
-### Opus 4.6 Deep Analysis
-
-Run the adversarial three-agent pipeline for deeper analysis:
-
-```bash
-# Requires ANTHROPIC_API_KEY
-export ANTHROPIC_API_KEY=your-key
-npx ecc-agentshield scan --opus --stream
-```
-
-This runs:
-1. **Attacker (Red Team)** — finds attack vectors
-2. **Defender (Blue Team)** — recommends hardening
-3. **Auditor (Final Verdict)** — synthesizes both perspectives
-
-### Initialize Secure Config
-
-Scaffold a new secure `.claude/` configuration from scratch:
-
-```bash
-npx ecc-agentshield init
-```
-
-Creates:
-- `settings.json` with scoped permissions and deny list
-- `CLAUDE.md` with security best practices
-- `mcp.json` placeholder
-
-### GitHub Action
-
-Add to your CI pipeline:
-
-```yaml
-- uses: affaan-m/agentshield@v1
-  with:
-    path: '.'
-    min-severity: 'medium'
-    fail-on-findings: true
-```
-
-## Severity Levels
-
-| Grade | Score | Meaning |
-|-------|-------|---------|
-| A | 90-100 | Secure configuration |
-| B | 75-89 | Minor issues |
-| C | 60-74 | Needs attention |
-| D | 40-59 | Significant risks |
-| F | 0-39 | Critical vulnerabilities |
-
-## Interpreting Results
-
-### Critical Findings (fix immediately)
-- Hardcoded API keys or tokens in config files
-- `Bash(*)` in the allow list (unrestricted shell access)
-- Command injection in hooks via `${file}` interpolation
-- Shell-running MCP servers
-
-### High Findings (fix before production)
-- Auto-run instructions in CLAUDE.md (prompt injection vector)
-- Missing deny lists in permissions
-- Agents with unnecessary Bash access
-
-### Medium Findings (recommended)
-- Silent error suppression in hooks (`2>/dev/null`, `|| true`)
-- Missing PreToolUse security hooks
-- `npx -y` auto-install in MCP server configs
-
-### Info Findings (awareness)
-- Missing descriptions on MCP servers
-- Prohibitive instructions correctly flagged as good practice
-
-## Links
-
-- **GitHub**: [github.com/affaan-m/agentshield](https://github.com/affaan-m/agentshield)
-- **npm**: [npmjs.com/package/ecc-agentshield](https://www.npmjs.com/package/ecc-agentshield)
+**기억하십시오**: 보안 스캔을 통해 에이전트가 예상치 못한 위험한 동작을 수행하지 않도록 설정을 견고히 관리하십시오.
+    
