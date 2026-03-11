@@ -1,13 +1,13 @@
 ---
-description: "Python security extending common rules"
+description: "공통 규칙을 확장하는 Python 보안"
 globs: ["**/*.py", "**/*.pyi"]
 alwaysApply: false
 ---
-# Python Security
+# Python 보안 (Security)
 
-> This file extends the common security rule with Python specific content.
+> 이 문서는 공통 보안 규칙을 기반으로 Python에 특화된 내용을 확장합니다.
 
-## Secret Management
+## 비밀 정보(Secret) 관리
 
 ```python
 import os
@@ -15,16 +15,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-api_key = os.environ["OPENAI_API_KEY"]  # Raises KeyError if missing
+api_key = os.environ["OPENAI_API_KEY"]  # 환경 변수가 없는 경우 KeyError 발생
 ```
 
-## Security Scanning
+## 보안 스캐닝
 
-- Use **bandit** for static security analysis:
+- 정적 보안 분석을 위해 **bandit**을 사용하십시오:
   ```bash
   bandit -r src/
   ```
 
-## Reference
+## 참고 자료
 
-See skill: `django-security` for Django-specific security guidelines (if applicable).
+Django를 사용하는 경우, Django에 특화된 보안 가이드라인을 위해 `django-security` 스킬을 참조하십시오.

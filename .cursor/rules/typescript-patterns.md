@@ -1,13 +1,13 @@
 ---
-description: "TypeScript patterns extending common rules"
+description: "공통 규칙을 확장하는 TypeScript 패턴"
 globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
 alwaysApply: false
 ---
-# TypeScript/JavaScript Patterns
+# TypeScript/JavaScript 패턴 (Patterns)
 
-> This file extends the common patterns rule with TypeScript/JavaScript specific content.
+> 이 문서는 공통 패턴 규칙을 기반으로 TypeScript/JavaScript에 특화된 내용을 확장합니다.
 
-## API Response Format
+## API 응답 형식
 
 ```typescript
 interface ApiResponse<T> {
@@ -22,7 +22,7 @@ interface ApiResponse<T> {
 }
 ```
 
-## Custom Hooks Pattern
+## 커스텀 후크 (Custom Hooks) 패턴
 
 ```typescript
 export function useDebounce<T>(value: T, delay: number): T {
@@ -37,7 +37,7 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 ```
 
-## Repository Pattern
+## 저장소(Repository) 패턴
 
 ```typescript
 interface Repository<T> {
