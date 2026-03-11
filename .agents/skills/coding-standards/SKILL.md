@@ -1,98 +1,98 @@
 ---
 name: coding-standards
-description: Universal coding standards, best practices, and patterns for TypeScript, JavaScript, React, and Node.js development.
+description: TypeScript, JavaScript, React 및 Node.js 개발을 위한 범용 코딩 표준, 모범 사례 및 패턴입니다.
 origin: ECC
 ---
 
-# Coding Standards & Best Practices
+# 코딩 표준 및 모범 사례 (Coding Standards & Best Practices)
 
-Universal coding standards applicable across all projects.
+모든 프로젝트에 적용 가능한 범용적인 코딩 표준입니다.
 
-## When to Activate
+## 활성화 시기
 
-- Starting a new project or module
-- Reviewing code for quality and maintainability
-- Refactoring existing code to follow conventions
-- Enforcing naming, formatting, or structural consistency
-- Setting up linting, formatting, or type-checking rules
-- Onboarding new contributors to coding conventions
+- 새로운 프로젝트나 모듈을 시작할 때
+- 품질 및 유지보수성을 위해 코드를 검토할 때
+- 관례를 따르도록 기존 코드를 리팩토링할 때
+- 명명, 포매팅 또는 구조적 일관성을 강제할 때
+- 린팅(Linting), 포매팅 또는 타입 체크 규칙을 설정할 때
+- 새로운 기여자에게 코딩 관례를 안내(Onboarding)할 때
 
-## Code Quality Principles
+## 코드 품질 원칙
 
-### 1. Readability First
-- Code is read more than written
-- Clear variable and function names
-- Self-documenting code preferred over comments
-- Consistent formatting
+### 1. 가독성 우선 (Readability First)
+- 코드는 작성되는 시간보다 읽히는 시간이 더 많습니다.
+- 변수와 함수 이름은 명확하게 지으십시오.
+- 주석보다는 그 자체로 설명이 되는 코드(Self-documenting code)를 선호하십시오.
+- 일관된 포매팅을 유지하십시오.
 
 ### 2. KISS (Keep It Simple, Stupid)
-- Simplest solution that works
-- Avoid over-engineering
-- No premature optimization
-- Easy to understand > clever code
+- 작동하는 가장 간단한 해결책을 찾으십시오.
+- 과도한 엔지니어링(Over-engineering)을 피하십시오.
+- 조기 최적화(Premature optimization)를 하지 마십시오.
+- 똑똑해 보이는 코드보다는 이해하기 쉬운 코드가 더 좋습니다.
 
 ### 3. DRY (Don't Repeat Yourself)
-- Extract common logic into functions
-- Create reusable components
-- Share utilities across modules
-- Avoid copy-paste programming
+- 공통 로직은 함수로 추출하십시오.
+- 재사용 가능한 컴포넌트를 만드십시오.
+- 모듈 간에 유틸리티를 공유하십시오.
+- 복사-붙여넣기 방식의 프로그래밍을 피하십시오.
 
 ### 4. YAGNI (You Aren't Gonna Need It)
-- Don't build features before they're needed
-- Avoid speculative generality
-- Add complexity only when required
-- Start simple, refactor when needed
+- 실제로 필요하기 전까지는 기능을 만들지 마십시오.
+- 추측에 근거한 범용성(Speculative generality)을 피하십시오.
+- 꼭 필요한 경우에만 복잡성을 추가하십시오.
+- 단순하게 시작하고, 필요할 때 리팩토링하십시오.
 
-## TypeScript/JavaScript Standards
+## TypeScript/JavaScript 표준
 
-### Variable Naming
+### 변수 명명 (Variable Naming)
 
 ```typescript
-// ✅ GOOD: Descriptive names
-const marketSearchQuery = 'election'
+// ✅ 좋은 예: 설명적인 이름
+const marketSearchQuery = '선거'
 const isUserAuthenticated = true
 const totalRevenue = 1000
 
-// ❌ BAD: Unclear names
-const q = 'election'
+// ❌ 나쁜 예: 불분명한 이름
+const q = '선거'
 const flag = true
 const x = 1000
 ```
 
-### Function Naming
+### 함수 명명 (Function Naming)
 
 ```typescript
-// ✅ GOOD: Verb-noun pattern
+// ✅ 좋은 예: 동사-명사 패턴
 async function fetchMarketData(marketId: string) { }
 function calculateSimilarity(a: number[], b: number[]) { }
 function isValidEmail(email: string): boolean { }
 
-// ❌ BAD: Unclear or noun-only
+// ❌ 나쁜 예: 불분명하거나 명사만 사용
 async function market(id: string) { }
 function similarity(a, b) { }
 function email(e) { }
 ```
 
-### Immutability Pattern (CRITICAL)
+### 불변성 패턴 (CRITICAL)
 
 ```typescript
-// ✅ ALWAYS use spread operator
+// ✅ 항상 전개 연산자(Spread operator)를 사용하십시오
 const updatedUser = {
   ...user,
-  name: 'New Name'
+  name: '새 이름'
 }
 
 const updatedArray = [...items, newItem]
 
-// ❌ NEVER mutate directly
-user.name = 'New Name'  // BAD
-items.push(newItem)     // BAD
+// ❌ 절대 직접 수정(Mutate)하지 마십시오
+user.name = '새 이름'  // 나쁨
+items.push(newItem)     // 나쁨
 ```
 
-### Error Handling
+### 에러 처리
 
 ```typescript
-// ✅ GOOD: Comprehensive error handling
+// ✅ 좋은 예: 포괄적인 에러 처리
 async function fetchData(url: string) {
   try {
     const response = await fetch(url)
@@ -103,38 +103,38 @@ async function fetchData(url: string) {
 
     return await response.json()
   } catch (error) {
-    console.error('Fetch failed:', error)
-    throw new Error('Failed to fetch data')
+    console.error('데이터 가져오기 실패:', error)
+    throw new Error('데이터를 가져오지 못했습니다')
   }
 }
 
-// ❌ BAD: No error handling
+// ❌ 나쁜 예: 에러 처리 없음
 async function fetchData(url) {
   const response = await fetch(url)
   return response.json()
 }
 ```
 
-### Async/Await Best Practices
+### Async/Await 모범 사례
 
 ```typescript
-// ✅ GOOD: Parallel execution when possible
+// ✅ 좋은 예: 가능하면 병렬로 실행
 const [users, markets, stats] = await Promise.all([
   fetchUsers(),
   fetchMarkets(),
   fetchStats()
 ])
 
-// ❌ BAD: Sequential when unnecessary
+// ❌ 나쁜 예: 불필요하게 순차적으로 실행
 const users = await fetchUsers()
 const markets = await fetchMarkets()
 const stats = await fetchStats()
 ```
 
-### Type Safety
+### 타입 안전성 (Type Safety)
 
 ```typescript
-// ✅ GOOD: Proper types
+// ✅ 좋은 예: 적절한 타입 정의
 interface Market {
   id: string
   name: string
@@ -143,21 +143,21 @@ interface Market {
 }
 
 function getMarket(id: string): Promise<Market> {
-  // Implementation
+  // 구현부
 }
 
-// ❌ BAD: Using 'any'
+// ❌ 나쁜 예: 'any' 사용
 function getMarket(id: any): Promise<any> {
-  // Implementation
+  // 구현부
 }
 ```
 
-## React Best Practices
+## React 모범 사례
 
-### Component Structure
+### 컴포넌트 구조
 
 ```typescript
-// ✅ GOOD: Functional component with types
+// ✅ 좋은 예: 타입이 포함된 함수형 컴포넌트
 interface ButtonProps {
   children: React.ReactNode
   onClick: () => void
@@ -182,16 +182,16 @@ export function Button({
   )
 }
 
-// ❌ BAD: No types, unclear structure
+// ❌ 나쁜 예: 타입 부재, 불분명한 구조
 export function Button(props) {
   return <button onClick={props.onClick}>{props.children}</button>
 }
 ```
 
-### Custom Hooks
+### 커스텀 후크 (Custom Hooks)
 
 ```typescript
-// ✅ GOOD: Reusable custom hook
+// ✅ 좋은 예: 재사용 가능한 커스텀 후크
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value)
 
@@ -206,55 +206,55 @@ export function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue
 }
 
-// Usage
+// 사용 예시
 const debouncedQuery = useDebounce(searchQuery, 500)
 ```
 
-### State Management
+### 상태 관리
 
 ```typescript
-// ✅ GOOD: Proper state updates
+// ✅ 좋은 예: 올바른 상태 업데이트
 const [count, setCount] = useState(0)
 
-// Functional update for state based on previous state
+// 이전 상태를 기반으로 업데이트할 때는 함수형 업데이트 사용
 setCount(prev => prev + 1)
 
-// ❌ BAD: Direct state reference
-setCount(count + 1)  // Can be stale in async scenarios
+// ❌ 나쁜 예: 상태 직접 참조
+setCount(count + 1)  // 비동기 상황에서 값이 부정확할 수 있음
 ```
 
-### Conditional Rendering
+### 조건부 렌더링
 
 ```typescript
-// ✅ GOOD: Clear conditional rendering
+// ✅ 좋은 예: 명확한 조건부 렌더링
 {isLoading && <Spinner />}
 {error && <ErrorMessage error={error} />}
 {data && <DataDisplay data={data} />}
 
-// ❌ BAD: Ternary hell
+// ❌ 나쁜 예: 복잡한 삼항 연산자
 {isLoading ? <Spinner /> : error ? <ErrorMessage error={error} /> : data ? <DataDisplay data={data} /> : null}
 ```
 
-## API Design Standards
+## API 설계 표준
 
-### REST API Conventions
+### REST API 관례
 
 ```
-GET    /api/markets              # List all markets
-GET    /api/markets/:id          # Get specific market
-POST   /api/markets              # Create new market
-PUT    /api/markets/:id          # Update market (full)
-PATCH  /api/markets/:id          # Update market (partial)
-DELETE /api/markets/:id          # Delete market
+GET    /api/markets              # 모든 마켓 목록 조회
+GET    /api/markets/:id          # 특정 마켓 정보 조회
+POST   /api/markets              # 새로운 마켓 생성
+PUT    /api/markets/:id          # 마켓 수정 (전체 교체)
+PATCH  /api/markets/:id          # 마켓 수정 (일부 수정)
+DELETE /api/markets/:id          # 마켓 삭제
 
-# Query parameters for filtering
+# 필터링을 위한 쿼리 파라미터
 GET /api/markets?status=active&limit=10&offset=0
 ```
 
-### Response Format
+### 응답 형식
 
 ```typescript
-// ✅ GOOD: Consistent response structure
+// ✅ 좋은 예: 일관된 응답 구조
 interface ApiResponse<T> {
   success: boolean
   data?: T
@@ -266,26 +266,26 @@ interface ApiResponse<T> {
   }
 }
 
-// Success response
+// 성공 응답
 return NextResponse.json({
   success: true,
   data: markets,
   meta: { total: 100, page: 1, limit: 10 }
 })
 
-// Error response
+// 에러 응답
 return NextResponse.json({
   success: false,
-  error: 'Invalid request'
+  error: '잘못된 요청입니다'
 }, { status: 400 })
 ```
 
-### Input Validation
+### 입력값 검증
 
 ```typescript
 import { z } from 'zod'
 
-// ✅ GOOD: Schema validation
+// ✅ 좋은 예: 스키마 검증
 const CreateMarketSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().min(1).max(2000),
@@ -298,12 +298,12 @@ export async function POST(request: Request) {
 
   try {
     const validated = CreateMarketSchema.parse(body)
-    // Proceed with validated data
+    // 검증된 데이터로 작업 진행
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({
         success: false,
-        error: 'Validation failed',
+        error: '유효성 검사 실패',
         details: error.errors
       }, { status: 400 })
     }
@@ -311,107 +311,107 @@ export async function POST(request: Request) {
 }
 ```
 
-## File Organization
+## 파일 구성
 
-### Project Structure
+### 프로젝트 구조
 
 ```
 src/
 ├── app/                    # Next.js App Router
-│   ├── api/               # API routes
-│   ├── markets/           # Market pages
-│   └── (auth)/           # Auth pages (route groups)
-├── components/            # React components
-│   ├── ui/               # Generic UI components
-│   ├── forms/            # Form components
-│   └── layouts/          # Layout components
-├── hooks/                # Custom React hooks
-├── lib/                  # Utilities and configs
-│   ├── api/             # API clients
-│   ├── utils/           # Helper functions
-│   └── constants/       # Constants
-├── types/                # TypeScript types
-└── styles/              # Global styles
+│   ├── api/               # API 라우트
+│   ├── markets/           # 마켓 페이지들
+│   └── (auth)/           # 인증 페이지들 (라우트 그룹)
+├── components/            # React 컴포넌트
+│   ├── ui/               # 범용 UI 컴포넌트
+│   ├── forms/            # 폼 관련 컴포넌트
+│   └── layouts/          # 레이아웃 관련 컴포넌트
+├── hooks/                # 커스텀 React 후크
+├── lib/                  # 유틸리티 및 설정 파일
+│   ├── api/             # API 클라이언트
+│   ├── utils/           # 헬퍼 함수
+│   └── constants/       # 상수
+├── types/                # TypeScript 타입 정의
+└── styles/              # 글로벌 스타일
 ```
 
-### File Naming
+### 파일 명명 규칙
 
 ```
-components/Button.tsx          # PascalCase for components
-hooks/useAuth.ts              # camelCase with 'use' prefix
-lib/formatDate.ts             # camelCase for utilities
-types/market.types.ts         # camelCase with .types suffix
+components/Button.tsx          # 컴포넌트에는 PascalCase 사용
+hooks/useAuth.ts              # 'use' 접두사와 함께 camelCase 사용
+lib/formatDate.ts             # 유틸리티에는 camelCase 사용
+types/market.types.ts         # .types 접미사와 함께 camelCase 사용
 ```
 
-## Comments & Documentation
+## 주석 및 문서화
 
-### When to Comment
+### 주석 작성 시점
 
 ```typescript
-// ✅ GOOD: Explain WHY, not WHAT
-// Use exponential backoff to avoid overwhelming the API during outages
+// ✅ 좋은 예: ‘무엇을’이 아니라 ‘왜’ 하는지 설명하십시오
+// 장애 상황에서 API 부하를 방지하기 위해 지수 백오프를 사용합니다
 const delay = Math.min(1000 * Math.pow(2, retryCount), 30000)
 
-// Deliberately using mutation here for performance with large arrays
+// 대규모 배열 작업 시 성능 향상을 위해 여기서는 의도적으로 직접 수정을 사용합니다
 items.push(newItem)
 
-// ❌ BAD: Stating the obvious
-// Increment counter by 1
+// ❌ 나쁜 예: 뻔한 내용 설명
+// 카운터를 1 증가시킵니다
 count++
 
-// Set name to user's name
+// 이름을 사용자의 이름으로 설정합니다
 name = user.name
 ```
 
-### JSDoc for Public APIs
+### 공용 API를 위한 JSDoc
 
 ```typescript
 /**
- * Searches markets using semantic similarity.
+ * 의미적 유사성을 사용하여 마켓을 검색합니다.
  *
- * @param query - Natural language search query
- * @param limit - Maximum number of results (default: 10)
- * @returns Array of markets sorted by similarity score
- * @throws {Error} If OpenAI API fails or Redis unavailable
+ * @param query - 자연어 검색 쿼리
+ * @param limit - 최대 결과 수 (기본값: 10)
+ * @returns 유사도 점수에 따라 정렬된 마켓 배열
+ * @throws {Error} OpenAI API 장애 또는 Redis 사용 불가 시 에러 발생
  *
  * @example
  * ```typescript
- * const results = await searchMarkets('election', 5)
- * console.log(results[0].name) // "Trump vs Biden"
+ * const results = await searchMarkets('선거', 5)
+ * console.log(results[0].name) // "트럼프 vs 바이든"
  * ```
  */
 export async function searchMarkets(
   query: string,
   limit: number = 10
 ): Promise<Market[]> {
-  // Implementation
+  // 구현부
 }
 ```
 
-## Performance Best Practices
+## 성능 모범 사례
 
-### Memoization
+### 메모이제이션 (Memoization)
 
 ```typescript
 import { useMemo, useCallback } from 'react'
 
-// ✅ GOOD: Memoize expensive computations
+// ✅ 좋은 예: 비용이 큰 계산 결과 메모이징
 const sortedMarkets = useMemo(() => {
   return markets.sort((a, b) => b.volume - a.volume)
 }, [markets])
 
-// ✅ GOOD: Memoize callbacks
+// ✅ 좋은 예: 콜백 함수 메모이징
 const handleSearch = useCallback((query: string) => {
   setSearchQuery(query)
 }, [])
 ```
 
-### Lazy Loading
+### 지연 로딩 (Lazy Loading)
 
 ```typescript
 import { lazy, Suspense } from 'react'
 
-// ✅ GOOD: Lazy load heavy components
+// ✅ 좋은 예: 무거운 컴포넌트 지연 로딩
 const HeavyChart = lazy(() => import('./HeavyChart'))
 
 export function Dashboard() {
@@ -423,64 +423,64 @@ export function Dashboard() {
 }
 ```
 
-### Database Queries
+### 데이터베이스 쿼리
 
 ```typescript
-// ✅ GOOD: Select only needed columns
+// ✅ 좋은 예: 필요한 컬럼만 선택
 const { data } = await supabase
   .from('markets')
   .select('id, name, status')
   .limit(10)
 
-// ❌ BAD: Select everything
+// ❌ 나쁜 예: 모든 컬럼(*) 선택
 const { data } = await supabase
   .from('markets')
   .select('*')
 ```
 
-## Testing Standards
+## 테스트 표준
 
-### Test Structure (AAA Pattern)
+### 테스트 구조 (AAA 패턴)
 
 ```typescript
-test('calculates similarity correctly', () => {
-  // Arrange
+test('유사도를 정확하게 계산함', () => {
+  // Arrange (준비)
   const vector1 = [1, 0, 0]
   const vector2 = [0, 1, 0]
 
-  // Act
+  // Act (실행)
   const similarity = calculateCosineSimilarity(vector1, vector2)
 
-  // Assert
+  // Assert (검증)
   expect(similarity).toBe(0)
 })
 ```
 
-### Test Naming
+### 테스트 명명 규칙
 
 ```typescript
-// ✅ GOOD: Descriptive test names
-test('returns empty array when no markets match query', () => { })
-test('throws error when OpenAI API key is missing', () => { })
-test('falls back to substring search when Redis unavailable', () => { })
+// ✅ 좋은 예: 설명적인 테스트 이름
+test('쿼리와 일치하는 마켓이 없을 때 빈 배열을 반환함', () => { })
+test('OpenAI API 키가 없을 때 에러를 발생시킴', () => { })
+test('Redis를 사용할 수 없을 때 부분 문자열 검색으로 대체함', () => { })
 
-// ❌ BAD: Vague test names
-test('works', () => { })
-test('test search', () => { })
+// ❌ 나쁜 예: 모호한 테스트 이름
+test('작동함', () => { })
+test('검색 테스트', () => { })
 ```
 
-## Code Smell Detection
+## 코드 스멜(Code Smell) 감지
 
-Watch for these anti-patterns:
+다음과 같은 안티 패턴을 주의하십시오:
 
-### 1. Long Functions
+### 1. 긴 함수
 ```typescript
-// ❌ BAD: Function > 50 lines
+// ❌ 나쁜 예: 50줄이 넘어가는 함수
 function processMarketData() {
-  // 100 lines of code
+  // 100줄의 코드
 }
 
-// ✅ GOOD: Split into smaller functions
+// ✅ 좋은 예: 작은 함수들로 분리
 function processMarketData() {
   const validated = validateData()
   const transformed = transformData(validated)
@@ -488,38 +488,38 @@ function processMarketData() {
 }
 ```
 
-### 2. Deep Nesting
+### 2. 깊은 중첩
 ```typescript
-// ❌ BAD: 5+ levels of nesting
+// ❌ 나쁜 예: 5단계 이상의 중첩
 if (user) {
   if (user.isAdmin) {
     if (market) {
       if (market.isActive) {
         if (hasPermission) {
-          // Do something
+          // 작업 수행
         }
       }
     }
   }
 }
 
-// ✅ GOOD: Early returns
+// ✅ 좋은 예: 이른 반환 (Early returns)
 if (!user) return
 if (!user.isAdmin) return
 if (!market) return
 if (!market.isActive) return
 if (!hasPermission) return
 
-// Do something
+// 작업 수행
 ```
 
-### 3. Magic Numbers
+### 3. 매직 넘버 (Magic Numbers)
 ```typescript
-// ❌ BAD: Unexplained numbers
+// ❌ 나쁜 예: 설명 없는 숫자 사용
 if (retryCount > 3) { }
 setTimeout(callback, 500)
 
-// ✅ GOOD: Named constants
+// ✅ 좋은 예: 명명된 상수 사용
 const MAX_RETRIES = 3
 const DEBOUNCE_DELAY_MS = 500
 
@@ -527,4 +527,4 @@ if (retryCount > MAX_RETRIES) { }
 setTimeout(callback, DEBOUNCE_DELAY_MS)
 ```
 
-**Remember**: Code quality is not negotiable. Clear, maintainable code enables rapid development and confident refactoring.
+**기억해 두세요**: 코드 품질은 타협할 대상이 아닙니다. 명확하고 유지보수가 쉬운 코드는 빠른 개발과 자신감 있는 리팩토링을 가능하게 합니다.
