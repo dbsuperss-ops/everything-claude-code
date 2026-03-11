@@ -1,166 +1,72 @@
-# SaaS 应用程序 — 项目 CLAUDE.md
+---
+description: Next.js 15, Supabase 및 Stripe를 사용하는 SaaS 애플리케이션 프로젝트의 CLAUDE.md 설정 예시입니다.
+---
 
-> 一个 Next.js + Supabase + Stripe SaaS 应用程序的真实示例。
-> 将此复制到您的项目根目录，并根据您的技术栈进行自定义。
+# SaaS 애플리케이션 프로젝트 가이드 (CLAUDE.md 예시)
 
-## 项目概览
+이 파일은 Next.js 기반의 SaaS 프로젝트에서 Claude Code가 준수해야 할 핵심 지침을 담고 있습니다.
 
-**技术栈：** Next.js 15（App Router）、TypeScript、Supabase（身份验证 + 数据库）、Stripe（计费）、Tailwind CSS、Playwright（端到端测试）
+## 프로젝트 개요
 
-**架构：** 默认使用服务器组件。仅在需要交互性时使用客户端组件。API 路由用于 Webhook，服务器操作用于数据变更。
+**기술 스택:** Next.js 15 (App Router), TypeScript, Supabase (Auth + DB), Stripe (결제), Tailwind CSS, Playwright (E2E 테스트).
 
-## 关键规则
+**아키텍처:** 서버 컴포넌트 우선 원칙을 따릅니다. 상호작용이 필요한 경우에만 제한적으로 클라이언트 컴포넌트를 사용하십시오. 데이터 변경은 서버 액션(Server Actions)을, 외부 연동은 API 라우트(Webhooks)를 활용합니다.
 
-### 数据库
+## 핵심 규칙
 
-* 所有查询均使用启用 RLS 的 Supabase 客户端 — 绝不要绕过 RLS
-* 迁移在 `supabase/migrations/` 中 — 绝不要直接修改数据库
-* 使用带有明确列列表的 `select()`，而不是 `select('*')`
-* 所有面向用户的查询必须包含 `.limit()` 以防止返回无限制的结果
+### 1. 데이터베이스 및 보안 (Supabase)
+* **RLS 준수**: 모든 쿼리는 행 단위 보안(RLS)이 활성화된 Supabase 클라이언트를 사용하며, RLS 우회는 금지됩니다.
+* **마이그레이션**: `supabase/migrations/` 폴더의 스크립트로 스키마를 관리하고 직접 수정하지 마십시오.
+* **최적화**: `select('*')` 대신 필요한 컬럼만 명시적으로 선택하고, 대량 데이터 방지를 위해 반드시 `.limit()`을 포함하십시오.
 
-### 身份验证
+### 2. 인증 및 미들웨어
+* **클라이언트 분리**: 서버에서는 `createServerClient()`, 클라이언트에서는 `createBrowserClient()`를 사용하십시오.
+* **유저 검증**: 보호된 경로에서는 `getSession()`이 아닌 `getUser()`를 호출하여 위조된 세션이 아닌지 확인하십시오.
+* **미들웨어**: `middleware.ts`를 통해 매 요청마다 인증 토큰을 갱신하십시오.
 
-* 在服务器组件中使用来自 `@supabase/ssr` 的 `createServerClient()`
-* 在客户端组件中使用来自 `@supabase/ssr` 的 `createBrowserClient()`
-* 受保护的路由检查 `getUser()` — 绝不要仅依赖 `getSession()` 进行身份验证
-* `middleware.ts` 中的中间件会在每个请求上刷新身份验证令牌
+### 3. 결제 시스템 (Stripe)
+* **신뢰의 기반**: 클라이언트에서 전달된 가격 정보는 절대 믿지 마십시오. 항상 서버에서 Stripe API를 통해 직접 확인하십시오.
+* **상태 동기화**: `subscription_status` 컬럼은 Stripe Webhook(`app/api/webhooks/stripe/route.ts`)을 통해서만 업데이트하십시오.
 
-### 计费
+### 4. 코드 스타일 및 패턴
+* **컴포넌트 설계**: `'use client'` 지시어는 파일 최상단에 명시하고, 클라이언트 컴포넌트는 최소한의 로직(Hook 추출 등)만 포함하도록 가볍게 유지하십시오.
+* **입력 검증**: 유효성 검사, API 요청, 환경 변수 파싱 등 모든 데이터 검증에는 Zod 스키마를 사용하십시오.
 
-* Stripe webhook 处理程序在 `app/api/webhooks/stripe/route.ts` 中
-* 绝不要信任客户端的定价数据 — 始终在服务器端从 Stripe 获取
-* 通过 `subscription_status` 列检查订阅状态，由 webhook 同步
-* 免费层用户：3 个项目，每天 100 次 API 调用
+## 권장 파일 구조
 
-### 代码风格
-
-* 代码或注释中不使用表情符号
-* 仅使用不可变模式 — 使用展开运算符，永不直接修改
-* 服务器组件：不使用 `'use client'` 指令，不使用 `useState`/`useEffect`
-* 客户端组件：`'use client'` 放在顶部，保持最小化 — 将逻辑提取到钩子中
-* 所有输入验证（API 路由、表单、环境变量）优先使用 Zod 模式
-
-## 文件结构
-
-```
+```text
 src/
   app/
-    (auth)/          # Auth pages (login, signup, forgot-password)
-    (dashboard)/     # Protected dashboard pages
-    api/
-      webhooks/      # Stripe, Supabase webhooks
-    layout.tsx       # Root layout with providers
-  components/
-    ui/              # Shadcn/ui components
-    forms/           # Form components with validation
-    dashboard/       # Dashboard-specific components
-  hooks/             # Custom React hooks
+    (auth)/          # 인증 관련 페이지 (로그인, 회원가입 등)
+    (dashboard)/     # 보호된 대시보드 페이지
+    api/webhooks/    # Stripe, Supabase 웹훅 핸들러
+  components/ui/     # Shadcn/ui 등 재사용 컴포넌트
   lib/
-    supabase/        # Supabase client factories
-    stripe/          # Stripe client and helpers
-    utils.ts         # General utilities
-  types/             # Shared TypeScript types
+    supabase/        # Supabase 클라이언트 팩토리
+    stripe/          # Stripe 클라이언트 및 유틸리티
 supabase/
-  migrations/        # Database migrations
-  seed.sql           # Development seed data
+  migrations/        # DB 마이그레이션 스크립트
 ```
 
-## 关键模式
+## 주요 패턴 예시
 
-### API 响应格式
-
-```typescript
-type ApiResponse<T> =
-  | { success: true; data: T }
-  | { success: false; error: string; code?: string }
-```
-
-### 服务器操作模式
-
+### 서버 액션 패턴 (Server Action with Zod)
 ```typescript
 'use server'
 
-import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
-
-const schema = z.object({
-  name: z.string().min(1).max(100),
-})
+const schema = z.object({ name: z.string().min(1) })
 
 export async function createProject(formData: FormData) {
-  const parsed = schema.safeParse({ name: formData.get('name') })
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.flatten() }
-  }
-
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false, error: 'Unauthorized' }
-
-  const { data, error } = await supabase
-    .from('projects')
-    .insert({ name: parsed.data.name, user_id: user.id })
-    .select('id, name, created_at')
-    .single()
-
-  if (error) return { success: false, error: 'Failed to create project' }
-  return { success: true, data }
+  // 데이터 파싱, 유저 인증 확인, DB 삽입 로직
+  // 성공 시 { success: true, data }, 실패 시 { success: false, error } 반환
 }
 ```
 
-## 环境变量
+## 주요 명령어 (Slash Commands)
 
-```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=     # Server-only, never expose to client
+* `/verify`: 빌드, 타입 체크, 린트 및 전체 보안 점검
+* `/tdd`: 유닛 및 통합 테스트를 통한 기능 개발
+* `/e2e`: Playwright를 활용한 핵심 사용자 여정(결제, 가입 등) 테스트
+* `/plan`: 팀 초대 시스템이나 결제 연동 등 신규 기능 설계
 
-# Stripe
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
-
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-## 测试策略
-
-```bash
-/tdd                    # Unit + integration tests for new features
-/e2e                    # Playwright tests for auth flow, billing, dashboard
-/test-coverage          # Verify 80%+ coverage
-```
-
-### 关键的端到端测试流程
-
-1. 注册 → 邮箱验证 → 创建第一个项目
-2. 登录 → 仪表盘 → CRUD 操作
-3. 升级计划 → Stripe 结账 → 订阅激活
-4. Webhook：订阅取消 → 降级到免费层
-
-## ECC 工作流
-
-```bash
-# Planning a feature
-/plan "Add team invitations with email notifications"
-
-# Developing with TDD
-/tdd
-
-# Before committing
-/code-review
-/security-scan
-
-# Before release
-/e2e
-/test-coverage
-```
-
-## Git 工作流
-
-* `feat:` 新功能，`fix:` 错误修复，`refactor:` 代码变更
-* 从 `main` 创建功能分支，需要 PR
-* CI 运行：代码检查、类型检查、单元测试、端到端测试
-* 部署：在 PR 上部署到 Vercel 预览环境，在合并到 `main` 时部署到生产环境
+**핵심**: 사용자 데이터 보안을 위해 RLS를 엄격히 관리하고, 서버와 클라이언트의 경계를 명확히 구분하여 성능과 보안을 동시에 잡으십시오.

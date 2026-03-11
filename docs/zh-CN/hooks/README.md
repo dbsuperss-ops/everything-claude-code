@@ -1,220 +1,89 @@
-# 钩子
+# 클로드 코드 훅 (Hooks)
 
-钩子是事件驱动的自动化程序，在 Claude Code 工具执行前后触发。它们用于强制执行代码质量、及早发现错误以及自动化重复性检查。
+훅은 Claude Code 도구가 실행되기 전후에 트리거되는 이벤트 기반 자동화 프로그램입니다. 코드 품질 강제, 에러 조기 발견, 반복적인 체크 작업 자동화 등을 위해 사용됩니다.
 
-## 钩子如何工作
+## 동작 원리
 
-```
-User request → Claude picks a tool → PreToolUse hook runs → Tool executes → PostToolUse hook runs
-```
-
-* **PreToolUse** 钩子在工具执行前运行。它们可以**阻止**（退出码 2）或**警告**（stderr 输出但不阻止）。
-* **PostToolUse** 钩子在工具完成后运行。它们可以分析输出但不能阻止执行。
-* **Stop** 钩子在每次 Claude 响应后运行。
-* **SessionStart/SessionEnd** 钩子在会话生命周期的边界处运行。
-* **PreCompact** 钩子在上下文压缩前运行，适用于保存状态。
-
-## 本插件中的钩子
-
-### PreToolUse 钩子
-
-| 钩子 | 匹配器 | 行为 | 退出码 |
-|------|---------|----------|-----------|
-| **开发服务器阻止器** | `Bash` | 在 tmux 外部阻止 `npm run dev` 等命令 —— 确保日志访问 | 2 (阻止) |
-| **Tmux 提醒** | `Bash` | 建议对长时间运行的命令（npm test, cargo build, docker）使用 tmux | 0 (警告) |
-| **Git push 提醒** | `Bash` | 提醒在 `git push` 前审查更改 | 0 (警告) |
-| **文档文件警告** | `Write` | 警告非标准的 `.md`/`.txt` 文件（允许 README, CLAUDE, CONTRIBUTING, CHANGELOG, LICENSE, SKILL, docs/, skills/）；跨平台路径处理 | 0 (警告) |
-| **策略性压缩** | `Edit\|Write` | 建议在逻辑间隔（约每 50 次工具调用）手动执行 `/compact` | 0 (警告) |
-
-### PostToolUse 钩子
-
-| 钩子 | 匹配器 | 功能 |
-|------|---------|-------------|
-| **PR 记录器** | `Bash` | 在 `gh pr create` 后记录 PR URL 和审查命令 |
-| **构建分析** | `Bash` | 构建命令后的后台分析（异步，非阻塞） |
-| **质量门** | `Edit\|Write\|MultiEdit` | 在编辑后运行快速质量检查 |
-| **Prettier 格式化** | `Edit` | 编辑后使用 Prettier 自动格式化 JS/TS 文件 |
-| **TypeScript 检查** | `Edit` | 在编辑 `.ts`/`.tsx` 文件后运行 `tsc --noEmit` |
-| **console.log 警告** | `Edit` | 警告编辑的文件中存在 `console.log` 语句 |
-
-### 生命周期钩子
-
-| 钩子 | 事件 | 功能 |
-|------|-------|-------------|
-| **会话开始** | `SessionStart` | 加载先前上下文并检测包管理器 |
-| **预压缩** | `PreCompact` | 在上下文压缩前保存状态 |
-| **Console.log 审计** | `Stop` | 每次响应后检查所有修改的文件是否有 `console.log` |
-| **会话摘要** | `Stop` | 当转录路径可用时持久化会话状态 |
-| **模式提取** | `Stop` | 评估会话以提取可抽取的模式（持续学习） |
-| **成本追踪器** | `Stop` | 发出轻量级的运行成本遥测标记 |
-| **会话结束标记** | `SessionEnd` | 生命周期标记和清理日志 |
-
-## 自定义钩子
-
-### 禁用钩子
-
-在 `hooks.json` 中移除或注释掉钩子条目。如果作为插件安装，请在您的 `~/.claude/settings.json` 中覆盖：
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write",
-        "hooks": [],
-        "description": "Override: allow all .md file creation"
-      }
-    ]
-  }
-}
+```text
+사용자 요청 → Claude 도구 선택 → PreToolUse 훅 실행 → 도구 실행 → PostToolUse 훅 실행
 ```
 
-### 运行时钩子控制（推荐）
+* **PreToolUse**: 도구 실행 직전에 작동합니다. 실행을 **차단**(종료 코드 2)하거나 **경고**(stderr 출력 후 계속 진행)를 보낼 수 있습니다.
+* **PostToolUse**: 도구 실행 완료 후에 작동합니다. 출력값을 분석할 수 있지만 실행을 되돌릴 수는 없습니다.
+* **Stop**: Claude의 각 응답이 끝날 때마다 작동합니다.
+* **SessionStart / SessionEnd**: 세션의 시작과 종료 시점에 작동합니다.
+* **PreCompact**: 컨텍스트 압축(Compact) 직전에 상태 저장을 위해 작동합니다.
 
-使用环境变量控制钩子行为，无需编辑 `hooks.json`：
+---
 
-```bash
-# minimal | standard | strict (default: standard)
-export ECC_HOOK_PROFILE=standard
+## 주요 훅 목록
 
-# Disable specific hook IDs (comma-separated)
-export ECC_DISABLED_HOOKS="pre:bash:tmux-reminder,post:edit:typecheck"
-```
+### PreToolUse 훅 (사전 점검)
 
-配置文件：
+| 훅 명칭 | 대상 도구 | 주요 동작 및 특징 | 결과 |
+|---------|-----------|-------------------|------|
+| **개발 서버 차단** | `Bash` | tmux 외부에서 `npm run dev` 등 실행 시 차단 (로그 접근성 보장) | 차단 (코드 2) |
+| **Tmux 권장** | `Bash` | 오래 걸리는 명령어(테스트, 빌드 등) 실행 시 tmux 사용 권장 | 경고 (코드 0) |
+| **Git Push 확인** | `Bash` | `git push` 전 변경 사항 최종 검토 요청 | 경고 (코드 0) |
+| **문서 파일 경고** | `Write` | 비표준 폴더에 `.md` 생성 시 권장 경로(docs/, skills/ 등) 안내 | 경고 (코드 0) |
+| **전략적 압축** | `Edit/Write` | 약 50회 도구 호출마다 `/compact` 실행 권장 | 경고 (코드 0) |
 
-* `minimal` —— 仅保留必要的生命周期和安全钩子。
-* `standard` —— 默认；平衡的质量 + 安全检查。
-* `strict` —— 启用额外的提醒和更严格的防护措施。
+### PostToolUse 훅 (사후 처리)
 
-### 编写你自己的钩子
+| 훅 명칭 | 대상 도구 | 주요 동작 및 특징 |
+|---------|-----------|-------------------|
+| **PR 기록기** | `Bash` | `gh pr create` 성공 후 PR URL 및 리뷰 명령어 기록 |
+| **품질 게이트** | `Edit/Write` | 코드 수정 후 즉각적인 품질 검사(Linter 등) 실행 |
+| **Prettier 포맷터** | `Edit` | JS/TS 파일 수정 후 자동으로 코드 스타일 정리 |
+| **TypeScript 체크** | `Edit` | `.ts`/`.tsx` 수정 후 `tsc --noEmit`으로 타입 에러 검증 |
+| **Console.log 경고** | `Edit` | 수정된 파일에 `console.log`가 남아있는 경우 경고 |
 
-钩子是 shell 命令，通过 stdin 接收 JSON 格式的工具输入，并且必须在 stdout 上输出 JSON。
+### 세션 및 라이프사이클 훅
 
-**基本结构：**
+* **SessionStart**: 이전 컨텍스트 로드 및 패키지 매니저 자동 감지
+* **Stop**: 매 응답 후 `console.log` 잔류 여부 재검사, 세션 상태 요약 및 학습 패턴 추출
+* **Cost Tracker**: 실행 비용(토큰 사용량 등)에 대한 경량 트래킹 태그 생성
 
+---
+
+## 훅 커스터마이징
+
+### 훅 비활성화
+`hooks.json`에서 해당 항목을 삭제하거나, `~/.claude/settings.json`에서 특정 도구의 훅 목록을 비워 덮어쓰기 하십시오.
+
+### 실행 프로필 제어 (환경 변수)
+파일 수정 없이 환경 변수로 훅의 수준을 조절할 수 있습니다.
+* `export ECC_HOOK_PROFILE=standard` (minimal, standard, strict 중 선택)
+* `export ECC_DISABLED_HOOKS="pre:bash:tmux-reminder"` (특정 ID 비활성화)
+
+---
+
+## 나만의 훅 만들기
+
+훅은 표준 입력(stdin)으로 JSON 형태의 도구 입력을 받고, 표준 출력(stdout)으로 다시 JSON을 출력해야 하는 셸 명령어입니다.
+
+**기본 구조 (Node.js 예시):**
 ```javascript
-// my-hook.js
 let data = '';
 process.stdin.on('data', chunk => data += chunk);
 process.stdin.on('end', () => {
   const input = JSON.parse(data);
+  const toolName = input.tool_name; // "Edit", "Bash" 등
 
-  // Access tool info
-  const toolName = input.tool_name;        // "Edit", "Bash", "Write", etc.
-  const toolInput = input.tool_input;      // Tool-specific parameters
-  const toolOutput = input.tool_output;    // Only available in PostToolUse
+  // 경고 메시지 출력 (차단하지 않음)
+  console.error('[Hook] 사용자에게 보여줄 경고 메시지');
 
-  // Warn (non-blocking): write to stderr
-  console.error('[Hook] Warning message shown to Claude');
-
-  // Block (PreToolUse only): exit with code 2
+  // 차단 시 (PreToolUse 전용)
   // process.exit(2);
 
-  // Always output the original data to stdout
+  // 반드시 원본 데이터를 stdout으로 출력해야 함
   console.log(data);
 });
 ```
 
-**退出码：**
+**종료 코드 가이드:**
+* `0`: 성공 (다음 단계 진행)
+* `2`: 도구 실행 차단 (PreToolUse 단계에서만 유효)
+* 기타: 에러 발생 (로그는 남기되 차단하지 않음)
 
-* `0` —— 成功（继续执行）
-* `2` —— 阻止工具调用（仅限 PreToolUse）
-* 其他非零值 —— 错误（记录日志但不阻止）
-
-### 钩子输入模式
-
-```typescript
-interface HookInput {
-  tool_name: string;          // "Bash", "Edit", "Write", "Read", etc.
-  tool_input: {
-    command?: string;         // Bash: the command being run
-    file_path?: string;       // Edit/Write/Read: target file
-    old_string?: string;      // Edit: text being replaced
-    new_string?: string;      // Edit: replacement text
-    content?: string;         // Write: file content
-  };
-  tool_output?: {             // PostToolUse only
-    output?: string;          // Command/tool output
-  };
-}
-```
-
-### 异步钩子
-
-对于不应阻塞主流程的钩子（例如，后台分析）：
-
-```json
-{
-  "type": "command",
-  "command": "node my-slow-hook.js",
-  "async": true,
-  "timeout": 30
-}
-```
-
-异步钩子在后台运行。它们不能阻止工具执行。
-
-## 常用钩子配方
-
-### 警告 TODO 注释
-
-```json
-{
-  "matcher": "Edit",
-  "hooks": [{
-    "type": "command",
-    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const ns=i.tool_input?.new_string||'';if(/TODO|FIXME|HACK/.test(ns)){console.error('[Hook] New TODO/FIXME added - consider creating an issue')}console.log(d)})\""
-  }],
-  "description": "Warn when adding TODO/FIXME comments"
-}
-```
-
-### 阻止创建大文件
-
-```json
-{
-  "matcher": "Write",
-  "hooks": [{
-    "type": "command",
-    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const c=i.tool_input?.content||'';const lines=c.split('\\n').length;if(lines>800){console.error('[Hook] BLOCKED: File exceeds 800 lines ('+lines+' lines)');console.error('[Hook] Split into smaller, focused modules');process.exit(2)}console.log(d)})\""
-  }],
-  "description": "Block creation of files larger than 800 lines"
-}
-```
-
-### 使用 ruff 自动格式化 Python 文件
-
-```json
-{
-  "matcher": "Edit",
-  "hooks": [{
-    "type": "command",
-    "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const p=i.tool_input?.file_path||'';if(/\\.py$/.test(p)){const{execFileSync}=require('child_process');try{execFileSync('ruff',['format',p],{stdio:'pipe'})}catch(e){}}console.log(d)})\""
-  }],
-  "description": "Auto-format Python files with ruff after edits"
-}
-```
-
-### 要求新源文件附带测试文件
-
-```json
-{
-  "matcher": "Write",
-  "hooks": [{
-    "type": "command",
-    "command": "node -e \"const fs=require('fs');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const p=i.tool_input?.file_path||'';if(/src\\/.*\\.(ts|js)$/.test(p)&&!/\\.test\\.|\\.spec\\./.test(p)){const testPath=p.replace(/\\.(ts|js)$/,'.test.$1');if(!fs.existsSync(testPath)){console.error('[Hook] No test file found for: '+p);console.error('[Hook] Expected: '+testPath);console.error('[Hook] Consider writing tests first (/tdd)')}}console.log(d)})\""
-  }],
-  "description": "Remind to create tests when adding new source files"
-}
-```
-
-## 跨平台注意事项
-
-钩子逻辑在 Node.js 脚本中实现，以便在 Windows、macOS 和 Linux 上具有跨平台行为。保留了少量 shell 包装器用于持续学习的观察者钩子；这些包装器受配置文件控制，并具有 Windows 安全的回退行为。
-
-## 相关
-
-* [rules/common/hooks.md](../rules/common/hooks.md) —— 钩子架构指南
-* [skills/strategic-compact/](../../../skills/strategic-compact) —— 策略性压缩技能
-* [scripts/hooks/](../../../scripts/hooks) —— 钩子脚本实现
+**핵심**: 훅은 프로젝트의 품질 기준을 자동화하고, 사용자가 실수하기 쉬운 부분을 기계적으로 보완하여 개발 안정성을 높이는 강력한 도구입니다.

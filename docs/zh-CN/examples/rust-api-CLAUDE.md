@@ -1,285 +1,71 @@
-# Rust API 服务 — 项目 CLAUDE.md
+---
+description: Axum, SQLx 및 PostgreSQL을 사용하는 Rust 기반 API 서비스 프로젝트의 CLAUDE.md 설정 예시입니다.
+---
 
-> 使用 Axum、PostgreSQL 和 Docker 构建 Rust API 服务的真实示例。
-> 将此文件复制到您的项目根目录，并根据您的服务进行自定义。
+# Rust API 서비스 프로젝트 가이드 (CLAUDE.md 예시)
 
-## 项目概述
+이 파일은 Rust 언어 기반의 백엔드 프로젝트에서 Claude Code가 준수해야 할 핵심 지침을 담고 있습니다.
 
-**技术栈：** Rust 1.78+, Axum (Web 框架), SQLx (异步数据库), PostgreSQL, Tokio (异步运行时), Docker
+## 프로젝트 개요
 
-**架构：** 采用分层架构，包含 handler → service → repository 分离。Axum 用于 HTTP，SQLx 用于编译时类型检查的 SQL，Tower 中间件用于横切关注点。
+**기술 스택:** Rust 1.78+, Axum (Web 프레임워크), SQLx (비동기 DB), PostgreSQL, Tokio (런타임), Docker.
 
-## 关键规则
+**아키텍처:** 핸들러(Handler), 서비스(Service), 저장소(Repository) 계층으로 분리된 구조를 가집니다. Axum을 HTTP 레이어로 사용하며, SQLx를 통해 컴파일 타임에 쿼리 유효성을 검증합니다.
 
-### Rust 约定
+## 핵심 규칙
 
-* 库错误使用 `thiserror`，仅在二进制 crate 或测试中使用 `anyhow`
-* 生产代码中不使用 `.unwrap()` 或 `.expect()` — 使用 `?` 传播错误
-* 函数参数中优先使用 `&str` 而非 `String`；所有权转移时返回 `String`
-* 使用 `clippy` 和 `#![deny(clippy::all, clippy::pedantic)]` — 修复所有警告
-* 在所有公共类型上派生 `Debug`；仅在需要时派生 `Clone`、`PartialEq`
-* 除非有 `// SAFETY:` 注释说明理由，否则不使用 `unsafe` 块
+### 1. Rust 코딩 컨벤션
+* **에러 라이브러리**: 라이브러리 수준의 에러 정의에는 `thiserror`를, 바이너리 실행부나 테스트에서는 `anyhow`를 사용하십시오.
+* **안전한 전파**: 프로덕션 코드에서 `.unwrap()`이나 `.expect()` 사용을 금지하고 `?` 연산자로 에러를 전파하십시오.
+* **소유권**: 함수 인자로는 `String`보다 `&str`을 선호하며, 소유권 이전이 필요한 경우에만 `String`을 반환하십시오.
+* **린트 검사**: `clippy`를 사용하여 모든 경고를 해결하십시오. (`#![deny(clippy::all)]` 권장)
+* **Unsafe 금지**: 명확한 사유를 담은 `// SAFETY:` 주석 없이는 `unsafe` 블록을 사용하지 마십시오.
 
-### 数据库
+### 2. 데이터베이스 (SQLx)
+* **정적 검증**: `sqlx::query!` 또는 `query_as!` 매크로를 사용하여 쿼리의 컴파일 타임 타입 체크를 보장하십시오.
+* **마이그레이션**: `migrations/` 폴더 내의 파일로 스키마를 관리하며 `sqlx migrate`를 활용하십시오.
+* **연결 관리**: `sqlx::Pool<Postgres>`를 공유 상태로 사용하며 요청마다 새로운 연결을 생성하지 마십시오.
+* **보안**: 쿼리 작성 시 항상 `$1`, `$2` 등의 파라미터를 사용하여 SQL 인젝션을 방지하십시오.
 
-* 所有查询使用 SQLx 的 `query!` 或 `query_as!` 宏 — 针对模式进行编译时验证
-* 在 `migrations/` 中使用 `sqlx migrate` 进行迁移 — 切勿直接修改数据库
-* 使用 `sqlx::Pool<Postgres>` 作为共享状态 — 切勿为每个请求创建连接
-* 所有查询使用参数化占位符 (`$1`, `$2`) — 切勿使用字符串格式化
+### 3. 에러 핸들링 및 로깅
+* **도메인 에러**: 모듈별로 `thiserror`를 사용한 에러 열거형(Enum)을 정의하십시오.
+* **응답 매핑**: `IntoResponse`를 구현하여 에러를 적절한 HTTP 상태 코드와 메시지로 변환하되 내부 상세 구현은 노출하지 마십시오.
+* **구조화된 로깅**: `println!` 대신 `tracing` 크레이트를 사용하여 로그를 남기십시오.
 
-```rust
-// BAD: String interpolation (SQL injection risk)
-let q = format!("SELECT * FROM users WHERE id = '{}'", id);
+## 권장 파일 구조
 
-// GOOD: Parameterized query, compile-time checked
-let user = sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", id)
-    .fetch_optional(&pool)
-    .await?;
-```
-
-### 错误处理
-
-* 为每个模块使用 `thiserror` 定义一个领域错误枚举
-* 通过 `IntoResponse` 将错误映射到 HTTP 响应 — 切勿暴露内部细节
-* 使用 `tracing` 进行结构化日志记录 — 切勿使用 `println!` 或 `eprintln!`
-
-```rust
-use thiserror::Error;
-
-#[derive(Debug, Error)]
-pub enum AppError {
-    #[error("Resource not found")]
-    NotFound,
-    #[error("Validation failed: {0}")]
-    Validation(String),
-    #[error("Unauthorized")]
-    Unauthorized,
-    #[error(transparent)]
-    Internal(#[from] anyhow::Error),
-}
-
-impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
-        let (status, message) = match &self {
-            Self::NotFound => (StatusCode::NOT_FOUND, self.to_string()),
-            Self::Validation(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
-            Self::Unauthorized => (StatusCode::UNAUTHORIZED, self.to_string()),
-            Self::Internal(err) => {
-                tracing::error!(?err, "internal error");
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal error".into())
-            }
-        };
-        (status, Json(json!({ "error": message }))).into_response()
-    }
-}
-```
-
-### 测试
-
-* 单元测试放在每个源文件内的 `#[cfg(test)]` 模块中
-* 集成测试放在 `tests/` 目录中，使用真实的 PostgreSQL (Testcontainers 或 Docker)
-* 使用 `#[sqlx::test]` 进行数据库测试，包含自动迁移和回滚
-* 使用 `mockall` 或 `wiremock` 模拟外部服务
-
-### 代码风格
-
-* 最大行长度：100 个字符（由 rustfmt 强制执行）
-* 导入分组：`std`、外部 crate、`crate`/`super` — 用空行分隔
-* 模块：每个模块一个文件，`mod.rs` 仅用于重新导出
-* 类型：PascalCase，函数/变量：snake\_case，常量：UPPER\_SNAKE\_CASE
-
-## 文件结构
-
-```
+```text
 src/
-  main.rs              # Entrypoint, server setup, graceful shutdown
-  lib.rs               # Re-exports for integration tests
-  config.rs            # Environment config with envy or figment
-  router.rs            # Axum router with all routes
-  middleware/
-    auth.rs            # JWT extraction and validation
-    logging.rs         # Request/response tracing
-  handlers/
-    mod.rs             # Route handlers (thin — delegate to services)
-    users.rs
-    orders.rs
-  services/
-    mod.rs             # Business logic
-    users.rs
-    orders.rs
-  repositories/
-    mod.rs             # Database access (SQLx queries)
-    users.rs
-    orders.rs
-  domain/
-    mod.rs             # Domain types, error enums
-    user.rs
-    order.rs
-migrations/
-  001_create_users.sql
-  002_create_orders.sql
-tests/
-  common/mod.rs        # Shared test helpers, test server setup
-  api_users.rs         # Integration tests for user endpoints
-  api_orders.rs        # Integration tests for order endpoints
+  main.rs              # 진입점 및 서버 설정
+  router.rs            # Axum 라우터 및 경로 정의
+  handlers/            # 비즈니스 로직을 호출하는 얇은 핸들러 계층
+  services/            # 핵심 비즈니스 로직 구현
+  repositories/        # 데이터베이스 액세스 (SQLx 쿼리)
+  domain/              # 도메인 모델 및 에러 정의
+migrations/            # DB 마이그레이션 스크립트
+tests/                 # 통합 테스트 전용 폴더
 ```
 
-## 关键模式
+## 주요 패턴 예시
 
-### Handler (薄层)
-
+### 계층별 구현 패턴
 ```rust
-async fn create_user(
-    State(ctx): State<AppState>,
-    Json(payload): Json<CreateUserRequest>,
-) -> Result<(StatusCode, Json<UserResponse>), AppError> {
-    let user = ctx.user_service.create(payload).await?;
-    Ok((StatusCode::CREATED, Json(UserResponse::from(user))))
+// Repository: 데이터 액세스
+pub async fn find_by_email(&self, email: &str) -> Result<Option<User>, sqlx::Error> {
+    sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", email)
+}
+
+// Service: 비즈니스 로직
+pub async fn create(&self, req: CreateUserRequest) -> Result<User, AppError> {
+    // 유효성 검사 및 데이터 가공 로직
 }
 ```
 
-### Service (业务逻辑)
+## 주요 명령어 (Slash Commands)
 
-```rust
-impl UserService {
-    pub async fn create(&self, req: CreateUserRequest) -> Result<User, AppError> {
-        if self.repo.find_by_email(&req.email).await?.is_some() {
-            return Err(AppError::Validation("Email already registered".into()));
-        }
+* `/verify`: 빌드, clippy, 테스트 및 보안 취약점 전체 점검
+* `/tdd`: cargo test 기반의 테스트 주도 개발 워크플로우
+* `/code-review`: Rust 관용구 및 소유권 모델 중심의 코드 리뷰
+* `/plan`: 신규 기능 개발(예: 결제 모듈 추가) 계획 수립
 
-        let password_hash = hash_password(&req.password)?;
-        let user = self.repo.insert(&req.email, &req.name, &password_hash).await?;
-
-        Ok(user)
-    }
-}
-```
-
-### Repository (数据访问)
-
-```rust
-impl UserRepository {
-    pub async fn find_by_email(&self, email: &str) -> Result<Option<User>, sqlx::Error> {
-        sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", email)
-            .fetch_optional(&self.pool)
-            .await
-    }
-
-    pub async fn insert(
-        &self,
-        email: &str,
-        name: &str,
-        password_hash: &str,
-    ) -> Result<User, sqlx::Error> {
-        sqlx::query_as!(
-            User,
-            r#"INSERT INTO users (email, name, password_hash)
-               VALUES ($1, $2, $3) RETURNING *"#,
-            email, name, password_hash,
-        )
-        .fetch_one(&self.pool)
-        .await
-    }
-}
-```
-
-### 集成测试
-
-```rust
-#[tokio::test]
-async fn test_create_user() {
-    let app = spawn_test_app().await;
-
-    let response = app
-        .client
-        .post(&format!("{}/api/v1/users", app.address))
-        .json(&json!({
-            "email": "alice@example.com",
-            "name": "Alice",
-            "password": "securepassword123"
-        }))
-        .send()
-        .await
-        .expect("Failed to send request");
-
-    assert_eq!(response.status(), StatusCode::CREATED);
-    let body: serde_json::Value = response.json().await.unwrap();
-    assert_eq!(body["email"], "alice@example.com");
-}
-
-#[tokio::test]
-async fn test_create_user_duplicate_email() {
-    let app = spawn_test_app().await;
-    // Create first user
-    create_test_user(&app, "alice@example.com").await;
-    // Attempt duplicate
-    let response = create_user_request(&app, "alice@example.com").await;
-    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-}
-```
-
-## 环境变量
-
-```bash
-# Server
-HOST=0.0.0.0
-PORT=8080
-RUST_LOG=info,tower_http=debug
-
-# Database
-DATABASE_URL=postgres://user:pass@localhost:5432/myapp
-
-# Auth
-JWT_SECRET=your-secret-key-min-32-chars
-JWT_EXPIRY_HOURS=24
-
-# Optional
-CORS_ALLOWED_ORIGINS=http://localhost:3000
-```
-
-## 测试策略
-
-```bash
-# Run all tests
-cargo test
-
-# Run with output
-cargo test -- --nocapture
-
-# Run specific test module
-cargo test api_users
-
-# Check coverage (requires cargo-llvm-cov)
-cargo llvm-cov --html
-open target/llvm-cov/html/index.html
-
-# Lint
-cargo clippy -- -D warnings
-
-# Format check
-cargo fmt -- --check
-```
-
-## ECC 工作流
-
-```bash
-# Planning
-/plan "Add order fulfillment with Stripe payment"
-
-# Development with TDD
-/tdd                    # cargo test-based TDD workflow
-
-# Review
-/code-review            # Rust-specific code review
-/security-scan          # Dependency audit + unsafe scan
-
-# Verification
-/verify                 # Build, clippy, test, security scan
-```
-
-## Git 工作流
-
-* `feat:` 新功能，`fix:` 错误修复，`refactor:` 代码变更
-* 从 `main` 创建功能分支，需要 PR
-* CI：`cargo fmt --check`、`cargo clippy`、`cargo test`、`cargo audit`
-* 部署：使用 `scratch` 或 `distroless` 基础镜像的 Docker 多阶段构建
+**핵심**: Rust의 강력한 타입 시스템과 소유권 개념을 최대한 활용하여 런타임 에러를 방지하고, 모든 동시성 제어는 `Arc`와 `Mutex/RwLock`을 적절히 사용하여 안전하게 처리하십시오.

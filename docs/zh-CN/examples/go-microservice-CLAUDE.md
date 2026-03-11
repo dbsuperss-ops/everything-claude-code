@@ -1,156 +1,54 @@
-# Go 微服务 — 项目 CLAUDE.md
+---
+description: PostgreSQL, gRPC 및 Docker를 사용하는 Go 마이크로서비스 프로젝트의 CLAUDE.md 설정 예시입니다.
+---
 
-> 一个使用 PostgreSQL、gRPC 和 Docker 的 Go 微服务真实示例。
-> 将此文件复制到您的项目根目录，并根据您的服务进行自定义。
+# Go 마이크로서비스 프로젝트 가이드 (CLAUDE.md 예시)
 
-## 项目概述
+이 파일은 Go 언어 기반의 마이크로서비스 프로젝트에서 Claude Code가 준수해야 할 핵심 지침을 담고 있습니다.
 
-**技术栈:** Go 1.22+, PostgreSQL, gRPC + REST (grpc-gateway), Docker, sqlc (类型安全的 SQL), Wire (依赖注入)
+## 프로젝트 개요
 
-**架构:** 采用领域、仓库、服务和处理器层的清晰架构。gRPC 作为主要传输方式，REST 网关用于外部客户端。
+**기술 스택:** Go 1.22+, PostgreSQL, gRPC + REST (grpc-gateway), Docker, sqlc (타입 안전한 SQL), Wire (의존성 주입).
 
-## 关键规则
+**아키텍처:** 도메인(Domain), 저장소(Repository), 서비스(Service), 핸들러(Handler) 계층으로 분리된 클린 아키텍처를 지향합니다. 마이크로서비스 간 통신은 gRPC를 기본으로 하며, 외부 클라이언트를 위해 REST 게이트웨이를 제공합니다.
 
-### Go 规范
+## 핵심 규칙
 
-* 遵循 Effective Go 和 Go Code Review Comments 指南
-* 使用 `errors.New` / `fmt.Errorf` 配合 `%w` 进行包装 — 绝不对错误进行字符串匹配
-* 不使用 `init()` 函数 — 在 `main()` 或构造函数中进行显式初始化
-* 没有全局可变状态 — 通过构造函数传递依赖项
-* Context 必须是第一个参数，并在所有层中传播
+### 1. Go 코딩 컨벤션
+* **정석 준수**: *Effective Go* 및 *Go Code Review Comments* 가이드를 따르십시오.
+* **에러 처리**: `errors.New` 또는 `fmt.Errorf`와 `%w`를 사용해 에러를 래핑하십시오. 에러 메시지 문자열 비교는 금지됩니다.
+* **초기화**: `init()` 함수 사용을 지양하고 `main()`이나 생성자에서 명시적으로 초기화하십시오.
+* **상태 관리**: 전역 가변 상태를 두지 말고 생성자를 통해 의존성을 주입하십시오.
+* **컨텍스트**: `context.Context`는 항상 함수의 첫 번째 인자여야 하며 모든 계층으로 전달되어야 합니다.
 
-### 数据库
+### 2. 데이터베이스 (SQL & Migrations)
+* **sqlc 활용**: `queries/` 폴더의 순수 SQL을 사용하여 sqlc가 타입 안전한 Go 코드를 생성하게 하십시오.
+* **마이그레이션**: `migrations/` 폴더 내의 파일로 데이터베이스 변경을 관리하며 직접적인 스키마 수정은 금지됩니다.
+* **트랜잭션**: 여러 단계의 작업에는 `pgx.Tx`를 활용한 트랜잭션을 적용하십시오.
+* **보안**: 쿼리 작성 시 항상 파라미터($1, $2 등)를 사용하여 인젝션을 방지하십시오.
 
-* `queries/` 中的所有查询都使用纯 SQL — sqlc 生成类型安全的 Go 代码
-* 在 `migrations/` 中使用 golang-migrate 进行迁移 — 绝不直接更改数据库
-* 通过 `pgx.Tx` 为多步骤操作使用事务
-* 所有查询必须使用参数化占位符 (`$1`, `$2`) — 绝不使用字符串格式化
+### 3. 에러 핸들링 전략
+* **반환(Return) 우선**: 정말 복구가 불가능한 경우가 아니면 `panic` 대신 `error`를 반환하십시오.
+* **문맥 추가**: `fmt.Errorf("user 생성 중 에러: %w", err)`와 같이 에러에 문맥을 추가하십시오.
+* **도메인 에러**: 비즈니스 로직 에러는 `domain/errors.go`에 정의하고, 핸들러 계층에서 gRPC 상태 코드로 매핑하십시오.
 
-### 错误处理
+## 권장 파일 구조
 
-* 返回错误，不要 panic — panic 仅用于真正无法恢复的情况
-* 使用上下文包装错误：`fmt.Errorf("creating user: %w", err)`
-* 在 `domain/errors.go` 中定义业务逻辑的哨兵错误
-* 在处理器层将领域错误映射到 gRPC 状态码
-
-```go
-// Domain layer — sentinel errors
-var (
-    ErrUserNotFound  = errors.New("user not found")
-    ErrEmailTaken    = errors.New("email already registered")
-)
-
-// Handler layer — map to gRPC status
-func toGRPCError(err error) error {
-    switch {
-    case errors.Is(err, domain.ErrUserNotFound):
-        return status.Error(codes.NotFound, err.Error())
-    case errors.Is(err, domain.ErrEmailTaken):
-        return status.Error(codes.AlreadyExists, err.Error())
-    default:
-        return status.Error(codes.Internal, "internal error")
-    }
-}
-```
-
-### 代码风格
-
-* 代码或注释中不使用表情符号
-* 导出的类型和函数必须有文档注释
-* 函数保持在 50 行以内 — 提取辅助函数
-* 对所有具有多个用例的逻辑使用表格驱动测试
-* 对于信号通道，优先使用 `struct{}`，而不是 `bool`
-
-## 文件结构
-
-```
-cmd/
-  server/
-    main.go              # Entrypoint, Wire injection, graceful shutdown
+```text
+cmd/server/main.go     # 진입점 및 의존성 주입(Wire)
 internal/
-  domain/                # Business types and interfaces
-    user.go              # User entity and repository interface
-    errors.go            # Sentinel errors
-  service/               # Business logic
-    user_service.go
-    user_service_test.go
-  repository/            # Data access (sqlc-generated + custom)
-    postgres/
-      user_repo.go
-      user_repo_test.go  # Integration tests with testcontainers
-  handler/               # gRPC + REST handlers
-    grpc/
-      user_handler.go
-    rest/
-      user_handler.go
-  config/                # Configuration loading
-    config.go
-proto/                   # Protobuf definitions
-  user/v1/
-    user.proto
-queries/                 # SQL queries for sqlc
-  user.sql
-migrations/              # Database migrations
-  001_create_users.up.sql
-  001_create_users.down.sql
+  domain/              # 비즈니스 타입 및 인터페이스 (에러 정의 포함)
+  service/             # 비즈니스 로직 구현 및 테스트
+  repository/          # 데이터 액세스 계층 (sqlc 생성 코드 포함)
+  handler/             # gRPC 및 REST 핸들러 구현
+proto/                 # Protobuf 정의 파일
+queries/               # sqlc용 SQL 쿼리 파일
+migrations/            # DB 마이그레이션 스크립트
 ```
 
-## 关键模式
+## 주요 패턴 예시
 
-### 仓库接口
-
-```go
-type UserRepository interface {
-    Create(ctx context.Context, user *User) error
-    FindByID(ctx context.Context, id uuid.UUID) (*User, error)
-    FindByEmail(ctx context.Context, email string) (*User, error)
-    Update(ctx context.Context, user *User) error
-    Delete(ctx context.Context, id uuid.UUID) error
-}
-```
-
-### 使用依赖注入的服务
-
-```go
-type UserService struct {
-    repo   domain.UserRepository
-    hasher PasswordHasher
-    logger *slog.Logger
-}
-
-func NewUserService(repo domain.UserRepository, hasher PasswordHasher, logger *slog.Logger) *UserService {
-    return &UserService{repo: repo, hasher: hasher, logger: logger}
-}
-
-func (s *UserService) Create(ctx context.Context, req CreateUserRequest) (*domain.User, error) {
-    existing, err := s.repo.FindByEmail(ctx, req.Email)
-    if err != nil && !errors.Is(err, domain.ErrUserNotFound) {
-        return nil, fmt.Errorf("checking email: %w", err)
-    }
-    if existing != nil {
-        return nil, domain.ErrEmailTaken
-    }
-
-    hashed, err := s.hasher.Hash(req.Password)
-    if err != nil {
-        return nil, fmt.Errorf("hashing password: %w", err)
-    }
-
-    user := &domain.User{
-        ID:       uuid.New(),
-        Name:     req.Name,
-        Email:    req.Email,
-        Password: hashed,
-    }
-    if err := s.repo.Create(ctx, user); err != nil {
-        return nil, fmt.Errorf("creating user: %w", err)
-    }
-    return user, nil
-}
-```
-
-### 表格驱动测试
-
+### 테이블 구동 테스트 (Table-Driven Tests)
 ```go
 func TestUserService_Create(t *testing.T) {
     tests := []struct {
@@ -159,109 +57,17 @@ func TestUserService_Create(t *testing.T) {
         setup   func(*MockUserRepo)
         wantErr error
     }{
-        {
-            name: "valid user",
-            req:  CreateUserRequest{Name: "Alice", Email: "alice@example.com", Password: "secure123"},
-            setup: func(m *MockUserRepo) {
-                m.On("FindByEmail", mock.Anything, "alice@example.com").Return(nil, domain.ErrUserNotFound)
-                m.On("Create", mock.Anything, mock.Anything).Return(nil)
-            },
-            wantErr: nil,
-        },
-        {
-            name: "duplicate email",
-            req:  CreateUserRequest{Name: "Alice", Email: "taken@example.com", Password: "secure123"},
-            setup: func(m *MockUserRepo) {
-                m.On("FindByEmail", mock.Anything, "taken@example.com").Return(&domain.User{}, nil)
-            },
-            wantErr: domain.ErrEmailTaken,
-        },
+        // 테스트 케이스 정의
     }
-
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            repo := new(MockUserRepo)
-            tt.setup(repo)
-            svc := NewUserService(repo, &bcryptHasher{}, slog.Default())
-
-            _, err := svc.Create(context.Background(), tt.req)
-
-            if tt.wantErr != nil {
-                assert.ErrorIs(t, err, tt.wantErr)
-            } else {
-                assert.NoError(t, err)
-            }
-        })
-    }
+    // 루프를 돌며 t.Run 실행
 }
 ```
 
-## 环境变量
+## 주요 명령어 (Slash Commands)
 
-```bash
-# Database
-DATABASE_URL=postgres://user:pass@localhost:5432/myservice?sslmode=disable
+* `/go-test`: Go 전용 TDD 워크플로우 실행
+* `/go-review`: 관용구(Idiomatic Go), 에러 처리, 동시성 중심의 리뷰
+* `/go-build`: Go 빌드 에러 자동 수정 시도
+* `/security-scan`: 비밀값 노출 및 보안 취약점 점검
 
-# gRPC
-GRPC_PORT=50051
-REST_PORT=8080
-
-# Auth
-JWT_SECRET=           # Load from vault in production
-TOKEN_EXPIRY=24h
-
-# Observability
-LOG_LEVEL=info        # debug, info, warn, error
-OTEL_ENDPOINT=        # OpenTelemetry collector
-```
-
-## 测试策略
-
-```bash
-/go-test             # TDD workflow for Go
-/go-review           # Go-specific code review
-/go-build            # Fix build errors
-```
-
-### 测试命令
-
-```bash
-# Unit tests (fast, no external deps)
-go test ./internal/... -short -count=1
-
-# Integration tests (requires Docker for testcontainers)
-go test ./internal/repository/... -count=1 -timeout 120s
-
-# All tests with coverage
-go test ./... -coverprofile=coverage.out -count=1
-go tool cover -func=coverage.out  # summary
-go tool cover -html=coverage.out  # browser
-
-# Race detector
-go test ./... -race -count=1
-```
-
-## ECC 工作流
-
-```bash
-# Planning
-/plan "Add rate limiting to user endpoints"
-
-# Development
-/go-test                  # TDD with Go-specific patterns
-
-# Review
-/go-review                # Go idioms, error handling, concurrency
-/security-scan            # Secrets and vulnerabilities
-
-# Before merge
-go vet ./...
-staticcheck ./...
-```
-
-## Git 工作流
-
-* `feat:` 新功能，`fix:` 错误修复，`refactor:` 代码更改
-* 从 `main` 创建功能分支，需要 PR
-* CI: `go vet`, `staticcheck`, `go test -race`, `golangci-lint`
-* 部署: 在 CI 中构建 Docker 镜像，部署到 Kubernetes
+**핵심**: Go 언어의 명료함을 유지하기 위해 함수는 50줄 이내로 유지하고, 모든 내보내기(Exported) 대상에는 문서 주석을 작성하십시오. 동시성 제어 시에는 공유 메모리가 아닌 채널(Channel) 통신을 지향하십시오.

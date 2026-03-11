@@ -1,308 +1,80 @@
-# Django REST API — 项目 CLAUDE.md
+---
+description: PostgreSQL과 Celery를 사용하는 Django REST Framework(DRF) 기반 API 프로젝트의 CLAUDE.md 설정 예시입니다.
+---
 
-> 使用 PostgreSQL 和 Celery 的 Django REST Framework API 真实示例。
-> 将此复制到你的项目根目录并针对你的服务进行自定义。
+# Django REST API 프로젝트 가이드 (CLAUDE.md 예시)
 
-## 项目概述
+이 파일은 Django REST Framework 기반의 백엔드 프로젝트에서 Claude Code가 준수해야 할 핵심 지침을 담고 있습니다.
 
-**技术栈:** Python 3.12+, Django 5.x, Django REST Framework, PostgreSQL, Celery + Redis, pytest, Docker Compose
+## 프로젝트 개요
 
-**架构:** 采用领域驱动设计，每个业务领域对应一个应用。DRF 用于 API 层，Celery 用于异步任务，pytest 用于测试。所有端点返回 JSON — 无模板渲染。
+**기술 스택:** Python 3.12+, Django 5.x, Django REST Framework, PostgreSQL, Celery + Redis, pytest, Docker Compose.
 
-## 关键规则
+**아키텍처:** 도메인 주도 설계(DDD)를 채택하며, 각 비즈니스 도메인은 개별 Django 앱으로 관리합니다. 모든 엔드포인트는 JSON으로 통신하며 템플릿 렌더링은 사용하지 않습니다.
 
-### Python 约定
+## 핵심 규칙
 
-* 所有函数签名使用类型提示 — 使用 `from __future__ import annotations`
-* 不使用 `print()` 语句 — 使用 `logging.getLogger(__name__)`
-* 字符串格式化使用 f-strings，绝不使用 `%` 或 `.format()`
-* 文件操作使用 `pathlib.Path` 而非 `os.path`
-* 导入排序使用 isort：标准库、第三方库、本地库（由 ruff 强制执行）
+### 1. Python 코딩 관행
+* **타입 힌트**: 모든 함수 시그니처에 타입 힌트를 명시하십시오. (`from __future__ import annotations` 사용 권장)
+* **로그 관리**: `print()` 대신 `logging.getLogger(__name__)`을 사용하십시오.
+* **문자열**: f-strings만 사용하며 `%`나 `.format()`은 지양하십시오.
+* **경로 처리**: `os.path` 대신 `pathlib.Path`를 사용하십시오.
+* **임포트 정렬**: 표준 라이브러리, 제3자 라이브러리, 로컬 패키지 순으로 정렬하십시오. (ruff로 강제)
 
-### 数据库
+### 2. 데이터베이스 및 ORM
+* **ORM 우선**: 모든 쿼리는 Django ORM을 사용하십시오. 로우 SQL은 파라미터화된 `.raw()`에서만 허용됩니다.
+* **마이그레이션**: 마이그레이션 파일은 반드시 Git에 포함하며, 운영 환경에서 `--fake` 옵션은 지양하십시오.
+* **성능 최적화**: N+1 쿼리 방지를 위해 `select_related()`와 `prefetch_related()`를 적극 활용하십시오.
+* **모델 필수 필드**: 모든 모델은 `created_at` 및 `updated_at` 자동 생성 필드를 포함해야 합니다.
+* **인덱스**: `filter()`, `order_by()` 또는 `WHERE` 절에 자주 쓰이는 필드에 인덱스를 설정하십시오.
 
-* 所有查询使用 Django ORM — 原始 SQL 仅与 `.raw()` 和参数化查询一起使用
-* 迁移文件提交到 git — 生产中绝不使用 `--fake`
-* 使用 `select_related()` 和 `prefetch_related()` 防止 N+1 查询
-* 所有模型必须具有 `created_at` 和 `updated_at` 自动字段
-* 在 `filter()`、`order_by()` 或 `WHERE` 子句中使用的任何字段上建立索引
+### 3. 인증 및 권한 (Auth)
+* **JWT 사용**: `simplejwt`를 활용한 Access/Refresh 토큰 방식을 구현하십시오.
+* **권한 설정**: 각 뷰마다 명시적인 권한 클래스를 설정하십시오. (기본 설정에 의존 금지)
+* **블랙리스트**: 로그아웃 시 토큰 블랙리스트 기능을 활성화하십시오.
 
-```python
-# BAD: N+1 query
-orders = Order.objects.all()
-for order in orders:
-    print(order.customer.name)  # hits DB for each order
+### 4. 시리어라이저 (Serializers)
+* **검증 위치**: 비즈니스 로직 검증은 뷰(View)가 아닌 시리어라이저 레벨에서 수행하여 뷰를 간결하게 유지하십시오.
+* **읽기/쓰기 분리**: 입력과 출력 구조가 다를 경우 읽기용과 쓰기용 시리어라이저를 분리하십시오.
 
-# GOOD: Single query with join
-orders = Order.objects.select_related("customer").all()
-```
+## 권장 파일 구조
 
-### 认证
-
-* 通过 `djangorestframework-simplejwt` 使用 JWT — 访问令牌（15 分钟）+ 刷新令牌（7 天）
-* 每个视图都设置权限类 — 绝不依赖默认设置
-* 使用 `IsAuthenticated` 作为基础，为对象级访问添加自定义权限
-* 为登出启用令牌黑名单
-
-### 序列化器
-
-* 简单 CRUD 使用 `ModelSerializer`，复杂验证使用 `Serializer`
-* 当输入/输出结构不同时，分离读写序列化器
-* 在序列化器层面进行验证，而非在视图中 — 视图应保持精简
-
-```python
-class CreateOrderSerializer(serializers.Serializer):
-    product_id = serializers.UUIDField()
-    quantity = serializers.IntegerField(min_value=1, max_value=100)
-
-    def validate_product_id(self, value):
-        if not Product.objects.filter(id=value, active=True).exists():
-            raise serializers.ValidationError("Product not found or inactive")
-        return value
-
-class OrderDetailSerializer(serializers.ModelSerializer):
-    customer = CustomerSerializer(read_only=True)
-    product = ProductSerializer(read_only=True)
-
-    class Meta:
-        model = Order
-        fields = ["id", "customer", "product", "quantity", "total", "status", "created_at"]
-```
-
-### 错误处理
-
-* 使用 DRF 异常处理器确保一致的错误响应
-* 业务逻辑中的自定义异常放在 `core/exceptions.py`
-* 绝不向客户端暴露内部错误细节
-
-```python
-# core/exceptions.py
-from rest_framework.exceptions import APIException
-
-class InsufficientStockError(APIException):
-    status_code = 409
-    default_detail = "Insufficient stock for this order"
-    default_code = "insufficient_stock"
-```
-
-### 代码风格
-
-* 代码或注释中不使用表情符号
-* 最大行长度：120 个字符（由 ruff 强制执行）
-* 类名：PascalCase，函数/变量名：snake\_case，常量：UPPER\_SNAKE\_CASE
-* 视图保持精简 — 业务逻辑放在服务函数或模型方法中
-
-## 文件结构
-
-```
-config/
-  settings/
-    base.py              # Shared settings
-    local.py             # Dev overrides (DEBUG=True)
-    production.py        # Production settings
-  urls.py                # Root URL config
-  celery.py              # Celery app configuration
+```text
+config/               # 프로젝트 설정 (base, local, production)
 apps/
-  accounts/              # User auth, registration, profile
-    models.py
-    serializers.py
-    views.py
-    services.py          # Business logic
-    tests/
-      test_views.py
-      test_services.py
-      factories.py       # Factory Boy factories
-  orders/                # Order management
-    models.py
-    serializers.py
-    views.py
-    services.py
-    tasks.py             # Celery tasks
-    tests/
-  products/              # Product catalog
-    models.py
-    serializers.py
-    views.py
-    tests/
-core/
-  exceptions.py          # Custom API exceptions
-  permissions.py         # Shared permission classes
-  pagination.py          # Custom pagination
-  middleware.py          # Request logging, timing
-  tests/
+  accounts/           # 사용자 인증, 프로필 등
+    services.py       # 비즈니스 로직 레이어
+    tests/            # pytest 기반 테스트
+  orders/             # 주문 관리 (tasks.py 포함)
+  products/           # 상품 카탈로그
+core/                 # 공통 예외, 권한, 미들웨어, 유틸리티
 ```
 
-## 关键模式
+## 주요 패턴 예시
 
-### 服务层
-
+### 서비스 레이어 (비즈니스 로직)
 ```python
-# apps/orders/services.py
-from django.db import transaction
-
+@transaction.atomic
 def create_order(*, customer, product_id: uuid.UUID, quantity: int) -> Order:
-    """Create an order with stock validation and payment hold."""
-    product = Product.objects.select_for_update().get(id=product_id)
-
-    if product.stock < quantity:
-        raise InsufficientStockError()
-
-    with transaction.atomic():
-        order = Order.objects.create(
-            customer=customer,
-            product=product,
-            quantity=quantity,
-            total=product.price * quantity,
-        )
-        product.stock -= quantity
-        product.save(update_fields=["stock", "updated_at"])
-
-    # Async: send confirmation email
-    send_order_confirmation.delay(order.id)
+    # 재고 검증 및 주문 생성 로직
+    # Celery 태스크 호출: send_order_confirmation.delay(order.id)
     return order
 ```
 
-### 视图模式
-
+### 테스트 패턴 (pytest + Factory Boy)
 ```python
-# apps/orders/views.py
-class OrderViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    pagination_class = StandardPagination
-
-    def get_serializer_class(self):
-        if self.action == "create":
-            return CreateOrderSerializer
-        return OrderDetailSerializer
-
-    def get_queryset(self):
-        return (
-            Order.objects
-            .filter(customer=self.request.user)
-            .select_related("product", "customer")
-            .order_by("-created_at")
-        )
-
-    def perform_create(self, serializer):
-        order = create_order(
-            customer=self.request.user,
-            product_id=serializer.validated_data["product_id"],
-            quantity=serializer.validated_data["quantity"],
-        )
-        serializer.instance = order
-```
-
-### 测试模式 (pytest + Factory Boy)
-
-```python
-# apps/orders/tests/factories.py
-import factory
-from apps.accounts.tests.factories import UserFactory
-from apps.products.tests.factories import ProductFactory
-
-class OrderFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = "orders.Order"
-
-    customer = factory.SubFactory(UserFactory)
-    product = factory.SubFactory(ProductFactory, stock=100)
-    quantity = 1
-    total = factory.LazyAttribute(lambda o: o.product.price * o.quantity)
-
-# apps/orders/tests/test_views.py
-import pytest
-from rest_framework.test import APIClient
-
 @pytest.mark.django_db
 class TestCreateOrder:
-    def setup_method(self):
-        self.client = APIClient()
-        self.user = UserFactory()
-        self.client.force_authenticate(self.user)
-
     def test_create_order_success(self):
-        product = ProductFactory(price=29_99, stock=10)
-        response = self.client.post("/api/orders/", {
-            "product_id": str(product.id),
-            "quantity": 2,
-        })
+        # APIClient와 Factory를 사용한 기능 검증
         assert response.status_code == 201
-        assert response.data["total"] == 59_98
-
-    def test_create_order_insufficient_stock(self):
-        product = ProductFactory(stock=0)
-        response = self.client.post("/api/orders/", {
-            "product_id": str(product.id),
-            "quantity": 1,
-        })
-        assert response.status_code == 409
-
-    def test_create_order_unauthenticated(self):
-        self.client.force_authenticate(None)
-        response = self.client.post("/api/orders/", {})
-        assert response.status_code == 401
 ```
 
-## 环境变量
+## 주요 명령어 (Slash Commands)
 
-```bash
-# Django
-SECRET_KEY=
-DEBUG=False
-ALLOWED_HOSTS=api.example.com
+* `/plan`: 신규 기능 개발 계획(예: 결제 시스템 연동) 수립
+* `/tdd`: pytest 기반의 테스트 주도 개발 워크플로우
+* `/python-review`: 파이썬 특유의 코드 리뷰 및 보안 스캔
+* `/verify`: 빌드, 린트, 테스트 및 전체 보안 점검
 
-# Database
-DATABASE_URL=postgres://user:pass@localhost:5432/myapp
-
-# Redis (Celery broker + cache)
-REDIS_URL=redis://localhost:6379/0
-
-# JWT
-JWT_ACCESS_TOKEN_LIFETIME=15       # minutes
-JWT_REFRESH_TOKEN_LIFETIME=10080   # minutes (7 days)
-
-# Email
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.example.com
-```
-
-## 测试策略
-
-```bash
-# Run all tests
-pytest --cov=apps --cov-report=term-missing
-
-# Run specific app tests
-pytest apps/orders/tests/ -v
-
-# Run with parallel execution
-pytest -n auto
-
-# Only failing tests from last run
-pytest --lf
-```
-
-## ECC 工作流
-
-```bash
-# Planning
-/plan "Add order refund system with Stripe integration"
-
-# Development with TDD
-/tdd                    # pytest-based TDD workflow
-
-# Review
-/python-review          # Python-specific code review
-/security-scan          # Django security audit
-/code-review            # General quality check
-
-# Verification
-/verify                 # Build, lint, test, security scan
-```
-
-## Git 工作流
-
-* `feat:` 新功能，`fix:` 错误修复，`refactor:` 代码变更
-* 功能分支从 `main` 创建，需要 PR
-* CI：ruff（代码检查 + 格式化）、mypy（类型检查）、pytest（测试）、safety（依赖检查）
-* 部署：Docker 镜像，通过 Kubernetes 或 Railway 管理
+**핵심**: 프로젝트의 일관성을 위해 도메인별 관심사 분리를 엄격히 준수하고, 모든 비즈니스 로직은 테스트 코드로 보호되어야 합니다.
