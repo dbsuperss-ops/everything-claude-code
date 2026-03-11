@@ -1,49 +1,49 @@
 ---
-description: Create implementation plan with risk assessment
+description: 리스크 평가가 포함된 구현 계획 수립
 agent: planner
 subtask: true
 ---
 
-# Plan Command
+# 계획 명령 (Plan Command)
 
-Create a detailed implementation plan for: $ARGUMENTS
+다음에 대한 상세한 구현 계획을 수립합니다: $ARGUMENTS
 
-## Your Task
+## 임무
 
-1. **Restate Requirements** - Clarify what needs to be built
-2. **Identify Risks** - Surface potential issues, blockers, and dependencies
-3. **Create Step Plan** - Break down implementation into phases
-4. **Wait for Confirmation** - MUST receive user approval before proceeding
+1. **요구 사항 재정의** - 구축해야 할 내용을 명확히 설명합니다.
+2. **리스크 식별** - 잠재적인 문제, 장애물 및 의존성을 표면화합니다.
+3. **단계별 계획 수립** - 구현 과정을 여러 단계로 세분화합니다.
+4. **확인 대기** - 계속 진행하기 전에 반드시 사용자의 승인을 받아야 합니다.
 
-## Output Format
+## 출력 형식
 
-### Requirements Restatement
-[Clear, concise restatement of what will be built]
+### 요구 사항 재정의
+[구축할 내용에 대한 명확하고 간결한 재진술]
 
-### Implementation Phases
-[Phase 1: Description]
-- Step 1.1
-- Step 1.2
+### 구현 단계
+[1단계: 설명]
+- 단계 1.1
+- 단계 1.2
 ...
 
-[Phase 2: Description]
-- Step 2.1
-- Step 2.2
+[2단계: 설명]
+- 단계 2.1
+- 단계 2.2
 ...
 
-### Dependencies
-[List external dependencies, APIs, services needed]
+### 의존성 (Dependencies)
+[필요한 외부 의존성, API, 서비스 목록]
 
-### Risks
-- HIGH: [Critical risks that could block implementation]
-- MEDIUM: [Moderate risks to address]
-- LOW: [Minor concerns]
+### 리스크 (Risks)
+- 높음 (HIGH): [구현을 가로막을 수 있는 치명적인 리스크]
+- 중간 (MEDIUM): [해결해야 할 보통 수준의 리스크]
+- 낮음 (LOW): [경미한 우려 사항]
 
-### Estimated Complexity
-[HIGH/MEDIUM/LOW with time estimates]
+### 예상 복잡도
+[높음/중간/낮음 및 예상 소요 시간]
 
-**WAITING FOR CONFIRMATION**: Proceed with this plan? (yes/no/modify)
+**확인 대기 중**: 이 계획대로 진행할까요? (yes/no/수정 요청)
 
 ---
 
-**CRITICAL**: Do NOT write any code until the user explicitly confirms with "yes", "proceed", or similar affirmative response.
+**중요**: 사용자가 "yes", "진행", 또는 이와 유사한 긍정적인 응답으로 명시적으로 확인하기 전까지는 어떠한 코드도 작성하지 마십시오.

@@ -1,29 +1,29 @@
-# Quality Gate Command
+# 품질 게이트 명령 (Quality Gate Command)
 
-Run the ECC quality pipeline on demand for a file or project scope.
+파일 또는 프로젝트 범주에 대해 ECC 품질 파이프라인을 온디맨드(On-demand)로 실행합니다.
 
-## Usage
+## 사용법
 
-`/quality-gate [path|.] [--fix] [--strict]`
+`/quality-gate [경로|.] [--fix] [--strict]`
 
-- default target: current directory (`.`)
-- `--fix`: allow auto-format/fix where configured
-- `--strict`: fail on warnings where supported
+- 기본 대상: 현재 디렉토리 (`.`)
+- `--fix`: 설정된 경우 자동 포매팅/수정을 허용합니다.
+- `--strict`: 지원되는 경우 경고(Warnings) 발생 시에도 실패로 처리합니다.
 
-## Pipeline
+## 파이프라인
 
-1. Detect language/tooling for target.
-2. Run formatter checks.
-3. Run lint/type checks when available.
-4. Produce a concise remediation list.
+1. 대상에 대한 언어 및 도구를 감지합니다.
+2. 포매터(Formatter) 체크를 실행합니다.
+3. 가능한 경우 린트(Lint) 및 타입 체크를 실행합니다.
+4. 간결한 수정(Remediation) 목록을 생성합니다.
 
-## Notes
+## 참고 사항
 
-This command mirrors hook behavior but is operator-invoked.
+이 명령은 후크(Hook)의 동작을 반영하지만, 사용자가 직접 호출한다는 점이 다릅니다.
 
-## Arguments
+## 인자(Arguments)
 
 $ARGUMENTS:
-- `[path|.]` optional target path
-- `--fix` optional
-- `--strict` optional
+- `[경로|.]` 선택적 대상 경로
+- `--fix` 선택 사항
+- `--strict` 선택 사항

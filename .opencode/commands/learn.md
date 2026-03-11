@@ -1,61 +1,61 @@
 ---
-description: Extract patterns and learnings from current session
+description: 현재 세션으로부터 패턴 및 학습 내용 추출
 agent: build
 ---
 
-# Learn Command
+# 학습 명령 (Learn Command)
 
-Extract patterns, learnings, and reusable insights from the current session: $ARGUMENTS
+현재 세션으로부터 패턴, 학습 내용 및 재사용 가능한 통찰(Insights)을 추출합니다: $ARGUMENTS
 
-## Your Task
+## 임무
 
-Analyze the conversation and code changes to extract:
+대화 내용과 코드 변경 사항을 분석하여 다음을 추출하십시오:
 
-1. **Patterns discovered** - Recurring solutions or approaches
-2. **Best practices applied** - Techniques that worked well
-3. **Mistakes to avoid** - Issues encountered and solutions
-4. **Reusable snippets** - Code patterns worth saving
+1. **발견된 패턴** - 반복되는 해결책 또는 접근 방식
+2. **적용된 베스트 프랙티스** - 효과적이었던 기술
+3. **피해야 할 실수** - 발생한 리스크 및 해결 방법
+4. **재사용 가능한 스니펫** - 저장할 가치가 있는 코드 패턴
 
-## Output Format
+## 출력 형식
 
-### Patterns Discovered
+### 발견된 패턴
 
-**Pattern: [Name]**
-- Context: When to use this pattern
-- Implementation: How to apply it
-- Example: Code snippet
+**패턴: [이름]**
+- 컨텍스트: 이 패턴을 사용하는 시기
+- 구현: 적용 방법
+- 예시: 코드 스니펫
 
-### Best Practices Applied
+### 적용된 베스트 프랙티스
 
-1. [Practice name]
-   - Why it works
-   - When to apply
+1. [프랙티스 이름]
+   - 효과적인 이유
+   - 적용 시기
 
-### Mistakes to Avoid
+### 피해야 할 실수
 
-1. [Mistake description]
-   - What went wrong
-   - How to prevent it
+1. [실수 설명]
+   - 무엇이 잘못되었는가
+   - 방지 방법
 
-### Suggested Skill Updates
+### 제안된 스킬 업데이트
 
-If patterns are significant, suggest updates to:
+패턴이 유의미한 경우, 다음 문서의 업데이트를 제안하십시오:
 - `skills/coding-standards/SKILL.md`
-- `skills/[domain]/SKILL.md`
-- `rules/[category].md`
+- `skills/[도메인]/SKILL.md`
+- `rules/[카테고리].md`
 
-## Instinct Format (for continuous-learning-v2)
+## 본능 (Instinct) 형식 (continuous-learning-v2용)
 
 ```json
 {
-  "trigger": "[situation that triggers this learning]",
-  "action": "[what to do]",
+  "trigger": "[이 학습을 트리거하는 상황]",
+  "action": "[수행할 조치]",
   "confidence": 0.7,
   "source": "session-extraction",
-  "timestamp": "[ISO timestamp]"
+  "timestamp": "[ISO 타임스탬프]"
 }
 ```
 
 ---
 
-**TIP**: Run `/learn` periodically during long sessions to capture insights before context compaction.
+**팁**: 긴 세션 동안 컨텍스트 함축(Compaction)이 발생하기 전에 통찰을 캡처할 수 있도록 `/learn` 명령을 주기적으로 실행하십시오.

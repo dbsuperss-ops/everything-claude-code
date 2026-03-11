@@ -1,147 +1,142 @@
-# Everything Claude Code (ECC) — Agent Instructions
+# Everything Claude Code (ECC) — 에이전트 지침
 
-This is a **production-ready AI coding plugin** providing 16 specialized agents, 65+ skills, 40 commands, and automated hook workflows for software development.
+이것은 소프트웨어 개발을 위해 13개의 전문 에이전트, 50개 이상의 스킬, 33개의 명령어, 그리고 자동화된 후크(hook) 워크플로우를 제공하는 **프로덕션 준비가 완료된 AI 코딩 플러그인**입니다.
 
-## Core Principles
+## 핵심 원칙
 
-1. **Agent-First** — Delegate to specialized agents for domain tasks
-2. **Test-Driven** — Write tests before implementation, 80%+ coverage required
-3. **Security-First** — Never compromise on security; validate all inputs
-4. **Immutability** — Always create new objects, never mutate existing ones
-5. **Plan Before Execute** — Plan complex features before writing code
+1. **에이전트 우선 (Agent-First)** — 도메인 과업을 위해 전문 에이전트에게 위임하십시오.
+2. **테스트 주도 (Test-Driven)** — 구현 전에 테스트를 작성하십시오. 80% 이상의 커버리지가 필요합니다.
+3. **보안 우선 (Security-First)** — 보안을 절대 타협하지 마십시오. 모든 입력을 검증하십시오.
+4. **불변성 (Immutability)** — 항상 새로운 객체를 생성하고, 기존 객체를 변경(mutate)하지 마십시오.
+5. **실행 전 계획 (Plan Before Execute)** — 코드를 작성하기 전에 복잡한 기능을 먼저 계획하십시오.
 
-## Available Agents
+## 사용 가능한 에이전트
 
-| Agent | Purpose | When to Use |
+| 에이전트 | 목적 | 사용 시기 |
 |-------|---------|-------------|
-| planner | Implementation planning | Complex features, refactoring |
-| architect | System design and scalability | Architectural decisions |
-| tdd-guide | Test-driven development | New features, bug fixes |
-| code-reviewer | Code quality and maintainability | After writing/modifying code |
-| security-reviewer | Vulnerability detection | Before commits, sensitive code |
-| build-error-resolver | Fix build/type errors | When build fails |
-| e2e-runner | End-to-end Playwright testing | Critical user flows |
-| refactor-cleaner | Dead code cleanup | Code maintenance |
-| doc-updater | Documentation and codemaps | Updating docs |
-| go-reviewer | Go code review | Go projects |
-| go-build-resolver | Go build errors | Go build failures |
-| database-reviewer | PostgreSQL/Supabase specialist | Schema design, query optimization |
-| python-reviewer | Python code review | Python projects |
-| chief-of-staff | Communication triage and drafts | Multi-channel email, Slack, LINE, Messenger |
-| loop-operator | Autonomous loop execution | Run loops safely, monitor stalls, intervene |
-| harness-optimizer | Harness config tuning | Reliability, cost, throughput |
+| planner | 구현 계획 수립 | 복잡한 기능, 리팩토링 |
+| architect | 시스템 설계 및 확장성 | 아키텍처 결정 |
+| tdd-guide | 테스트 주도 개발 | 신규 기능, 버그 수정 |
+| code-reviewer | 코드 품질 및 유지보수 | 코드 작성/수정 후 |
+| security-reviewer | 취약점 탐지 | 커밋 전, 민감한 코드 |
+| build-error-resolver | 빌드/타입 에러 수정 | 빌드 실패 시 |
+| e2e-runner | 엔드투엔드 Playwright 테스트 | 핵심 사용자 흐름 |
+| refactor-cleaner | 데드 코드 정리 | 코드 유지보수 |
+| doc-updater | 문서 및 코드맵(codemap) | 문서 업데이트 시 |
+| go-reviewer | Go 코드 리뷰 | Go 프로젝트 |
+| go-build-resolver | Go 빌드 에러 해결 | Go 빌드 실패 시 |
+| database-reviewer | PostgreSQL/Supabase 전문가 | 스키마 설계, 쿼리 최적화 |
+| python-reviewer | Python 코드 리뷰 | Python 프로젝트 |
 
-## Agent Orchestration
+## 에이전트 오케스트레이션 (Orchestration)
 
-Use agents proactively without user prompt:
-- Complex feature requests → **planner**
-- Code just written/modified → **code-reviewer**
-- Bug fix or new feature → **tdd-guide**
-- Architectural decision → **architect**
-- Security-sensitive code → **security-reviewer**
-- Multi-channel communication triage → **chief-of-staff**
-- Autonomous loops / loop monitoring → **loop-operator**
-- Harness config reliability and cost → **harness-optimizer**
+사용자의 요청 없이도 에이전트를 선제적으로 활용하십시오:
+- 복잡한 기능 요청 → **planner**
+- 코드 작성/수정 완료 → **code-reviewer**
+- 버그 수정 또는 신규 기능 → **tdd-guide**
+- 아키텍처 결정 → **architect**
+- 보안에 민감한 코드 → **security-reviewer**
 
-Use parallel execution for independent operations — launch multiple agents simultaneously.
+독립적인 작업에는 병렬 실행을 사용하십시오 — 여러 에이전트를 동시에 실행하십시오.
 
-## Security Guidelines
+## 보안 가이드라인
 
-**Before ANY commit:**
-- No hardcoded secrets (API keys, passwords, tokens)
-- All user inputs validated
-- SQL injection prevention (parameterized queries)
-- XSS prevention (sanitized HTML)
-- CSRF protection enabled
-- Authentication/authorization verified
-- Rate limiting on all endpoints
-- Error messages don't leak sensitive data
+**어떤 커밋이든 수행하기 전에:**
+- 하드코딩된 비밀 정보(API 키, 비밀번호, 토큰)가 없는지 확인
+- 모든 사용자 입력 검증 완료
+- SQL 인젝션 방지 (파라미터화된 쿼리 사용)
+- XSS 방지 (HTML 새니타이징)
+- CSRF 보호 활성화
+- 인증/인가 확인 완료
+- 모든 엔드포인트에 속도 제한(Rate limiting) 적용
+- 에러 메시지에 민감한 데이터 유출 방지
 
-**Secret management:** NEVER hardcode secrets. Use environment variables or a secret manager. Validate required secrets at startup. Rotate any exposed secrets immediately.
+**비밀 정보 관리:** 절대 비밀 정보를 하드코딩하지 마십시오. 환경 변수나 비밀 관리자(Secret Manager)를 사용하십시오. 시작 시 필수 비밀 정보를 검증하십시오. 노출된 비밀 정보는 즉시 교체하십시오.
 
-**If security issue found:** STOP → use security-reviewer agent → fix CRITICAL issues → rotate exposed secrets → review codebase for similar issues.
+**보안 문제 발견 시:** 중단 → security-reviewer 에이전트 사용 → 치명적(CRITICAL) 문제 수정 → 노출된 비밀 정보 교체 → 유사한 문제가 있는지 코드베이스 검토.
 
-## Coding Style
+## 코딩 스타일
 
-**Immutability (CRITICAL):** Always create new objects, never mutate. Return new copies with changes applied.
+**불변성 (중요):** 항상 새로운 객체를 생성하고 절대 기존 상태를 변경하지 마십시오. 변경 사항이 적용된 새로운 복사본을 반환하십시오.
 
-**File organization:** Many small files over few large ones. 200-400 lines typical, 800 max. Organize by feature/domain, not by type. High cohesion, low coupling.
+**파일 구성:** 소수의 큰 파일보다 다수의 작은 파일을 선호합니다. 보통 200-400라인, 최대 800라인으로 구성하십시오. 타입이 아닌 기능/도메인별로 조하십시오. 응집도는 높이고 결합도는 낮추십시오.
 
-**Error handling:** Handle errors at every level. Provide user-friendly messages in UI code. Log detailed context server-side. Never silently swallow errors.
+**에러 처리:** 모든 레벨에서 에러를 처리하십시오. UI 코드에서는 사용자 친화적인 메시지를 제공하십시오. 서버 측에는 상세한 문맥을 로그로 남기십시오. 에러를 조용히 무시하지 마십시오.
 
-**Input validation:** Validate all user input at system boundaries. Use schema-based validation. Fail fast with clear messages. Never trust external data.
+**입력 검증:** 시스템 경계에서 모든 사용자 입력을 검증하십시오. 스키마 기반 검증을 사용하십시오. 명확한 메시지와 함께 즉시 실패(Fail fast)하도록 하십시오. 외부 데이터를 절대 신뢰하지 마십시오.
 
-**Code quality checklist:**
-- Functions small (<50 lines), files focused (<800 lines)
-- No deep nesting (>4 levels)
-- Proper error handling, no hardcoded values
-- Readable, well-named identifiers
+**코드 품질 체크리스트:**
+- 함수는 짧게 (<50라인), 파일은 집중도 있게 (<800라인)
+- 깊은 중첩 금지 (>4단계)
+- 적절한 에러 처리, 하드코딩된 값 배제
+- 읽기 쉽고 잘 명명된 식별자
 
-## Testing Requirements
+## 테스트 요구 사항
 
-**Minimum coverage: 80%**
+**최소 커버리지: 80%**
 
-Test types (all required):
-1. **Unit tests** — Individual functions, utilities, components
-2. **Integration tests** — API endpoints, database operations
-3. **E2E tests** — Critical user flows
+테스트 유형 (모두 필수):
+1. **단위 테스트 (Unit tests)** — 개별 함수, 유틸리티, 컴포넌트
+2. **통합 테스트 (Integration tests)** — API 엔드포인트, 데이터베이스 작업
+3. **E2E 테스트** — 핵심 사용자 흐름
 
-**TDD workflow (mandatory):**
-1. Write test first (RED) — test should FAIL
-2. Write minimal implementation (GREEN) — test should PASS
-3. Refactor (IMPROVE) — verify coverage 80%+
+**TDD 워크플로우 (의무 사항):**
+1. 테스트 먼저 작성 (RED) — 테스트가 실패해야 함
+2. 최소한의 구현 작성 (GREEN) — 테스트가 통과해야 함
+3. 리팩토링 (IMPROVE) — 커버리지 80% 이상 확인
 
-Troubleshoot failures: check test isolation → verify mocks → fix implementation (not tests, unless tests are wrong).
+실패 해결: 테스트 격리 확인 → 모의 객체(Mocks) 검증 → 구현 코드 수정 (테스트가 잘못된 경우가 아니라면 테스트를 수정하지 말 것).
 
-## Development Workflow
+## 개발 워크플로우
 
-1. **Plan** — Use planner agent, identify dependencies and risks, break into phases
-2. **TDD** — Use tdd-guide agent, write tests first, implement, refactor
-3. **Review** — Use code-reviewer agent immediately, address CRITICAL/HIGH issues
-4. **Capture knowledge in the right place**
-   - Personal debugging notes, preferences, and temporary context → auto memory
-   - Team/project knowledge (architecture decisions, API changes, runbooks) → the project's existing docs structure
-   - If the current task already produces the relevant docs or code comments, do not duplicate the same information elsewhere
-   - If there is no obvious project doc location, ask before creating a new top-level file
-5. **Commit** — Conventional commits format, comprehensive PR summaries
+1. **계획 (Plan)** — planner 에이전트 사용, 의존성 및 리스크 식별, 단계별로 분할
+2. **TDD** — tdd-guide 에이전트 사용, 테스트 먼저 작성, 구현, 리팩토링
+3. **리뷰 (Review)** — 즉시 code-reviewer 에이전트 사용, 치명적(CRITICAL)/높음(HIGH) 이슈 해결
+4. **올바른 위치에 지식 기록**
+   - 개인적인 디버깅 노트, 선호도, 일시적인 문맥 → 자동 메모리(auto memory)
+   - 팀/프로젝트 지식 (아키텍처 결정, API 변경, 런북) → 프로젝트의 기존 문서 구조
+   - 현재 작업에서 이미 관련 문서나 코드 주석을 생성했다면, 다른 곳에 정보를 중복하지 마십시오.
+   - 명확한 프로젝트 문서 위치가 없다면, 새로운 최상위 파일을 만들기 전에 물어보십시오.
+5. **커밋 (Commit)** — Conventional Commits 형식 사용, 상세한 PR 요약 작성
 
-## Git Workflow
+## Git 워크플로우
 
-**Commit format:** `<type>: <description>` — Types: feat, fix, refactor, docs, test, chore, perf, ci
+**커밋 형식:** `<type>: <description>` — 유형: feat, fix, refactor, docs, test, chore, perf, ci
 
-**PR workflow:** Analyze full commit history → draft comprehensive summary → include test plan → push with `-u` flag.
+**PR 워크플로우:** 전체 커밋 히스토리 분석 → 상세 요약 초안 작성 → 테스트 계획 포함 → `-u` 플래그와 함께 푸시.
 
-## Architecture Patterns
+## 아키텍처 패턴
 
-**API response format:** Consistent envelope with success indicator, data payload, error message, and pagination metadata.
+**API 응답 형식:** 성공 여부, 데이터 페이로드, 에러 메시지 및 페이지네이션 메타데이터를 포함하는 일관된 엔벨로프(envelope) 형식을 사용하십시오.
 
-**Repository pattern:** Encapsulate data access behind standard interface (findAll, findById, create, update, delete). Business logic depends on abstract interface, not storage mechanism.
+**레포지토리 패턴:** 데이터 접근을 표준 인터페이스(findAll, findById, create, update, delete) 뒤로 캡슐화하십시오. 비즈니스 로직은 저장 메커니즘이 아닌 추상화된 인터페이스에 의존해야 합니다.
 
-**Skeleton projects:** Search for battle-tested templates, evaluate with parallel agents (security, extensibility, relevance), clone best match, iterate within proven structure.
+**스켈레톤 프로젝트:** 검증된 템플릿을 검색하고, 병렬 에이전트(보안, 확장성, 관련성)로 평가한 후 가장 적합한 것을 복제하여 검증된 구조 내에서 반복 개발하십시오.
 
-## Performance
+## 성능
 
-**Context management:** Avoid last 20% of context window for large refactoring and multi-file features. Lower-sensitivity tasks (single edits, docs, simple fixes) tolerate higher utilization.
+**컨텍스트 관리:** 대규모 리팩토링이나 다중 파일 기능 구현 시 컨텍스트 윈도우의 마지막 20%는 피하십시오. 감도가 낮은 작업(단일 수정, 문서, 단순 수정)은 높은 사용률을 허용합니다.
 
-**Build troubleshooting:** Use build-error-resolver agent → analyze errors → fix incrementally → verify after each fix.
+**빌드 문제 해결:** build-error-resolver 에이전트 사용 → 에러 분석 → 점진적으로 수정 → 각 수정 후 검증.
 
-## Project Structure
+## 프로젝트 구조
 
 ```
-agents/          — 13 specialized subagents
-skills/          — 65+ workflow skills and domain knowledge
-commands/        — 40 slash commands
-hooks/           — Trigger-based automations
-rules/           — Always-follow guidelines (common + per-language)
-scripts/         — Cross-platform Node.js utilities
-mcp-configs/     — 14 MCP server configurations
-tests/           — Test suite
+agents/          — 13개의 전문 서브 에이전트
+skills/          — 50개 이상의 워크플로우 스킬 및 도메인 지식
+commands/        — 33개의 슬래시 명령어
+hooks/           — 트리거 기반 자동화
+rules/           — 항상 준수해야 할 가이드라인 (공통 + 언어별)
+scripts/         — 크로스 플랫폼 Node.js 유틸리티
+mcp-configs/     — 14개의 MCP 서버 구성
+tests/           — 테스트 스위트
 ```
 
-## Success Metrics
+## 성공 지표
 
-- All tests pass with 80%+ coverage
-- No security vulnerabilities
-- Code is readable and maintainable
-- Performance is acceptable
-- User requirements are met
+- 모든 테스트가 80% 이상의 커버리지로 통과함
+- 보안 취약점 없음
+- 코드가 읽기 쉽고 유지보수가 용이함
+- 성능이 허용 가능한 수준임
+- 사용자 요구 사항이 충족됨
+    
