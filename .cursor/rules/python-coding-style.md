@@ -1,20 +1,20 @@
 ---
-description: "Python coding style extending common rules"
+description: "공통 규칙을 확장하는 Python 코딩 스타일"
 globs: ["**/*.py", "**/*.pyi"]
 alwaysApply: false
 ---
-# Python Coding Style
+# Python 코딩 스타일 (Coding Style)
 
-> This file extends the common coding style rule with Python specific content.
+> 이 문서는 공통 코딩 스타일 규칙을 기반으로 Python에 특화된 내용을 확장합니다.
 
-## Standards
+## 표준 (Standards)
 
-- Follow **PEP 8** conventions
-- Use **type annotations** on all function signatures
+- **PEP 8** 컨벤션을 따릅니다.
+- 모든 함수 서명에 **타입 어노테이션(Type annotations)**을 사용하십시오.
 
-## Immutability
+## 불변성 (Immutability)
 
-Prefer immutable data structures:
+불변 데이터 구조를 선호하십시오:
 
 ```python
 from dataclasses import dataclass
@@ -31,12 +31,12 @@ class Point(NamedTuple):
     y: float
 ```
 
-## Formatting
+## 포매팅 (Formatting)
 
-- **black** for code formatting
-- **isort** for import sorting
-- **ruff** for linting
+- 코드 포매팅을 위해 **black**을 사용하십시오.
+- 임포트 정렬을 위해 **isort**를 사용하십시오.
+- 린팅을 위해 **ruff**를 사용하십시오.
 
-## Reference
+## 참고 자료
 
-See skill: `python-patterns` for comprehensive Python idioms and patterns.
+Python의 종합적인 관례와 패턴에 대해서는 `python-patterns` 스킬을 참조하십시오.

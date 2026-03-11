@@ -1,35 +1,35 @@
 ---
-description: "Common patterns: repository, API response, skeleton projects"
+description: "공통 패턴: 저장소, API 응답, 스켈레톤 프로젝트"
 alwaysApply: true
 ---
-# Common Patterns
+# 공통 패턴 (Common Patterns)
 
-## Skeleton Projects
+## 스켈레톤(Skeleton) 프로젝트
 
-When implementing new functionality:
-1. Search for battle-tested skeleton projects
-2. Use parallel agents to evaluate options:
-   - Security assessment
-   - Extensibility analysis
-   - Relevance scoring
-   - Implementation planning
-3. Clone best match as foundation
-4. Iterate within proven structure
+신규 기능을 구현할 때의 절차:
+1. 실전 검증된 스켈레톤 프로젝트를 검색합니다.
+2. 병렬 에이전트를 사용하여 후보군을 평가합니다:
+   - 보안성 평가
+   - 확장성 분석
+   - 관련성 점수 산정
+   - 구현 계획 수립
+3. 프로젝트와 가장 잘 맞는 항목을 클론하여 기초로 삼습니다.
+4. 검증된 구조 내에서 반복하여 개발합니다.
 
-## Design Patterns
+## 디자인 패턴
 
-### Repository Pattern
+### 저장소(Repository) 패턴
 
-Encapsulate data access behind a consistent interface:
-- Define standard operations: findAll, findById, create, update, delete
-- Concrete implementations handle storage details (database, API, file, etc.)
-- Business logic depends on the abstract interface, not the storage mechanism
-- Enables easy swapping of data sources and simplifies testing with mocks
+데이터 접근 로직을 일관된 인터페이스 뒤로 캡슐화합니다:
+- 표준 작업 정의: findAll, findById, create, update, delete
+- 구체적인 구현체에서 저장소 세부 사항(DB, API, 파일 등)을 처리
+- 비즈니스 로직은 저장 메커니즘이 아닌 추상 인터페이스에 의존
+- 데이터 소스 교체가 용이하며 모의 객체(Mock)를 이용한 테스트가 간편함
 
-### API Response Format
+### API 응답 형식
 
-Use a consistent envelope for all API responses:
-- Include a success/status indicator
-- Include the data payload (nullable on error)
-- Include an error message field (nullable on success)
-- Include metadata for paginated responses (total, page, limit)
+모든 API 응답에 일관된 봉투(Envelope) 형식을 사용하십시오:
+- 성공/상태 표시기 포함
+- 데이터 페이로드 포함 (에러 발생 시 null 가능)
+- 에러 메시지 필드 포함 (성공 시 null 가능)
+- 페이지네이션 응답의 경우 메타데이터(총 개수, 페이지 번호, 제한) 포함

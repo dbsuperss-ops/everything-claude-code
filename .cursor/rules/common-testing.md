@@ -1,33 +1,33 @@
 ---
-description: "Testing requirements: 80% coverage, TDD workflow, test types"
+description: "테스트 요구 사항: 80% 커버리지, TDD 워크플로우, 테스트 유형"
 alwaysApply: true
 ---
-# Testing Requirements
+# 테스트 요구 사항 (Testing Requirements)
 
-## Minimum Test Coverage: 80%
+## 최소 테스트 커버리지: 80%
 
-Test Types (ALL required):
-1. **Unit Tests** - Individual functions, utilities, components
-2. **Integration Tests** - API endpoints, database operations
-3. **E2E Tests** - Critical user flows (framework chosen per language)
+테스트 유형 (모두 필수):
+1. **단위 테스트 (Unit Tests)** - 개별 함수, 유틸리티, 컴포넌트 단위
+2. **통합 테스트 (Integration Tests)** - API 엔드포인트, 데이터베이스 작업 간 연결
+3. **E2E 테스트 (E2E Tests)** - 주요 사용자 흐름 (해당 언어의 프레임워크 사용)
 
-## Test-Driven Development
+## 테스트 주도 개발 (TDD)
 
-MANDATORY workflow:
-1. Write test first (RED)
-2. Run test - it should FAIL
-3. Write minimal implementation (GREEN)
-4. Run test - it should PASS
-5. Refactor (IMPROVE)
-6. Verify coverage (80%+)
+필수 워크플로우:
+1. 테스트를 먼저 작성합니다 (실패 상태: RED).
+2. 테스트를 실행하여 실패하는지 확인합니다.
+3. 최소한의 구현 코드를 작성합니다 (성공 상태: GREEN).
+4. 테스트를 실행하여 통과하는지 확인합니다.
+5. 리팩토링을 수행합니다 (개선: IMPROVE).
+6. 테스트 커버리지가 80% 이상인지 확인합니다.
 
-## Troubleshooting Test Failures
+## 테스트 실패 문제 해결 (Troubleshooting)
 
-1. Use **tdd-guide** agent
-2. Check test isolation
-3. Verify mocks are correct
-4. Fix implementation, not tests (unless tests are wrong)
+1. **tdd-guide** 에이전트를 활용합니다.
+2. 테스트 간의 격리성(Isolation)을 확인합니다.
+3. 모의 객체(Mocking)가 올바르게 설정되었는지 검증합니다.
+4. 테스트 케이스 자체가 잘못된 경우가 아니라면, 테스트가 아닌 기능을 수정하십시오.
 
-## Agent Support
+## 에이전트 지원
 
-- **tdd-guide** - Use PROACTIVELY for new features, enforces write-tests-first
+- **tdd-guide** - 신규 기능 개발 시 적극적으로 사용하며, 테스트 우선 원칙을 강제하는 역할을 수행합니다.

@@ -1,92 +1,116 @@
 ---
-이름: learn-eval
-설명: 세션에서 재사용 가능한 패턴을 추출하고, 저장 전 품질을 자체적으로 평가하며, 적절한 저장 위치(글로벌 vs 프로젝트)를 결정합니다.
+description: "Extract reusable patterns from the session, self-evaluate quality before saving, and determine the right save location (Global vs Project)."
 ---
 
-# /learn-eval - 추출, 평가 및 저장
+# /learn-eval - Extract, Evaluate, then Save
 
-스킬 파일을 작성하기 전에 품질 검증 단계와 저장 위치 결정 단계를 추가하여 `/learn` 기능을 확장합니다.
+Extends `/learn` with a quality gate, save-location decision, and knowledge-placement awareness before writing any skill file.
 
-## 추출 대상
+## What to Extract
 
-다음을 찾으십시오:
+Look for:
 
-1. **에러 해결 패턴** — 근본 원인 + 해결책 + 재사용성
-2. **디버깅 기법** — 일반적이지 않은 단계, 도구의 조합
-3. **해결 방법 (Workarounds)** — 라이브러리 특성, API 제한, 버전별 수정 사항
-4. **프로젝트 전용 패턴** — 컨벤션, 아키텍처 결정, 통합 패턴
+1. **Error Resolution Patterns** — root cause + fix + reusability
+2. **Debugging Techniques** — non-obvious steps, tool combinations
+3. **Workarounds** — library quirks, API limitations, version-specific fixes
+4. **Project-Specific Patterns** — conventions, architecture decisions, integration patterns
 
-## 프로세스
+## Process
 
-1. 세션을 검토하여 추출 가능한 패턴을 찾습니다.
-2. 가장 가치 있고 재사용 가능성이 높은 인사이트를 식별합니다.
+1. Review the session for extractable patterns
+2. Identify the most valuable/reusable insight
 
-3. **저장 위치 결정:**
-   - 질문: "이 패턴이 다른 프로젝트에서도 유용할까?"
-   - **글로벌** (`~/.claude/skills/learned/`): 2개 이상의 프로젝트에서 사용할 수 있는 범용 패턴 (bash 호환성, LLM API 동작, 디버깅 기법 등)
-   - **프로젝트** (현재 프로젝트의 `.claude/skills/learned/`): 프로젝트 고유의 지식 (특정 설정 파일의 특성, 프로젝트 전용 아키텍처 결정 등)
-   - 불확실한 경우 글로벌을 선택하십시오 (글로벌에서 프로젝트로 옮기는 것이 반대의 경우보다 쉽습니다).
+3. **Determine save location:**
+   - Ask: "Would this pattern be useful in a different project?"
+   - **Global** (`~/.claude/skills/learned/`): Generic patterns usable across 2+ projects (bash compatibility, LLM API behavior, debugging techniques, etc.)
+   - **Project** (`.claude/skills/learned/` in current project): Project-specific knowledge (quirks of a particular config file, project-specific architecture decisions, etc.)
+   - When in doubt, choose Global (moving Global → Project is easier than the reverse)
 
-4. 다음 형식으로 스킬 파일 초안을 작성합니다:
+4. Draft the skill file using this format:
 
 ```markdown
 ---
 name: pattern-name
-description: "130자 이내"
+description: "Under 130 characters"
 user-invocable: false
 origin: auto-extracted
 ---
 
-# [설명적인 패턴 이름]
+# [Descriptive Pattern Name]
 
-**추출일:** [날짜]
-**컨텍스트:** [이 패턴이 적용되는 상황에 대한 간략한 설명]
+**Extracted:** [Date]
+**Context:** [Brief description of when this applies]
 
-## 문제 (Problem)
-[이 패턴이 해결하는 문제 - 구체적으로 작성]
+## Problem
+[What problem this solves - be specific]
 
-## 해결책 (Solution)
-[패턴/기법/해결 방법 - 코드 예시 포함]
+## Solution
+[The pattern/technique/workaround - with code examples]
 
-## 사용 시점
-[트리거 조건]
+## When to Use
+[Trigger conditions]
 ```
 
-5. 다음 기준(Rubric)을 사용하여 **저장 전 자체 평가**를 수행합니다:
+5. **Quality gate — Checklist + Holistic verdict**
 
-   | 차원 | 1점 | 3점 | 5점 |
-   |-----------|---|---|---|
-   | 구체성 (Specificity) | 추상적인 원칙만 있음, 코드 예시 없음 | 대표적인 코드 예시 포함 | 모든 사용 패턴을 아우르는 풍부한 예시 |
-   | 실행 가능성 (Actionability) | 무엇을 해야 할지 불분명함 | 주요 단계들을 이해할 수 있음 | 즉시 실행 가능하며 엣지 케이스까지 다룸 |
-   | 범위 적합성 (Scope Fit) | 너무 넓거나 좁음 | 대체로 적절하지만 경계가 다소 모호함 | 이름, 트리거, 내용이 완벽하게 일치함 |
-   | 중복 없음 (Non-redundancy) | 다른 스킬과 거의 동일함 | 일부 겹치지만 고유한 관점이 있음 | 완전히 고유한 가치를 지님 |
-   | 커버리지 (Coverage) | 목표 작업의 극히 일부만 다룸 | 주요 케이스를 다루지만 변형 케이스 누락 | 주요 케이스, 엣지 케이스, 함정까지 모두 다룸 |
+   ### 5a. Required checklist (verify by actually reading files)
 
-   - 각 차원별로 1~5점을 매깁니다.
-   - 어떤 차원이라도 1~2점을 받으면 초안을 개선하고 모든 차원이 3점 이상이 될 때까지 다시 평가합니다.
-   - 사용자에게 평가표와 최종 초안을 보여줍니다.
+   Execute **all** of the following before evaluating the draft:
 
-6. 사용자에게 확인 요청:
-   - 표시 내용: 제안된 저장 경로 + 평가표 + 최종 초안
-   - 파일을 쓰기 전에 명시적인 승인을 기다립니다.
+   - [ ] Grep `~/.claude/skills/` and relevant project `.claude/skills/` files by keyword to check for content overlap
+   - [ ] Check MEMORY.md (both project and global) for overlap
+   - [ ] Consider whether appending to an existing skill would suffice
+   - [ ] Confirm this is a reusable pattern, not a one-off fix
 
-7. 결정된 위치에 저장합니다.
+   ### 5b. Holistic verdict
 
-## 5단계 평가표 출력 형식
+   Synthesize the checklist results and draft quality, then choose **one** of the following:
 
-| 차원 | 점수 | 근거 |
-|-----------|-------|-----------|
-| 구체성 | N/5 | ... |
-| 실행 가능성 | N/5 | ... |
-| 범위 적합성 | N/5 | ... |
-| 중복 없음 | N/5 | ... |
-| 커버리지 | N/5 | ... |
-| **합계** | **N/25** | |
+   | Verdict | Meaning | Next Action |
+   |---------|---------|-------------|
+   | **Save** | Unique, specific, well-scoped | Proceed to Step 6 |
+   | **Improve then Save** | Valuable but needs refinement | List improvements → revise → re-evaluate (once) |
+   | **Absorb into [X]** | Should be appended to an existing skill | Show target skill and additions → Step 6 |
+   | **Drop** | Trivial, redundant, or too abstract | Explain reasoning and stop |
 
-## 주의 사항
+   **Guideline dimensions** (informing the verdict, not scored):
 
-- 사소한 수정(오타, 단순 구문 에러)은 추출하지 마십시오.
-- 일회성 이슈(특정 API 일시 장애 등)는 추출하지 마십시오.
-- 향후 세션에서 시간을 절약해 줄 패턴에 집중하십시오.
-- 스킬의 초점을 명확히 유지하십시오 — 스킬당 하나의 패턴만 다룹니다.
-- 커버리지 점수가 낮다면 저장하기 전에 관련 변형 케이스를 추가하십시오.
+   - **Specificity & Actionability**: Contains code examples or commands that are immediately usable
+   - **Scope Fit**: Name, trigger conditions, and content are aligned and focused on a single pattern
+   - **Uniqueness**: Provides value not covered by existing skills (informed by checklist results)
+   - **Reusability**: Realistic trigger scenarios exist in future sessions
+
+6. **Verdict-specific confirmation flow**
+
+   - **Improve then Save**: Present the required improvements + revised draft + updated checklist/verdict after one re-evaluation; if the revised verdict is **Save**, save after user confirmation, otherwise follow the new verdict
+   - **Save**: Present save path + checklist results + 1-line verdict rationale + full draft → save after user confirmation
+   - **Absorb into [X]**: Present target path + additions (diff format) + checklist results + verdict rationale → append after user confirmation
+   - **Drop**: Show checklist results + reasoning only (no confirmation needed)
+
+7. Save / Absorb to the determined location
+
+## Output Format for Step 5
+
+```
+### Checklist
+- [x] skills/ grep: no overlap (or: overlap found → details)
+- [x] MEMORY.md: no overlap (or: overlap found → details)
+- [x] Existing skill append: new file appropriate (or: should append to [X])
+- [x] Reusability: confirmed (or: one-off → Drop)
+
+### Verdict: Save / Improve then Save / Absorb into [X] / Drop
+
+**Rationale:** (1-2 sentences explaining the verdict)
+```
+
+## Design Rationale
+
+This version replaces the previous 5-dimension numeric scoring rubric (Specificity, Actionability, Scope Fit, Non-redundancy, Coverage scored 1-5) with a checklist-based holistic verdict system. Modern frontier models (Opus 4.6+) have strong contextual judgment — forcing rich qualitative signals into numeric scores loses nuance and can produce misleading totals. The holistic approach lets the model weigh all factors naturally, producing more accurate save/drop decisions while the explicit checklist ensures no critical check is skipped.
+
+## Notes
+
+- Don't extract trivial fixes (typos, simple syntax errors)
+- Don't extract one-time issues (specific API outages, etc.)
+- Focus on patterns that will save time in future sessions
+- Keep skills focused — one pattern per skill
+- When the verdict is Absorb, append to the existing skill rather than creating a new file

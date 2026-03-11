@@ -1,59 +1,59 @@
 ---
-description: "Performance: model selection, context management, build troubleshooting"
+description: "성능: 모델 선택, 컨텍스트 관리, 빌드 문제 해결"
 alwaysApply: true
 ---
-# Performance Optimization
+# 성능 최적화 (Performance Optimization)
 
-## Model Selection Strategy
+## 모델 선택 전략
 
-**Haiku 4.5** (90% of Sonnet capability, 3x cost savings):
-- Lightweight agents with frequent invocation
-- Pair programming and code generation
-- Worker agents in multi-agent systems
+**Haiku 4.5** (Sonnet 기능의 90%, 3배 비용 절감):
+- 빈번하게 호출되는 경량 에이전트
+- 페어 프로그래밍 및 코드 생성
+- 멀티 에이전트 시스템 내의 작업용 에이전트
 
-**Sonnet 4.6** (Best coding model):
-- Main development work
-- Orchestrating multi-agent workflows
-- Complex coding tasks
+**Sonnet 4.6** (최고의 코딩 모델):
+- 주요 개발 작업 전반
+- 멀티 에이전트 워크플로우 오케스트레이션
+- 복잡한 코딩 작업
 
-**Opus 4.5** (Deepest reasoning):
-- Complex architectural decisions
-- Maximum reasoning requirements
-- Research and analysis tasks
+**Opus 4.5** (가장 깊은 추론):
+- 복잡한 아키텍처 관련 결정
+- 최고 수준의 추론 요구 사항
+- 연구 및 분석 작업
 
-## Context Window Management
+## 컨텍스트 윈도우(Context Window) 관리
 
-Avoid last 20% of context window for:
-- Large-scale refactoring
-- Feature implementation spanning multiple files
-- Debugging complex interactions
+컨텍스트 윈도우의 마지막 20%가 남은 상태에서는 다음 작업을 피하십시오:
+- 대규모 리팩토링
+- 여러 파일에 걸친 기능 구현
+- 복잡한 상호작용 디버깅
 
-Lower context sensitivity tasks:
-- Single-file edits
-- Independent utility creation
-- Documentation updates
-- Simple bug fixes
+상대적으로 컨텍스트 민감도가 낮은 작업들:
+- 단일 파일 편집
+- 독립적인 유틸리티 생성
+- 문서 업데이트
+- 단순 버그 수정
 
-## Extended Thinking + Plan Mode
+## 확장 추론(Extended Thinking) + 계획 모드
 
-Extended thinking is enabled by default, reserving up to 31,999 tokens for internal reasoning.
+확장 추론은 기본적으로 활성화되어 있으며, 내부 추론을 위해 최대 31,999 토큰을 예약합니다.
 
-Control extended thinking via:
-- **Toggle**: Option+T (macOS) / Alt+T (Windows/Linux)
-- **Config**: Set `alwaysThinkingEnabled` in `~/.claude/settings.json`
-- **Budget cap**: `export MAX_THINKING_TOKENS=10000`
-- **Verbose mode**: Ctrl+O to see thinking output
+확장 추론 제어 방법:
+- **전환**: Option+T (macOS) / Alt+T (Windows/Linux)
+- **설정**: `~/.claude/settings.json` 내 `alwaysThinkingEnabled` 항목
+- **예산 제한**: `export MAX_THINKING_TOKENS=10000`
+- **상세 모드**: Ctrl+O를 눌러 추론 출력 확인
 
-For complex tasks requiring deep reasoning:
-1. Ensure extended thinking is enabled (on by default)
-2. Enable **Plan Mode** for structured approach
-3. Use multiple critique rounds for thorough analysis
-4. Use split role sub-agents for diverse perspectives
+깊은 추론이 필요한 복잡한 작업의 경우:
+1. 확장 추론이 활성화되어 있는지 확인합니다(기본값: On).
+2. 구조적인 접근을 위해 **계획 모드(Plan Mode)**를 활성화합니다.
+3. 철저한 분석을 위해 다회차 비판(Critique) 과정을 거칩니다.
+4. 다각도 분석을 위해 역할을 나눈 서브 에이전트들을 활용합니다.
 
-## Build Troubleshooting
+## 빌드 문제 해결 (Troubleshooting)
 
-If build fails:
-1. Use **build-error-resolver** agent
-2. Analyze error messages
-3. Fix incrementally
-4. Verify after each fix
+빌드 실패 시의 절차:
+1. **build-error-resolver** 에이전트를 활용합니다.
+2. 에러 메시지를 분석합니다.
+3. 단계별로 수정을 진행합니다.
+4. 수정 사항이 적용될 때마다 검증 단계를 거칩니다.

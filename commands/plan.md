@@ -1,114 +1,115 @@
 ---
-이름: plan
-설명: 요구사항을 재정의하고, 위험 요소를 평가하며, 단계별 구현 계획을 세웁니다. 코드를 수정하기 전에 반드시 사용자의 승인을 기다립니다.
+description: Restate requirements, assess risks, and create step-by-step implementation plan. WAIT for user CONFIRM before touching any code.
 ---
 
-# 계획 명령어 (Plan Command)
+# Plan Command
 
-이 명령어는 코드를 작성하기 전에 종합적인 구현 계획을 수립하기 위해 **플래너(planner)** 에이전트를 호출합니다.
+This command invokes the **planner** agent to create a comprehensive implementation plan before writing any code.
 
-## 주요 기능
+## What This Command Does
 
-1. **요구사항 재정의** - 구축해야 할 내용을 명확히 합니다.
-2. **위험 요소 식별** - 잠재적인 이슈와 장애물을 표면화합니다.
-3. **단계별 계획 수립** - 구현 과정을 여러 단계(Phase)로 나눕니다.
-4. **승인 대기** - 진행하기 전 반드시 사용자의 승인을 받아야 합니다.
+1. **Restate Requirements** - Clarify what needs to be built
+2. **Identify Risks** - Surface potential issues and blockers
+3. **Create Step Plan** - Break down implementation into phases
+4. **Wait for Confirmation** - MUST receive user approval before proceeding
 
-## 사용 시점
+## When to Use
 
-다음과 같은 경우 `/plan`을 사용하십시오:
-- 새로운 기능을 시작할 때
-- 중요한 아키텍처 변경을 수행할 때
-- 복잡한 리팩토링 작업을 할 때
-- 여러 파일이나 컴포넌트에 영향을 줄 때
-- 요구사항이 불명확하거나 모호할 때
+Use `/plan` when:
+- Starting a new feature
+- Making significant architectural changes
+- Working on complex refactoring
+- Multiple files/components will be affected
+- Requirements are unclear or ambiguous
 
-## 동작 방식
+## How It Works
 
-플래너 에이전트는 다음 작업을 수행합니다:
+The planner agent will:
 
-1. **요청 분석** 및 요구사항을 명확한 용어로 재정의
-2. **단계별 세분화**를 통해 구체적이고 실행 가능한 단계 생성
-3. 컴포넌트 간의 **의존성 식별**
-4. **위험 요소** 및 잠재적 장애물 평가
-5. **복잡도 추정** (높음/보통/낮음)
-6. **계획 제시** 후 사용자의 명시적인 확인을 위해 대기
+1. **Analyze the request** and restate requirements in clear terms
+2. **Break down into phases** with specific, actionable steps
+3. **Identify dependencies** between components
+4. **Assess risks** and potential blockers
+5. **Estimate complexity** (High/Medium/Low)
+6. **Present the plan** and WAIT for your explicit confirmation
 
-## 사용 예시
+## Example Usage
 
 ```
-사용자: /plan 마켓이 종료될 때 실시간 알림 기능을 추가하고 싶어
+User: /plan I need to add real-time notifications when markets resolve
 
-에이전트 (플래너):
-# 구현 계획: 실시간 마켓 종료 알림
+Agent (planner):
+# Implementation Plan: Real-Time Market Resolution Notifications
 
-## 요구사항 재정의
-- 사용자가 주시하고 있는 마켓이 종료될 때 알림 전송
-- 다양한 알림 채널 지원 (인앱, 이메일, 웹후크)
-- 알림이 안정적으로 전달되도록 보장
-- 마켓 결과 및 사용자의 포지션 결과 포함
+## Requirements Restatement
+- Send notifications to users when markets they're watching resolve
+- Support multiple notification channels (in-app, email, webhook)
+- Ensure notifications are delivered reliably
+- Include market outcome and user's position result
 
-## 구현 단계
+## Implementation Phases
 
-### 1단계: 데이터베이스 스키마
-- 알림 테이블 추가: id, user_id, market_id, type, status, created_at
-- 채널 설정을 위한 user_notification_preferences 테이블 추가
-- 성능을 위해 user_id 및 market_id에 인덱스 생성
+### Phase 1: Database Schema
+- Add notifications table with columns: id, user_id, market_id, type, status, created_at
+- Add user_notification_preferences table for channel preferences
+- Create indexes on user_id and market_id for performance
 
-### 2단계: 알림 서비스
-- lib/notifications.ts에 알림 서비스 생성
-- BullMQ/Redis를 사용하여 알림 큐(Queue) 구현
-- 전송 실패 시 재시도 로직 추가
-- 알림 템플릿 생성
+### Phase 2: Notification Service
+- Create notification service in lib/notifications.ts
+- Implement notification queue using BullMQ/Redis
+- Add retry logic for failed deliveries
+- Create notification templates
 
-### 3단계: 통합 지점
-- 마켓 종료 로직에 연동 (상태가 "resolved"로 변경될 때)
-- 해당 마켓에 포지션을 가진 모든 사용자 조회
-- 각 사용자별 알림 큐 등록
+### Phase 3: Integration Points
+- Hook into market resolution logic (when status changes to "resolved")
+- Query all users with positions in market
+- Enqueue notifications for each user
 
-### 4단계: 프론트엔드 컴포넌트
-- 헤더에 NotificationBell 컴포넌트 생성
-- NotificationList 모달 추가
-- Supabase 구독(Subscription)을 통한 실시간 업데이트 구현
-- 알림 설정 페이지 추가
+### Phase 4: Frontend Components
+- Create NotificationBell component in header
+- Add NotificationList modal
+- Implement real-time updates via Supabase subscriptions
+- Add notification preferences page
 
-## 의존성
-- Redis (큐 로직용)
-- 이메일 서비스 (SendGrid/Resend)
-- Supabase 실시간 구독
+## Dependencies
+- Redis (for queue)
+- Email service (SendGrid/Resend)
+- Supabase real-time subscriptions
 
-## 위험 요소
-- 높음: 이메일 전송 신뢰성 (SPF/DKIM 필요)
-- 보통: 마켓당 1,000명 이상의 사용자가 있을 경우의 성능
-- 보통: 마켓이 빈번하게 종료될 경우의 알림 스팸 우려
-- 낮음: 실시간 구독으로 인한 오버헤드
+## Risks
+- HIGH: Email deliverability (SPF/DKIM required)
+- MEDIUM: Performance with 1000+ users per market
+- MEDIUM: Notification spam if markets resolve frequently
+- LOW: Real-time subscription overhead
 
-## 예상 복잡도: 보통 (MEDIUM)
-- 백엔드: 4-6시간
-- 프론트엔드: 3-4시간
-- 테스트: 2-3시간
-- 합계: 9-13시간
+## Estimated Complexity: MEDIUM
+- Backend: 4-6 hours
+- Frontend: 3-4 hours
+- Testing: 2-3 hours
+- Total: 9-13 hours
 
-**승인 대기 중**: 이 계획대로 진행할까요? (yes/no/modify)
+**WAITING FOR CONFIRMATION**: Proceed with this plan? (yes/no/modify)
 ```
 
-## 중요 사항
+## Important Notes
 
-**핵심**: 플래너 에이전트는 사용자가 "yes", "proceed" 또는 이와 유사한 긍정적인 답변으로 계획을 명시적으로 승인하기 전까지는 어떠한 코드도 작성하지 **않습니다**.
+**CRITICAL**: The planner agent will **NOT** write any code until you explicitly confirm the plan with "yes" or "proceed" or similar affirmative response.
 
-변경을 원하는 경우 다음과 같이 답변하십시오:
-- "modify: [변경 사항]"
-- "different approach: [대안 제시]"
-- "skip phase 2 and do phase 3 first (2단계 건너뛰고 3단계 먼저 진행해)"
+If you want changes, respond with:
+- "modify: [your changes]"
+- "different approach: [alternative]"
+- "skip phase 2 and do phase 3 first"
 
-## 다른 명령어와의 연계
+## Integration with Other Commands
 
-계획 수립 후:
-- `/tdd`를 사용하여 테스트 주도 개발로 구현합니다.
-- 빌드 에러 발생 시 `/build-fix`를 사용합니다.
-- 구현 완료 후 `/code-review`를 사용하여 검토합니다.
+After planning:
+- Use `/tdd` to implement with test-driven development
+- Use `/build-fix` if build errors occur
+- Use `/code-review` to review completed implementation
 
-## 관련 에이전트
+## Related Agents
 
-이 명령어는 다음 경로에 있는 `planner` 에이전트를 호출합니다:
-`~/.claude/agents/planner.md`
+This command invokes the `planner` agent provided by ECC.
+
+For manual installs, the source file lives at:
+`agents/planner.md`

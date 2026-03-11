@@ -1,52 +1,52 @@
 ---
-description: "ECC coding style: immutability, file organization, error handling, validation"
+description: "ECC 코딩 스타일: 불변성, 파일 구성, 에러 처리, 검증"
 alwaysApply: true
 ---
-# Coding Style
+# 코딩 스타일 (Coding Style)
 
-## Immutability (CRITICAL)
+## 불변성 (Immutability) (중요)
 
-ALWAYS create new objects, NEVER mutate existing ones:
+항상 새로운 객체를 생성하고, 기존 객체를 절대 직접 수정(Mutate)하지 마십시오:
 
 ```
-// Pseudocode
-WRONG:  modify(original, field, value) → changes original in-place
-CORRECT: update(original, field, value) → returns new copy with change
+// 의사코드 (Pseudocode)
+잘못된 예: modify(original, field, value) → 원본을 그 자리에서 변경
+올바른 예: update(original, field, value) → 변경 사항이 반영된 새로운 복사본을 반환
 ```
 
-Rationale: Immutable data prevents hidden side effects, makes debugging easier, and enables safe concurrency.
+이유: 불변 데이터는 숨겨진 부작용(Side effects)을 방지하고 디버깅을 용이하게 하며, 안전한 동시성(Concurrency)을 지원합니다.
 
-## File Organization
+## 파일 구성
 
-MANY SMALL FILES > FEW LARGE FILES:
-- High cohesion, low coupling
-- 200-400 lines typical, 800 max
-- Extract utilities from large modules
-- Organize by feature/domain, not by type
+거대한 파일 몇 개보다 작은 파일 여러 개를 선호합니다:
+- 높은 응집도(Cohesion), 낮은 결합도(Coupling)
+- 보통 200~400줄 권장, 최대 800줄 제한
+- 대규모 모듈에서 유틸리티 기능을 별도로 추출
+- 파일 유형이 아닌 기능/도메인(Feature/Domain)별로 조직화
 
-## Error Handling
+## 에러 처리
 
-ALWAYS handle errors comprehensively:
-- Handle errors explicitly at every level
-- Provide user-friendly error messages in UI-facing code
-- Log detailed error context on the server side
-- Never silently swallow errors
+항상 에러를 포괄적으로 처리하십시오:
+- 모든 수준에서 에러를 명확하게 처리
+- 사용자 대면 코드에서는 사용자 친화적인 에러 메시지 제공
+- 서버 측에서는 상세한 에러 컨텍스트를 로그로 기록
+- 절대로 에러를 묵인하거나 무시하지 마십시오.
 
-## Input Validation
+## 입력값 검증
 
-ALWAYS validate at system boundaries:
-- Validate all user input before processing
-- Use schema-based validation where available
-- Fail fast with clear error messages
-- Never trust external data (API responses, user input, file content)
+항상 시스템 경계에서 검증을 수행하십시오:
+- 처리 전 모든 사용자 입력을 검증
+- 가능한 경우 스키마 기반 검증(Schema-based validation) 사용
+- 명확한 에러 메시지와 함께 즉시 실패(Fail-fast) 처리
+- 외부 데이터(API 응답, 사용자 입력, 파일 내용 등)를 절대로 신뢰하지 마십시오.
 
-## Code Quality Checklist
+## 코드 품질 체크리스트
 
-Before marking work complete:
-- [ ] Code is readable and well-named
-- [ ] Functions are small (<50 lines)
-- [ ] Files are focused (<800 lines)
-- [ ] No deep nesting (>4 levels)
-- [ ] Proper error handling
-- [ ] No hardcoded values (use constants or config)
-- [ ] No mutation (immutable patterns used)
+작업을 완료하기 전에 다음 항목을 확인하십시오:
+- [ ] 코드가 가독성이 좋고 이름이 적절하게 명명되었는가
+- [ ] 함수가 짧은가 (< 50줄)
+- [ ] 파일이 한 가지 역할에 집중되어 있는가 (< 800줄)
+- [ ] 중첩이 깊지 않은가 (> 4단계 금지)
+- [ ] 올바른 에러 처리가 이루어졌는가
+- [ ] 하드코딩된 값이 없는가 (상수 또는 설정 파일 사용)
+- [ ] 직접적인 상태 변경(Mutation)이 없는가 (불변 패턴 사용)

@@ -1,34 +1,34 @@
 ---
-description: "Hooks system: types, auto-accept permissions, TodoWrite best practices"
+description: "후크 시스템: 유형, 자동 승인 권한, TodoWrite 베스트 프랙티스"
 alwaysApply: true
 ---
-# Hooks System
+# 후크 (Hooks) 시스템
 
-## Hook Types
+## 후크 유형
 
-- **PreToolUse**: Before tool execution (validation, parameter modification)
-- **PostToolUse**: After tool execution (auto-format, checks)
-- **Stop**: When session ends (final verification)
+- **PreToolUse**: 도구 실행 전 (검증, 파라미터 수정)
+- **PostToolUse**: 도구 실행 후 (자동 포매팅, 검사)
+- **Stop**: 세션 종료 시 (최종 검증)
 
-## Auto-Accept Permissions
+## 권한 자동 승인
 
-Use with caution:
-- Enable for trusted, well-defined plans
-- Disable for exploratory work
-- Never use dangerously-skip-permissions flag
-- Configure `allowedTools` in `~/.claude.json` instead
+신중하게 사용하십시오:
+- 신뢰할 수 있고 명확하게 정의된 계획에 대해서만 활성화하십시오.
+- 탐색적인 작업 시에는 비활성화하십시오.
+- `dangerously-skip-permissions` 플래그는 절대 사용하지 마십시오.
+- 대신 `~/.claude.json` 파일의 `allowedTools` 항목에 신뢰할 수 있는 도구를 구성하십시오.
 
-## TodoWrite Best Practices
+## TodoWrite 베스트 프랙티스
 
-Use TodoWrite tool to:
-- Track progress on multi-step tasks
-- Verify understanding of instructions
-- Enable real-time steering
-- Show granular implementation steps
+TodoWrite 도구를 다음 용도로 사용하십시오:
+- 다단계 작업의 진행 상황 추격
+- 지침에 대한 이해도 검증
+- 실시간 제어(Steering) 가능하게 함
+- 상세한 구현 단계 표시
 
-Todo list reveals:
-- Out of order steps
-- Missing items
-- Extra unnecessary items
-- Wrong granularity
-- Misinterpreted requirements
+할 일(Todo) 목록을 통해 다음 사항을 확인할 수 있습니다:
+- 작업 순서 오류
+- 누락된 항목
+- 불필요하고 과도한 항목
+- 작업 단위(Granularity) 설정 오류
+- 요구 사항에 대한 오해

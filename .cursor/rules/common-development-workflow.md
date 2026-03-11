@@ -1,33 +1,33 @@
 ---
-description: "Development workflow: plan, TDD, review, commit pipeline"
+description: "개발 워크플로우: 계획, TDD, 리뷰, 커밋 파이프라인"
 alwaysApply: true
 ---
-# Development Workflow
+# 개발 워크플로우 (Development Workflow)
 
-> This rule extends the git workflow rule with the full feature development process that happens before git operations.
+> 이 규칙은 git 작업 이전에 발생하는 전체 기능 개발 프로세스를 포함하도록 git 워크플로우 규칙을 확장합니다.
 
-The Feature Implementation Workflow describes the development pipeline: planning, TDD, code review, and then committing to git.
+기능 구현 워크플로우는 계획, TDD, 코드 리뷰, 그리고 git 커밋으로 이어지는 개발 파이프라인을 설명합니다.
 
-## Feature Implementation Workflow
+## 기능 구현 워크플로우
 
-1. **Plan First**
-   - Use **planner** agent to create implementation plan
-   - Identify dependencies and risks
-   - Break down into phases
+1. **계획 우선 (Plan First)**
+   - **planner** 에이전트를 사용하여 구현 계획을 수립합니다.
+   - 의존성 및 리스크를 식별합니다.
+   - 작업을 여러 단계(Phases)로 분해합니다.
 
-2. **TDD Approach**
-   - Use **tdd-guide** agent
-   - Write tests first (RED)
-   - Implement to pass tests (GREEN)
-   - Refactor (IMPROVE)
-   - Verify 80%+ coverage
+2. **TDD 접근 방식**
+   - **tdd-guide** 에이전트를 활용합니다.
+   - 테스트를 먼저 작성합니다 (RED).
+   - 테스트를 통과하도록 기능을 구현합니다 (GREEN).
+   - 리팩토링을 수행합니다 (IMPROVE).
+   - 80% 이상의 커버리지를 확인합니다.
 
-3. **Code Review**
-   - Use **code-reviewer** agent immediately after writing code
-   - Address CRITICAL and HIGH issues
-   - Fix MEDIUM issues when possible
+3. **코드 리뷰 (Code Review)**
+   - 코드 작성 직후 **code-reviewer** 에이전트를 사용합니다.
+   - 치명적(CRITICAL) 및 높음(HIGH) 등급의 이슈를 해결합니다.
+   - 가능한 경우 중간(MEDIUM) 등급의 이슈도 수정합니다.
 
-4. **Commit & Push**
-   - Detailed commit messages
-   - Follow conventional commits format
-   - See the git workflow rule for commit message format and PR process
+4. **커밋 및 푸시 (Commit & Push)**
+   - 상세한 커밋 메시지를 작성합니다.
+   - Conventional Commits 형식을 준수합니다.
+   - 커밋 메시지 형식 및 PR 프로세스에 관한 내용은 git 워크플로우 규칙을 참조하십시오.

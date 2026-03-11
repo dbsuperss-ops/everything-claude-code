@@ -1,33 +1,33 @@
 ---
-description: "Security: mandatory checks, secret management, response protocol"
+description: "보안: 필수 체크리스트, 비밀 정보 관리, 대응 프로토콜"
 alwaysApply: true
 ---
-# Security Guidelines
+# 보안 가이드라인 (Security Guidelines)
 
-## Mandatory Security Checks
+## 필수 보안 체크리스트
 
-Before ANY commit:
-- [ ] No hardcoded secrets (API keys, passwords, tokens)
-- [ ] All user inputs validated
-- [ ] SQL injection prevention (parameterized queries)
-- [ ] XSS prevention (sanitized HTML)
-- [ ] CSRF protection enabled
-- [ ] Authentication/authorization verified
-- [ ] Rate limiting on all endpoints
-- [ ] Error messages don't leak sensitive data
+모든 커밋 전에 다음 항목을 확인하십시오:
+- [ ] 하드코딩된 비밀 정보(API 키, 비밀번호, 토큰)가 없는가
+- [ ] 모든 사용자 입력값이 검증되었는가
+- [ ] SQL 인젝션 방지 처리가 되었는가 (매개변수화된 쿼리 사용)
+- [ ] XSS 방지 처리가 되었는가 (정제된 HTML 사용)
+- [ ] CSRF 보호 기능이 활성화되었는가
+- [ ] 인증/인가 로직이 검증되었는가
+- [ ] 모든 엔드포인트에 속도 제한(Rate limiting)이 적용되었는가
+- [ ] 에러 메시지에 민감한 데이터가 포함되어 있지 않은가
 
-## Secret Management
+## 비밀 정보(Secret) 관리
 
-- NEVER hardcode secrets in source code
-- ALWAYS use environment variables or a secret manager
-- Validate that required secrets are present at startup
-- Rotate any secrets that may have been exposed
+- 절대로 소스 코드 내에 비밀 정보를 하드코딩하지 마십시오.
+- 항상 환경 변수나 전용 비밀 정보 관리 도구(Secret Manager)를 사용하십시오.
+- 애플리케이션 시작 시 필요한 비밀 정보의 존재 여부를 검증하십시오.
+- 유출 가능성이 있는 비밀 정보는 즉시 교체(Rotation)하십시오.
 
-## Security Response Protocol
+## 보안 사고 대응 프로토콜
 
-If security issue found:
-1. STOP immediately
-2. Use **security-reviewer** agent
-3. Fix CRITICAL issues before continuing
-4. Rotate any exposed secrets
-5. Review entire codebase for similar issues
+보안 문제가 발견되면 다음 단계를 따르십시오:
+1. 즉시 작업을 **중단(STOP)**합니다.
+2. **security-reviewer** 에이전트를 활용합니다.
+3. 작업을 계속하기 전에 **치명적(CRITICAL)** 이슈를 먼저 해결합니다.
+4. 노출된 모든 비밀 정보를 교체합니다.
+5. 코드베이스 전체를 훑어보며 유사한 문제가 있는지 확인합니다.

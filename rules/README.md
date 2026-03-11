@@ -1,11 +1,11 @@
-# 규칙 (Rules)
-## 구조
+# Rules
+## Structure
 
-규칙은 **공통(common)** 레이어와 **언어별(language-specific)** 디렉토리로 구성됩니다:
+Rules are organized into a **common** layer plus **language-specific** directories:
 
 ```
 rules/
-├── common/          # 언어 중립적인 원칙 (항상 설치)
+├── common/          # Language-agnostic principles (always install)
 │   ├── coding-style.md
 │   ├── git-workflow.md
 │   ├── testing.md
@@ -14,89 +14,93 @@ rules/
 │   ├── hooks.md
 │   ├── agents.md
 │   └── security.md
-├── typescript/      # TypeScript/JavaScript 전용
-├── python/          # Python 전용
-├── golang/          # Go 전용
-└── swift/           # Swift 전용
+├── typescript/      # TypeScript/JavaScript specific
+├── python/          # Python specific
+├── golang/          # Go specific
+├── swift/           # Swift specific
+└── php/             # PHP specific
 ```
 
-- **common/**은 범용적인 원칙을 포함하며, 언어별 코드 예제는 포함하지 않습니다.
-- **언어별 디렉토리**는 프레임워크 전용 패턴, 도구 및 코드 예제와 함께 공통 규칙을 확장합니다. 각 파일은 해당 공통 파일을 참조합니다.
+- **common/** contains universal principles — no language-specific code examples.
+- **Language directories** extend the common rules with framework-specific patterns, tools, and code examples. Each file references its common counterpart.
 
-## 설치
+## Installation
 
-### 옵션 1: 설치 스크립트 (권장)
+### Option 1: Install Script (Recommended)
 
 ```bash
-# 공통 규칙 + 하나 이상의 언어별 규칙 세트 설치
+# Install common + one or more language-specific rule sets
 ./install.sh typescript
 ./install.sh python
 ./install.sh golang
 ./install.sh swift
+./install.sh php
 
-# 여러 언어를 한 번에 설치
+# Install multiple languages at once
 ./install.sh typescript python
 ```
 
-### 옵션 2: 수동 설치
+### Option 2: Manual Installation
 
-> **중요:** 디렉토리 전체를 복사하십시오. `/*`를 사용하여 내용을 직접 펼치지(flatten) 마십시오.
-> 공통 디렉토리와 언어별 디렉토리에는 이름이 같은 파일들이 포함되어 있습니다.
-> 이를 하나의 디렉토리에 펼쳐서 복사하면 언어별 파일이 공통 규칙을 덮어쓰게 되며, 
-> 언어별 파일에서 사용하는 상대 경로(`../common/`) 참조가 깨지게 됩니다.
+> **Important:** Copy entire directories — do NOT flatten with `/*`.
+> Common and language-specific directories contain files with the same names.
+> Flattening them into one directory causes language-specific files to overwrite
+> common rules, and breaks the relative `../common/` references used by
+> language-specific files.
 
 ```bash
-# 공통 규칙 설치 (모든 프로젝트에 필요)
+# Install common rules (required for all projects)
 cp -r rules/common ~/.claude/rules/common
 
-# 프로젝트의 기술 스택에 따른 언어별 규칙 설치
+# Install language-specific rules based on your project's tech stack
 cp -r rules/typescript ~/.claude/rules/typescript
 cp -r rules/python ~/.claude/rules/python
 cp -r rules/golang ~/.claude/rules/golang
 cp -r rules/swift ~/.claude/rules/swift
+cp -r rules/php ~/.claude/rules/php
 
-# 주의! ! ! 실제 프로젝트 요구 사항에 따라 구성하십시오. 여기의 구성은 참조용일 뿐입니다.
+# Attention ! ! ! Configure according to your actual project requirements; the configuration here is for reference only.
 ```
 
-## 규칙(Rules) vs 스킬(Skills)
+## Rules vs Skills
 
-- **규칙(Rules)**은 광범위하게 적용되는 표준, 컨벤션 및 체크리스트를 정의합니다 (예: "80% 테스트 커버리지", "하드코딩된 비밀 정보 금지").
-- **스킬(Skills)** (`skills/` 디렉토리)은 특정 작업을 위한 깊이 있고 실행 가능한 참조 자료를 제공합니다 (예: `python-patterns`, `golang-testing`).
+- **Rules** define standards, conventions, and checklists that apply broadly (e.g., "80% test coverage", "no hardcoded secrets").
+- **Skills** (`skills/` directory) provide deep, actionable reference material for specific tasks (e.g., `python-patterns`, `golang-testing`).
 
-언어별 규칙 파일은 적절한 경우 관련 스킬을 참조합니다. 규칙은 *무엇(what)*을 해야 하는지 알려주고, 스킬은 *어떻게(how)* 해야 하는지 알려줍니다.
+Language-specific rule files reference relevant skills where appropriate. Rules tell you *what* to do; skills tell you *how* to do it.
 
-## 새로운 언어 추가
+## Adding a New Language
 
-새로운 언어(예: `rust/`)에 대한 지원을 추가하려면:
+To add support for a new language (e.g., `rust/`):
 
-1. `rules/rust/` 디렉토리를 생성합니다.
-2. 공통 규칙을 확장하는 파일을 추가합니다:
-   - `coding-style.md` — 포매팅 도구, 관용구, 에러 처리 패턴
-   - `testing.md` — 테스트 프레임워크, 커버리지 도구, 테스트 구성
-   - `patterns.md` — 언어별 디자인 패턴
-   - `hooks.md` — 포매터, 린터, 타입 체크를 위한 PostToolUse 훅
-   - `security.md` — 비밀 정보 관리, 보안 스캔 도구
-3. 각 파일은 다음과 같이 시작해야 합니다:
+1. Create a `rules/rust/` directory
+2. Add files that extend the common rules:
+   - `coding-style.md` — formatting tools, idioms, error handling patterns
+   - `testing.md` — test framework, coverage tools, test organization
+   - `patterns.md` — language-specific design patterns
+   - `hooks.md` — PostToolUse hooks for formatters, linters, type checkers
+   - `security.md` — secret management, security scanning tools
+3. Each file should start with:
    ```
-   > 이 파일은 [common/xxx.md](../common/xxx.md)을 <언어> 전용 내용으로 확장합니다.
+   > This file extends [common/xxx.md](../common/xxx.md) with <Language> specific content.
    ```
-4. 이미 있는 경우 기존 스킬을 참조하거나, `skills/` 아래에 새로운 스킬을 생성하십시오.
+4. Reference existing skills if available, or create new ones under `skills/`.
 
-## 규칙 우선순위
+## Rule Priority
 
-언어별 규칙과 공통 규칙이 충돌할 경우, **언어별 규칙이 우선**합니다 (구체적인 것이 일반적인 것을 덮어씀). 이는 표준적인 레이어드 구성 패턴(CSS 명시도나 `.gitignore` 우선순위와 유사함)을 따릅니다.
+When language-specific rules and common rules conflict, **language-specific rules take precedence** (specific overrides general). This follows the standard layered configuration pattern (similar to CSS specificity or `.gitignore` precedence).
 
-- `rules/common/`은 모든 프로젝트에 적용되는 범용 기본값을 정의합니다.
-- `rules/golang/`, `rules/python/`, `rules/typescript/` 등은 언어별 관용구가 다를 경우 해당 기본값을 덮어씁니다.
+- `rules/common/` defines universal defaults applicable to all projects.
+- `rules/golang/`, `rules/python/`, `rules/swift/`, `rules/php/`, `rules/typescript/`, etc. override those defaults where language idioms differ.
 
-### 예시
+### Example
 
-`common/coding-style.md`는 기본 원칙으로 불변성을 권장합니다. 언어별 `golang/coding-style.md`는 이를 덮어쓸 수 있습니다:
+`common/coding-style.md` recommends immutability as a default principle. A language-specific `golang/coding-style.md` can override this:
 
-> 관용적인 Go는 구조체 수정을 위해 포인터 리시버를 사용합니다. 일반적인 원칙은 [common/coding-style.md](../common/coding-style.md)를 참조하되, 여기서는 Go의 관용적 수정을 선호합니다.
+> Idiomatic Go uses pointer receivers for struct mutation — see [common/coding-style.md](../common/coding-style.md) for the general principle, but Go-idiomatic mutation is preferred here.
 
-### 재정의 노트가 포함된 공통 규칙
+### Common rules with override notes
 
-언어별 파일에 의해 재정의될 수 있는 `rules/common/`의 규칙들은 다음과 같이 표시되어 있습니다:
+Rules in `rules/common/` that may be overridden by language-specific files are marked with:
 
-> **언어 참고**: 이 패턴이 관용적이지 않은 언어의 경우, 언어별 규칙에 의해 이 규칙이 재정의될 수 있습니다.
+> **Language note**: This rule may be overridden by language-specific rules for languages where this pattern is not idiomatic.
