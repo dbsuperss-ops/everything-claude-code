@@ -1,16 +1,16 @@
 ---
-description: "Go hooks extending common rules"
+description: "공통 규칙을 확장하는 Go 후크(Hooks)"
 globs: ["**/*.go", "**/go.mod", "**/go.sum"]
 alwaysApply: false
 ---
-# Go Hooks
+# Go 후크 (Hooks)
 
-> This file extends the common hooks rule with Go specific content.
+> 이 문서는 공통 후크 규칙을 기반으로 Go 언어에 특화된 내용을 확장합니다.
 
-## PostToolUse Hooks
+## PostToolUse 후크
 
-Configure in `~/.claude/settings.json`:
+`~/.claude/settings.json` 파일에서 다음 항목을 구성하십시오:
 
-- **gofmt/goimports**: Auto-format `.go` files after edit
-- **go vet**: Run static analysis after editing `.go` files
-- **staticcheck**: Run extended static checks on modified packages
+- **gofmt/goimports**: `.go` 파일 편집 후 자동 포매팅 수행
+- **go vet**: `.go` 파일 편집 후 정적 분석 실행
+- **staticcheck**: 수정된 패키지에 대해 확장 정적 검사 실행
