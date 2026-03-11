@@ -1,25 +1,25 @@
 ---
-description: "PHP coding style extending common rules"
+description: "공통 규칙을 확장하는 PHP 코딩 스타일"
 globs: ["**/*.php", "**/composer.json"]
 alwaysApply: false
 ---
-# PHP Coding Style
+# PHP 코딩 스타일 (Coding Style)
 
-> This file extends the common coding style rule with PHP specific content.
+> 이 문서는 공통 코딩 스타일 규칙을 기반으로 PHP에 특화된 내용을 확장합니다.
 
-## Standards
+## 표준 (Standards)
 
-- Follow **PSR-12** formatting and naming conventions.
-- Prefer `declare(strict_types=1);` in application code.
-- Use scalar type hints, return types, and typed properties everywhere new code permits.
+- **PSR-12** 포매팅 및 명명 컨벤션을 따릅니다.
+- 애플리케이션 코드에서는 `declare(strict_types=1);` 사용을 선호하십시오.
+- 새로운 코드 작성이 허용되는 모든 곳에서 스칼라 타입 힌트(Type hints), 리턴 타입 및 타입이 지정된 속성을 사용하십시오.
 
-## Immutability
+## 불변성 (Immutability)
 
-- Prefer immutable DTOs and value objects for data crossing service boundaries.
-- Use `readonly` properties or immutable constructors for request/response payloads where possible.
-- Keep arrays for simple maps; promote business-critical structures into explicit classes.
+- 서비스 경계를 넘나드는 데이터에 대해 불변 DTO 및 값 객체(Value objects)를 선호하십시오.
+- 요청/응답 페이로드에 대해 가능한 경우 `readonly` 속성이나 불변 생성자를 사용하십시오.
+- 단순한 맵 구조에는 배열을 유지하되, 비즈니스상 중요한 구조는 명시적인 클래스로 승격시키십시오.
 
-## Formatting
+## 포매팅 (Formatting)
 
-- Use **PHP-CS-Fixer** or **Laravel Pint** for formatting.
-- Use **PHPStan** or **Psalm** for static analysis.
+- 포매팅을 위해 **PHP-CS-Fixer** 또는 **Laravel Pint**를 사용하십시오.
+- 정적 분석을 위해 **PHPStan** 또는 **Psalm**을 사용하십시오.

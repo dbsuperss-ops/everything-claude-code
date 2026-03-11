@@ -1,68 +1,68 @@
 ---
-description: Review code for quality, security, and maintainability
+description: 품질, 보안 및 유지 관리 가능성에 대해 코드 리뷰 수행
 agent: code-reviewer
 subtask: true
 ---
 
-# Code Review Command
+# 코드 리뷰 명령 (Code Review Command)
 
-Review code changes for quality, security, and maintainability: $ARGUMENTS
+품질, 보안 및 유지 관리 가능성에 대해 코드 변경 사항을 리뷰합니다: $ARGUMENTS
 
-## Your Task
+## 임무
 
-1. **Get changed files**: Run `git diff --name-only HEAD`
-2. **Analyze each file** for issues
-3. **Generate structured report**
-4. **Provide actionable recommendations**
+1. **변경된 파일 확인**: `git diff --name-only HEAD` 실행
+2. **각 파일 분석**하여 문제점 파악
+3. **구조화된 보고서 생성**
+4. **실행 가능한 권장 사항 제공**
 
-## Check Categories
+## 점검 항목
 
-### Security Issues (CRITICAL)
-- [ ] Hardcoded credentials, API keys, tokens
-- [ ] SQL injection vulnerabilities
-- [ ] XSS vulnerabilities
-- [ ] Missing input validation
-- [ ] Insecure dependencies
-- [ ] Path traversal risks
-- [ ] Authentication/authorization flaws
+### 보안 이슈 (치명적 - CRITICAL)
+- [ ] 하드코딩된 자격 증명, API 키, 토큰
+- [ ] SQL 인젝션 취약점
+- [ ] XSS 취약점
+- [ ] 입력값 검증 누락
+- [ ] 보안상 취약한 종속성
+- [ ] 경로 탐색(Path traversal) 리스크
+- [ ] 인증/인가 결함
 
-### Code Quality (HIGH)
-- [ ] Functions > 50 lines
-- [ ] Files > 800 lines
-- [ ] Nesting depth > 4 levels
-- [ ] Missing error handling
-- [ ] console.log statements
-- [ ] TODO/FIXME comments
-- [ ] Missing JSDoc for public APIs
+### 코드 품질 (높음 - HIGH)
+- [ ] 함수 길이 > 50줄
+- [ ] 파일 길이 > 800줄
+- [ ] 중첩 깊이 > 4단계
+- [ ] 에러 처리 누락
+- [ ] console.log 구문
+- [ ] TODO/FIXME 주석
+- [ ] 공개 API에 대한 JSDoc 누락
 
-### Best Practices (MEDIUM)
-- [ ] Mutation patterns (use immutable instead)
-- [ ] Unnecessary complexity
-- [ ] Missing tests for new code
-- [ ] Accessibility issues (a11y)
-- [ ] Performance concerns
+### 베스트 프랙티스 (중간 - MEDIUM)
+- [ ] 상태 변경(Mutation) 패턴 (불변성 유지 권장)
+- [ ] 불필요한 복잡성
+- [ ] 신규 코드에 대한 테스트 누락
+- [ ] 접근성 이슈 (a11y)
+- [ ] 성능 관련 우려 사항
 
-### Style (LOW)
-- [ ] Inconsistent naming
-- [ ] Missing type annotations
-- [ ] Formatting issues
+### 스타일 (낮음 - LOW)
+- [ ] 일관성 없는 명명 규칙
+- [ ] 타입 어노테이션 누락
+- [ ] 포매팅 이슈
 
-## Report Format
+## 보고서 형식
 
-For each issue found:
+발견된 각 문제에 대해:
 
 ```
-**[SEVERITY]** file.ts:123
-Issue: [Description]
-Fix: [How to fix]
+**[중요도]** file.ts:123
+이슈: [설명]
+해결: [해결 방법]
 ```
 
-## Decision
+## 결정 가이드라인
 
-- **CRITICAL or HIGH issues**: Block commit, require fixes
-- **MEDIUM issues**: Recommend fixes before merge
-- **LOW issues**: Optional improvements
+- **치명적(CRITICAL) 또는 높음(HIGH) 이슈**: 커밋 차단, 필수 수정 요청
+- **중간(MEDIUM) 이슈**: 머지(Merge) 전 수정 권장
+- **낮음(LOW) 이슈**: 선택적 개선 사항
 
 ---
 
-**IMPORTANT**: Never approve code with security vulnerabilities!
+**중요**: 보안 취약점이 있는 코드는 절대 승인하지 마십시오!

@@ -1,67 +1,67 @@
 ---
-description: Save verification state and progress checkpoint
+description: 검증 상태 및 진행 상황 체크포인트 저장
 agent: build
 ---
 
-# Checkpoint Command
+# 체크포인트 명령 (Checkpoint Command)
 
-Save current verification state and create progress checkpoint: $ARGUMENTS
+현재의 검증 상태를 저장하고 진행 상황 체크포인트를 생성합니다: $ARGUMENTS
 
-## Your Task
+## 임무
 
-Create a snapshot of current progress including:
+다음을 포함하여 현재 진행 상황의 스냅샷을 생성하십시오:
 
-1. **Tests status** - Which tests pass/fail
-2. **Coverage** - Current coverage metrics
-3. **Build status** - Build succeeds or errors
-4. **Code changes** - Summary of modifications
-5. **Next steps** - What remains to be done
+1. **테스트 상태** - 통과/실패한 테스트 목록
+2. **커버리지** - 현재 테스트 커버리지 지표
+3. **빌드 상태** - 빌드 성공 또는 에러 내용
+4. **코드 변경 사항** - 수정 사항 요약
+5. **다음 단계** - 남은 작업 내용
 
-## Checkpoint Format
+## 체크포인트 형식
 
-### Checkpoint: [Timestamp]
+### 체크포인트: [타임스탬프]
 
-**Tests**
-- Total: X
-- Passing: Y
-- Failing: Z
-- Coverage: XX%
+**테스트**
+- 전체: X
+- 통과: Y
+- 실패: Z
+- 커버리지: XX%
 
-**Build**
-- Status: ✅ Passing / ❌ Failing
-- Errors: [if any]
+**빌드**
+- 상태: ✅ 통과 / ❌ 실패
+- 에러: [있는 경우 기재]
 
-**Changes Since Last Checkpoint**
+**지난 체크포인트 이후 변경 사항**
 ```
 git diff --stat [last-checkpoint-commit]
 ```
 
-**Completed Tasks**
-- [x] Task 1
-- [x] Task 2
-- [ ] Task 3 (in progress)
+**완료된 작업**
+- [x] 작업 1
+- [x] 작업 2
+- [ ] 작업 3 (진행 중)
 
-**Blocking Issues**
-- [Issue description]
+**차단 이슈 (Blocking Issues)**
+- [이슈 설명]
 
-**Next Steps**
-1. Step 1
-2. Step 2
+**다음 단계**
+1. 단계 1
+2. 단계 2
 
-## Usage with Verification Loop
+## 검증 루프(Verification Loop)와 함께 사용
 
-Checkpoints integrate with the verification loop:
+체크포인트는 검증 루프와 통합되어 작동합니다:
 
 ```
-/plan → implement → /checkpoint → /verify → /checkpoint → implement → ...
+/plan → 구현 → /checkpoint → /verify → /checkpoint → 구현 → ...
 ```
 
-Use checkpoints to:
-- Save state before risky changes
-- Track progress through phases
-- Enable rollback if needed
-- Document verification points
+체크포인트를 다음 용도로 사용하십시오:
+- 위험한 변경 전에 상태 저장
+- 각 단계별 진행 상황 추적
+- 필요 시 롤백(Rollback) 수행
+- 검증 포인트 문서화
 
 ---
 
-**TIP**: Create checkpoints at natural breakpoints: after each phase, before major refactoring, after fixing critical bugs.
+**팁**: 각 단계 완료 후, 대규모 리팩토링 전, 중요한 버그 수정 후 등 자연스러운 중단점에서 체크포인트를 생성하십시오.
