@@ -1,312 +1,67 @@
-# Sessions 命令
+---
+description: Claude Code 세션 이력(~/.claude/sessions/)을 관리합니다. 목록 조회, 세션 로드, 별칭(Alias) 설정 및 상세 정보 확인 기능을 제공합니다.
+---
 
-管理 Claude Code 会话历史 - 列出、加载、设置别名和编辑存储在 `~/.claude/sessions/` 中的会话。
+# 세션 (Sessions) 명령어
 
-## 用法
+Claude Code의 대화 세션 이력을 관리합니다. 특정 세션을 찾거나, 자주 사용하는 세션에 별명을 붙여 효율적으로 접근할 수 있습니다.
 
-`/sessions [list|load|alias|info|help] [options]`
+## 사용법
 
-## 操作
+`/sessions [list|load|alias|info|help] [옵션]`
 
-### 列出会话
+## 주요 작업
 
-显示所有会话及其元数据，支持筛选和分页。
+### 1. 세션 목록 조회 (list)
+저장된 모든 세션의 목록과 메타데이터를 표시합니다.
+* `/sessions list`: 모든 세션 출력 (기본값)
+* `/sessions list --limit 10`: 최근 10개만 표시
+* `/sessions list --date 2026-02-01`: 특정 날짜 세션 필터링
+* `/sessions list --search 키워드`: 세션 ID 또는 별칭 검색
 
-```bash
-/sessions                              # List all sessions (default)
-/sessions list                         # Same as above
-/sessions list --limit 10              # Show 10 sessions
-/sessions list --date 2026-02-01       # Filter by date
-/sessions list --search abc            # Search by session ID
-```
+### 2. 세션 로드 (load)
+세션 ID나 별칭을 사용해 과거 대화 내용을 불러옵니다.
+* `/sessions load <ID|별칭>`
+* `/sessions load a1b2c3d4`: 단축 ID로 로드
+* `/sessions load my-project`: 설정된 별칭으로 로드
 
-**脚本：**
+### 3. 별칭(Alias) 설정 및 관리
+길고 복잡한 세션 ID 대신 기억하기 쉬운 이름을 부여합니다.
+* `/sessions alias <ID> <이름>`: 별칭 생성
+* `/sessions alias 2026-02-01 daily-sync`: 'daily-sync'라는 별칭 부여
+* `/sessions aliases`: 등록된 모든 별칭 목록 확인
+* `/sessions unalias <이름>`: 별칭 삭제
 
-```bash
-node -e "
-const sm = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-manager');
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
+### 4. 세션 상세 정보 확인 (info)
+세션의 파일 크기, 라인 수, 수정 시각 등 통계 정보를 확인합니다.
+* `/sessions info <ID|별칭>`
 
-const result = sm.getAllSessions({ limit: 20 });
-const aliases = aa.listAliases();
-const aliasMap = {};
-for (const a of aliases) aliasMap[a.sessionPath] = a.name;
+---
 
-console.log('Sessions (showing ' + result.sessions.length + ' of ' + result.total + '):');
-console.log('');
-console.log('ID        Date        Time     Size     Lines  Alias');
-console.log('────────────────────────────────────────────────────');
-
-for (const s of result.sessions) {
-  const alias = aliasMap[s.filename] || '';
-  const size = sm.getSessionSize(s.sessionPath);
-  const stats = sm.getSessionStats(s.sessionPath);
-  const id = s.shortId === 'no-id' ? '(none)' : s.shortId.slice(0, 8);
-  const time = s.modifiedTime.toTimeString().slice(0, 5);
-
-  console.log(id.padEnd(8) + ' ' + s.date + '  ' + time + '   ' + size.padEnd(7) + '  ' + String(stats.lineCount).padEnd(5) + '  ' + alias);
-}
-"
-```
-
-### 加载会话
-
-加载并显示会话内容（通过 ID 或别名）。
+## 실행 예시
 
 ```bash
-/sessions load <id|alias>             # Load session
-/sessions load 2026-02-01             # By date (for no-id sessions)
-/sessions load a1b2c3d4               # By short ID
-/sessions load my-alias               # By alias name
-```
-
-**脚本：**
-
-```bash
-node -e "
-const sm = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-manager');
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
-const id = process.argv[1];
-
-// First try to resolve as alias
-const resolved = aa.resolveAlias(id);
-const sessionId = resolved ? resolved.sessionPath : id;
-
-const session = sm.getSessionById(sessionId, true);
-if (!session) {
-  console.log('Session not found: ' + id);
-  process.exit(1);
-}
-
-const stats = sm.getSessionStats(session.sessionPath);
-const size = sm.getSessionSize(session.sessionPath);
-const aliases = aa.getAliasesForSession(session.filename);
-
-console.log('Session: ' + session.filename);
-console.log('Path: ~/.claude/sessions/' + session.filename);
-console.log('');
-console.log('Statistics:');
-console.log('  Lines: ' + stats.lineCount);
-console.log('  Total items: ' + stats.totalItems);
-console.log('  Completed: ' + stats.completedItems);
-console.log('  In progress: ' + stats.inProgressItems);
-console.log('  Size: ' + size);
-console.log('');
-
-if (aliases.length > 0) {
-  console.log('Aliases: ' + aliases.map(a => a.name).join(', '));
-  console.log('');
-}
-
-if (session.metadata.title) {
-  console.log('Title: ' + session.metadata.title);
-  console.log('');
-}
-
-if (session.metadata.started) {
-  console.log('Started: ' + session.metadata.started);
-}
-
-if (session.metadata.lastUpdated) {
-  console.log('Last Updated: ' + session.metadata.lastUpdated);
-}
-" "$ARGUMENTS"
-```
-
-### 创建别名
-
-为会话创建一个易记的别名。
-
-```bash
-/sessions alias <id> <name>           # Create alias
-/sessions alias 2026-02-01 today-work # Create alias named "today-work"
-```
-
-**脚本：**
-
-```bash
-node -e "
-const sm = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-manager');
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
-
-const sessionId = process.argv[1];
-const aliasName = process.argv[2];
-
-if (!sessionId || !aliasName) {
-  console.log('Usage: /sessions alias <id> <name>');
-  process.exit(1);
-}
-
-// Get session filename
-const session = sm.getSessionById(sessionId);
-if (!session) {
-  console.log('Session not found: ' + sessionId);
-  process.exit(1);
-}
-
-const result = aa.setAlias(aliasName, session.filename);
-if (result.success) {
-  console.log('✓ Alias created: ' + aliasName + ' → ' + session.filename);
-} else {
-  console.log('✗ Error: ' + result.error);
-  process.exit(1);
-}
-" "$ARGUMENTS"
-```
-
-### 移除别名
-
-删除现有的别名。
-
-```bash
-/sessions alias --remove <name>        # Remove alias
-/sessions unalias <name>               # Same as above
-```
-
-**脚本：**
-
-```bash
-node -e "
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
-
-const aliasName = process.argv[1];
-if (!aliasName) {
-  console.log('Usage: /sessions alias --remove <name>');
-  process.exit(1);
-}
-
-const result = aa.deleteAlias(aliasName);
-if (result.success) {
-  console.log('✓ Alias removed: ' + aliasName);
-} else {
-  console.log('✗ Error: ' + result.error);
-  process.exit(1);
-}
-" "$ARGUMENTS"
-```
-
-### 会话信息
-
-显示会话的详细信息。
-
-```bash
-/sessions info <id|alias>              # Show session details
-```
-
-**脚本：**
-
-```bash
-node -e "
-const sm = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-manager');
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
-
-const id = process.argv[1];
-const resolved = aa.resolveAlias(id);
-const sessionId = resolved ? resolved.sessionPath : id;
-
-const session = sm.getSessionById(sessionId, true);
-if (!session) {
-  console.log('Session not found: ' + id);
-  process.exit(1);
-}
-
-const stats = sm.getSessionStats(session.sessionPath);
-const size = sm.getSessionSize(session.sessionPath);
-const aliases = aa.getAliasesForSession(session.filename);
-
-console.log('Session Information');
-console.log('════════════════════');
-console.log('ID:          ' + (session.shortId === 'no-id' ? '(none)' : session.shortId));
-console.log('Filename:    ' + session.filename);
-console.log('Date:        ' + session.date);
-console.log('Modified:    ' + session.modifiedTime.toISOString().slice(0, 19).replace('T', ' '));
-console.log('');
-console.log('Content:');
-console.log('  Lines:         ' + stats.lineCount);
-console.log('  Total items:   ' + stats.totalItems);
-console.log('  Completed:     ' + stats.completedItems);
-console.log('  In progress:   ' + stats.inProgressItems);
-console.log('  Size:          ' + size);
-if (aliases.length > 0) {
-  console.log('Aliases:     ' + aliases.map(a => a.name).join(', '));
-}
-" "$ARGUMENTS"
-```
-
-### 列出别名
-
-显示所有会话别名。
-
-```bash
-/sessions aliases                      # List all aliases
-```
-
-**脚本：**
-
-```bash
-node -e "
-const aa = require((process.env.CLAUDE_PLUGIN_ROOT||require('path').join(require('os').homedir(),'.claude'))+'/scripts/lib/session-aliases');
-
-const aliases = aa.listAliases();
-console.log('Session Aliases (' + aliases.length + '):');
-console.log('');
-
-if (aliases.length === 0) {
-  console.log('No aliases found.');
-} else {
-  console.log('Name          Session File                    Title');
-  console.log('─────────────────────────────────────────────────────────────');
-  for (const a of aliases) {
-    const name = a.name.padEnd(12);
-    const file = (a.sessionPath.length > 30 ? a.sessionPath.slice(0, 27) + '...' : a.sessionPath).padEnd(30);
-    const title = a.title || '';
-    console.log(name + ' ' + file + ' ' + title);
-  }
-}
-"
-```
-
-## 参数
-
-$ARGUMENTS:
-
-* `list [options]` - 列出会话
-  * `--limit <n>` - 最大显示会话数（默认：50）
-  * `--date <YYYY-MM-DD>` - 按日期筛选
-  * `--search <pattern>` - 在会话 ID 中搜索
-* `load <id|alias>` - 加载会话内容
-* `alias <id> <name>` - 为会话创建别名
-* `alias --remove <name>` - 移除别名
-* `unalias <name>` - 与 `--remove` 相同
-* `info <id|alias>` - 显示会话统计信息
-* `aliases` - 列出所有别名
-* `help` - 显示此帮助信息
-
-## 示例
-
-```bash
-# List all sessions
+# 세션 목록 확인
 /sessions list
 
-# Create an alias for today's session
-/sessions alias 2026-02-01 today
+# 특정 세션에 별칭 부여
+/sessions alias a1b2c3d4 refactoring-job
 
-# Load session by alias
-/sessions load today
+# 별칭으로 세션 로드
+/sessions load refactoring-job
 
-# Show session info
-/sessions info today
+# 세션 상세 정보 확인
+/sessions info refactoring-job
 
-# Remove alias
-/sessions alias --remove today
-
-# List all aliases
+# 별칭 목록 확인
 /sessions aliases
 ```
 
-## 备注
+## 참고 사항
 
-* 会话以 Markdown 文件形式存储在 `~/.claude/sessions/`
-* 别名存储在 `~/.claude/session-aliases.json`
-* 会话 ID 可以缩短（通常前 4-8 个字符就足够唯一）
-* 为经常引用的会话使用别名
+* **저장 위치**: 모든 세션은 `~/.claude/sessions/` 경로에 Markdown 파일로 저장됩니다.
+* **별칭 관리**: 별칭 설정 정보는 `~/.claude/session-aliases.json` 파일에 별도로 보관됩니다.
+* **단축 ID**: 세션 ID 전체를 입력하지 않아도, 중복되지 않는 범위 내에서 앞의 4~8자리만 입력하여 사용할 수 있습니다.
+* **불러오기 팁**: 자주 참조해야 하는 설계 문서나 복잡한 리팩토링 세션에는 반드시 별칭을 설정해 두는 것이 좋습니다.
+
+**핵심**: Sessions 명령어를 통해 과거의 작업 문맥을 신속하게 복원하고, 파편화된 대화 기록을 체계적인 지식 베이스로 활용할 수 있습니다.

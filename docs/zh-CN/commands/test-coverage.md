@@ -1,69 +1,65 @@
-# 测试覆盖率
+---
+description: 테스트 커버리지를 분석하여 누락된 지점을 식별하고, 80% 이상의 커버리지를 달성하기 위한 추가 테스트 코드를 생성합니다.
+---
 
-分析测试覆盖率，识别缺口，并生成缺失的测试以达到 80%+ 的覆盖率。
+# 테스트 커버리지 (Test-Coverage) 명령어
 
-## 步骤 1：检测测试框架
+테스트가 누락된 코드 영역을 파악하고 보완하여 소프트웨어의 안정성을 높입니다.
 
-| 指标 | 覆盖率命令 |
+## 1단계: 테스트 프레임워크 감지
+
+프로젝트에서 사용 중인 도구에 맞는 커버리지 측정 명령어를 실행합니다:
+
+| 도구 | 실행 명령어 |
 |-----------|-----------------|
-| `jest.config.*` 或 `package.json` jest | `npx jest --coverage --coverageReporters=json-summary` |
-| `vitest.config.*` | `npx vitest run --coverage` |
-| `pytest.ini` / `pyproject.toml` pytest | `pytest --cov=src --cov-report=json` |
-| `Cargo.toml` | `cargo llvm-cov --json` |
-| `pom.xml` 与 JaCoCo | `mvn test jacoco:report` |
-| `go.mod` | `go test -coverprofile=coverage.out ./...` |
+| **Jest** | `npx jest --coverage --coverageReporters=json-summary` |
+| **Vitest** | `npx vitest run --coverage` |
+| **Pytest** | `pytest --cov=src --cov-report=json` |
+| **Cargo (Rust)** | `cargo llvm-cov --json` |
+| **Maven (Java)** | `mvn test jacoco:report` |
+| **Go** | `go test -coverprofile=coverage.out ./...` |
 
-## 步骤 2：分析覆盖率报告
+## 2단계: 커버리지 리포트 분석
 
-1. 运行覆盖率命令
-2. 解析输出（JSON 摘要或终端输出）
-3. 列出**覆盖率低于 80%** 的文件，按最差情况排序
-4. 对于每个覆盖率不足的文件，识别：
-   * 未测试的函数或方法
-   * 缺失的分支覆盖率（if/else、switch、错误路径）
-   * 增加分母的死代码
+1. 커버리지 명령어를 실행합니다.
+2. 출력된 결과(JSON 요약 또는 터미널 출력)를 파싱합니다.
+3. **커버리지 80% 미만**인 파일을 취합하여 상태가 좋지 않은 순서대로 정렬합니다.
+4. 부족한 파일마다 다음 요소를 식별합니다:
+   * 테스트되지 않은 함수나 메서드
+   * 누락된 분기(if/else, switch, 에러 발생 경로)
+   * 분모만 키우고 있는 데드 코드(Dead Code)
 
-## 步骤 3：生成缺失的测试
+## 3단계: 누락된 테스트 생성
 
-对于每个覆盖率不足的文件，按以下优先级生成测试：
+커버리지 확보를 위해 다음 우선순위에 따라 테스트를 생성합니다:
 
-1. **快乐路径** — 使用有效输入的核心功能
-2. **错误处理** — 无效输入、缺失数据、网络故障
-3. **边界情况** — 空数组、null/undefined、边界值（0、-1、MAX\_INT）
-4. **分支覆盖率** — 每个 if/else、switch case、三元运算符
+1. **🟡 정상 경로 (Happy Path)**: 유효한 입력을 통한 핵심 기능 검증
+2. **🔴 에러 처리 (Error Handling)**: 잘못된 입력, 데이터 누락, 네트워크 장애 대응
+3. **🔵 엣지 케이스 (Edge Cases)**: 빈 배열, null/undefined, 경계값(0, -1, MAX_INT)
+4. **🟢 분기 커버리지 (Branch Coverage)**: 모든 if/else, switch case, 삼항 연산자 보완
 
-### 测试生成规则
+### 테스트 생성 규칙
+* 소스 코드 옆에 테스트 위치 지정: `foo.ts` → `foo.test.ts` (또는 프로젝트 관례 준수)
+* 프로젝트의 기존 테스트 패턴(import 스타일, 어설션 라이브러리, 모킹 방식)을 따름
+* 외부 의존성(DB, API, 파일 시스템)은 모킹(Mocking) 처리
+* 각 테스트는 독립적이어야 함 (공유된 가변 상태 지양)
+* 테스트 명칭은 설명적으로 작성: `test_create_user_with_duplicate_email_returns_409`
 
-* 将测试放在源代码旁边：`foo.ts` → `foo.test.ts`（或遵循项目惯例）
-* 使用项目中现有的测试模式（导入风格、断言库、模拟方法）
-* 模拟外部依赖项（数据库、API、文件系统）
-* 每个测试都应该是独立的 — 测试之间没有共享的可变状态
-* 描述性地命名测试：`test_create_user_with_duplicate_email_returns_409`
+## 4단계: 검증 및 보고
 
-## 步骤 4：验证
+1. 전체 테스트 수트를 실행하여 모든 테스트가 통과하는지 확인합니다.
+2. 커버리지를 다시 측정하여 개선 수치를 검증합니다.
+3. 목표치(80%) 미달 시 부족한 부분에 대해 3단계를 반복합니다.
 
-1. 运行完整的测试套件 — 所有测试必须通过
-2. 重新运行覆盖率 — 验证改进
-3. 如果仍然低于 80%，针对剩余的缺口重复步骤 3
-
-## 步骤 5：报告
-
-显示前后对比：
-
-```
-Coverage Report
+### 최종 보고 양식
+```text
+테스트 커버리지 리포트
 ──────────────────────────────
-File                   Before  After
-src/services/auth.ts   45%     88%
-src/utils/validation.ts 32%    82%
+파일명                   이전    이후
+src/services/auth.ts     45%     88%
+src/utils/validation.ts  32%     82%
 ──────────────────────────────
-Overall:               67%     84%  ✅
+전체 커버리지:           67%     84%  ✅
 ```
 
-## 重点关注领域
-
-* 具有复杂分支的函数（高圈复杂度）
-* 错误处理程序和 catch 块
-* 整个代码库中使用的工具函数
-* API 端点处理程序（请求 → 响应流程）
-* 边界情况：null、undefined、空字符串、空数组、零、负数
+**핵심**: 테스트 커버리지 명령어는 단순히 숫자를 채우는 것이 아니라, 자칫 놓치기 쉬운 예외 상황과 복잡한 분기점을 에이전트가 대신 찾아내어 코드의 신뢰도를 견고히 만드는 도구입니다.
