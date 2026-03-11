@@ -1,283 +1,116 @@
-# PM2 初始化
+---
+description: 프로젝트를 자동 분석하여 PM2(Process Manager 2) 서비스 관리 설정 및 명령어를 생성합니다.
+---
 
-自动分析项目并生成 PM2 服务命令。
+# PM2 초기화 (PM2 Init)
 
-**命令**: `$ARGUMENTS`
+프로젝트 구조를 분석하여 백엔드, 프론트엔드 등의 서비스를 PM2로 관리할 수 있도록 설정 파일과 명령어를 생성합니다.
 
-***
+## 워크플로우
 
-## 工作流程
+1. **PM2 확인**: 시스템에 PM2가 설치되어 있는지 확인하고, 없는 경우 설치를 안내하거나 진행합니다.
+2. **서비스 감지**: 프로젝트 내의 프론트엔드(Vite, Next.js 등), 백엔드(Node.js, Python, Go 등) 서비스를 자동으로 찾아냅니다.
+3. **설정 생성**: `ecosystem.config.cjs` 파일과 개별 서비스 제어용 명령어를 생성합니다.
 
-1. 检查 PM2（如果缺失，通过 `npm install -g pm2` 安装）
-2. 扫描项目以识别服务（前端/后端/数据库）
-3. 生成配置文件和各命令文件
+---
 
-***
+## 서비스 감지 기준
 
-## 服务检测
-
-| 类型 | 检测方式 | 默认端口 |
+| 유형 | 감지 방식 | 기본 포트 |
 |------|-----------|--------------|
-| Vite | vite.config.\* | 5173 |
-| Next.js | next.config.\* | 3000 |
-| Nuxt | nuxt.config.\* | 3000 |
-| CRA | package.json 中的 react-scripts | 3000 |
-| Express/Node | server/backend/api 目录 + package.json | 3000 |
-| FastAPI/Flask | requirements.txt / pyproject.toml | 8000 |
-| Go | go.mod / main.go | 8080 |
+| Vite | `vite.config.*` 존재 여부 | 5173 |
+| Next.js | `next.config.*` 존재 여부 | 3000 |
+| Express/Node | `package.json` 및 서버 디렉토리 분석 | 3000 |
+| Fast API/Flask | `requirements.txt` / `pyproject.toml` 분석 | 8000 |
+| Go | `go.mod` / `main.go` 분석 | 8080 |
 
-**端口检测优先级**: 用户指定 > .env 文件 > 配置文件 > 脚本参数 > 默认端口
+**포트 결정 우선순위**: 사용자 지정 > `.env` 파일 > 설정 파일 > 기본 포트
 
-***
+---
 
-## 生成的文件
+## 생성되는 파일 구조
 
-```
-project/
-├── ecosystem.config.cjs              # PM2 config
-├── {backend}/start.cjs               # Python wrapper (if applicable)
+```text
+프로젝트 루트/
+├── ecosystem.config.cjs              # PM2 메인 설정 파일
+├── {backend}/start.cjs               # Python 등을 위한 래퍼 (필요시)
 └── .claude/
     ├── commands/
-    │   ├── pm2-all.md                # Start all + monit
-    │   ├── pm2-all-stop.md           # Stop all
-    │   ├── pm2-all-restart.md        # Restart all
-    │   ├── pm2-{port}.md             # Start single + logs
-    │   ├── pm2-{port}-stop.md        # Stop single
-    │   ├── pm2-{port}-restart.md     # Restart single
-    │   ├── pm2-logs.md               # View all logs
-    │   └── pm2-status.md             # View status
+    │   ├── pm2-all.md                # 전체 시작 및 모니터링
+    │   ├── pm2-all-stop.md           # 전체 중지
+    │   ├── pm2-all-restart.md        # 전체 재시작
+    │   ├── pm2-{포트}.md             # 단일 서비스 시작 및 로그 확인
+    │   ├── pm2-logs.md               # 모든 로그 보기
+    │   └── pm2-status.md             # 프로세스 상태 확인
     └── scripts/
-        ├── pm2-logs-{port}.ps1       # Single service logs
-        └── pm2-monit.ps1             # PM2 monitor
+        ├── pm2-logs-{포트}.ps1       # 단일 서비스 로그 스크립트
+        └── pm2-monit.ps1             # 모니터링 패널 스크립트
 ```
 
-***
+---
 
-## Windows 配置（重要）
+## Windows 환경 설정 (중요)
 
-### ecosystem.config.cjs
+Windows에서는 호환성을 위해 **`.cjs` 확장자**를 반드시 사용해야 합니다.
 
-**必须使用 `.cjs` 扩展名**
-
+### ecosystem.config.cjs 예시
 ```javascript
 module.exports = {
   apps: [
-    // Node.js (Vite/Next/Nuxt)
     {
-      name: 'project-3000',
-      cwd: './packages/web',
+      name: 'web-app-3000',
+      cwd: './frontend',
       script: 'node_modules/vite/bin/vite.js',
       args: '--port 3000',
-      interpreter: 'C:/Program Files/nodejs/node.exe',
+      interpreter: 'node',
       env: { NODE_ENV: 'development' }
     },
-    // Python
     {
-      name: 'project-8000',
+      name: 'api-server-8000',
       cwd: './backend',
-      script: 'start.cjs',
-      interpreter: 'C:/Program Files/nodejs/node.exe',
+      script: 'start.cjs', // Python 래퍼
       env: { PYTHONUNBUFFERED: '1' }
     }
   ]
 }
 ```
 
-**框架脚本路径:**
+---
 
-| 框架 | script | args |
-|-----------|--------|------|
-| Vite | `node_modules/vite/bin/vite.js` | `--port {port}` |
-| Next.js | `node_modules/next/dist/bin/next` | `dev -p {port}` |
-| Nuxt | `node_modules/nuxt/bin/nuxt.mjs` | `dev --port {port}` |
-| Express | `src/index.js` 或 `server.js` | - |
+## 주요 명령어 사용법
 
-### Python 包装脚本 (start.cjs)
-
-```javascript
-const { spawn } = require('child_process');
-const proc = spawn('python', ['-m', 'uvicorn', 'app.main:app', '--host', '0.0.0.0', '--port', '8000', '--reload'], {
-  cwd: __dirname, stdio: 'inherit', windowsHide: true
-});
-proc.on('close', (code) => process.exit(code));
-```
-
-***
-
-## 命令文件模板（最简内容）
-
-### pm2-all.md (启动所有 + 监控)
-
-````markdown
-启动所有服务并打开 PM2 监控器。
+### 초기 실행 (설정 파일 적용)
 ```bash
-cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs && start wt.exe -d "{PROJECT_ROOT}" pwsh -NoExit -c "pm2 monit"
-```
-````
-
-### pm2-all-stop.md
-
-````markdown
-停止所有服务。
-```bash
-cd "{PROJECT_ROOT}" && pm2 stop all
-```
-````
-
-### pm2-all-restart.md
-
-````markdown
-重启所有服务。
-```bash
-cd "{PROJECT_ROOT}" && pm2 restart all
-```
-````
-
-### pm2-{port}.md (启动单个 + 日志)
-
-````markdown
-启动 {name} ({port}) 并打开日志。
-```bash
-cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs --only {name} && start wt.exe -d "{PROJECT_ROOT}" pwsh -NoExit -c "pm2 logs {name}"
-```
-````
-
-### pm2-{port}-stop.md
-
-````markdown
-停止 {name} ({port})。
-```bash
-cd "{PROJECT_ROOT}" && pm2 stop {name}
-```
-````
-
-### pm2-{port}-restart.md
-
-````markdown
-重启 {name} ({port})。
-```bash
-cd "{PROJECT_ROOT}" && pm2 restart {name}
-```
-````
-
-### pm2-logs.md
-
-````markdown
-查看所有 PM2 日志。
-```bash
-cd "{PROJECT_ROOT}" && pm2 logs
-```
-````
-
-### pm2-status.md
-
-````markdown
-查看 PM2 状态。
-```bash
-cd "{PROJECT_ROOT}" && pm2 status
-```
-````
-
-### PowerShell 脚本 (pm2-logs-{port}.ps1)
-
-```powershell
-Set-Location "{PROJECT_ROOT}"
-pm2 logs {name}
-```
-
-### PowerShell 脚本 (pm2-monit.ps1)
-
-```powershell
-Set-Location "{PROJECT_ROOT}"
-pm2 monit
-```
-
-***
-
-## 关键规则
-
-1. **配置文件**: `ecosystem.config.cjs` (不是 .js)
-2. **Node.js**: 直接指定 bin 路径 + 解释器
-3. **Python**: Node.js 包装脚本 + `windowsHide: true`
-4. **打开新窗口**: `start wt.exe -d "{path}" pwsh -NoExit -c "command"`
-5. **最简内容**: 每个命令文件只有 1-2 行描述 + bash 代码块
-6. **直接执行**: 无需 AI 解析，直接运行 bash 命令
-
-***
-
-## 执行
-
-基于 `$ARGUMENTS`，执行初始化：
-
-1. 扫描项目服务
-2. 生成 `ecosystem.config.cjs`
-3. 为 Python 服务生成 `{backend}/start.cjs`（如果适用）
-4. 在 `.claude/commands/` 中生成命令文件
-5. 在 `.claude/scripts/` 中生成脚本文件
-6. **更新项目 CLAUDE.md**，添加 PM2 信息（见下文）
-7. **显示完成摘要**，包含终端命令
-
-***
-
-## 初始化后：更新 CLAUDE.md
-
-生成文件后，将 PM2 部分追加到项目的 `CLAUDE.md`（如果不存在则创建）：
-
-````markdown
-## PM2 服务
-
-| 端口 | 名称 | 类型 |
-|------|------|------|
-| {port} | {name} | {type} |
-
-**终端命令：**
-```bash
-pm2 start ecosystem.config.cjs   # First time
-pm2 start all                    # After first time
-pm2 stop all / pm2 restart all
-pm2 start {name} / pm2 stop {name}
-pm2 logs / pm2 status / pm2 monit
-pm2 save                         # Save process list
-pm2 resurrect                    # Restore saved list
-```
-````
-
-**更新 CLAUDE.md 的规则：**
-
-* 如果存在 PM2 部分，替换它
-* 如果不存在，追加到末尾
-* 保持内容精简且必要
-
-***
-
-## 初始化后：显示摘要
-
-所有文件生成后，输出：
-
-```
-## PM2 Init Complete
-
-**Services:**
-
-| Port | Name | Type |
-|------|------|------|
-| {port} | {name} | {type} |
-
-**Claude Commands:** /pm2-all, /pm2-all-stop, /pm2-{port}, /pm2-{port}-stop, /pm2-logs, /pm2-status
-
-**Terminal Commands:**
-## First time (with config file)
 pm2 start ecosystem.config.cjs && pm2 save
-
-## After first time (simplified)
-pm2 start all          # Start all
-pm2 stop all           # Stop all
-pm2 restart all        # Restart all
-pm2 start {name}       # Start single
-pm2 stop {name}        # Stop single
-pm2 logs               # View logs
-pm2 monit              # Monitor panel
-pm2 resurrect          # Restore saved processes
-
-**Tip:** Run `pm2 save` after first start to enable simplified commands.
 ```
+
+### 상시 관리 (저장된 프로세스 리스트 활용)
+* **전체 시작**: `pm2 start all`
+* **전체 중지**: `pm2 stop all`
+* **로그 확인**: `pm2 logs`
+* **모니터링 패널**: `pm2 monit`
+* **상태 확인**: `pm2 status`
+* **리스트 저장**: `pm2 save` (재부팅 후 복구용)
+
+---
+
+## 초기화 완료 후 요약 보고
+
+모든 설정이 완료되면 에이전트는 다음과 같은 요약을 제공합니다:
+
+```text
+## PM2 초기화 완료 리포트
+
+**감지된 서비스:**
+| 포트 | 이름 | 유형 |
+|------|------|------|
+| 3000 | my-frontend | Vite |
+| 8000 | my-api | FastAPI |
+
+**사용 가능한 명령어:**
+/pm2-all, /pm2-all-stop, /pm2-logs, /pm2-status 등
+
+**팁:** 첫 실행 후 `pm2 save`를 실행하면 컴퓨터 재부팅 시에도 `pm2 resurrect` 명령오로 서비스를 즉시 복구할 수 있습니다.
+```
+
+**핵심**: PM2 초기화 명령어는 개발 환경의 수많은 프로세스를 체계적으로 관리하고, 로그 확인 및 모니터링을 한 곳에서 수행할 수 있도록 돕습니다.

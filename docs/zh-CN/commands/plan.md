@@ -1,115 +1,90 @@
 ---
-description: 重新阐述需求、评估风险并创建分步实施计划。在接触任何代码之前，等待用户确认。
+description: 요구사항을 재정의하고, 위험 요소를 평가하며, 단계별 실행 계획을 수립합니다. 실제 코드 수정 전 사용자의 최종 승인을 기다립니다.
 ---
 
-# 计划命令
+# 계획 (Plan) 명령어
 
-此命令调用 **planner** 代理，在编写任何代码之前创建一个全面的实施计划。
+이 명령어는 **planner** 에이전트를 호출하여 실제 코드를 한 줄이라도 작성하기 전에 종합적인 구현 계획을 수립합니다.
 
-## 此命令的作用
+## 주요 기능
 
-1. **重新阐述需求** - 明确需要构建什么
-2. **识别风险** - 揭示潜在问题和阻碍
-3. **创建分步计划** - 将实施分解为多个阶段
-4. **等待确认** - 必须获得用户批准才能继续
+1. **요구사항 재정의**: 구현해야 할 내용을 명확한 언어로 다시 정리합니다.
+2. **위험 요소 식별**: 잠재적인 기술적 문제나 병목 지점을 미리 파악합니다.
+3. **단계별 계획 수립**: 전체 구현 과정을 관리 가능한 여러 단계(Phase)로 나눕니다.
+4. **승인 대기**: 사용자의 명확한 승인이 있을 때까지 작업을 진행하지 않습니다.
 
-## 何时使用
+## 적용 시점
 
-在以下情况下使用 `/plan`：
+`/plan` 명령어를 사용하는 경우:
 
-* 开始新功能时
-* 进行重大架构变更时
-* 处理复杂重构时
-* 多个文件/组件将受到影响时
-* 需求不明确或存在歧义时
+* 새로운 기능을 구현하기 시작할 때
+* 주요 아키텍처 변경이 필요할 때
+* 복잡한 리팩토링을 수행할 때
+* 여러 파일이나 컴포넌트에 걸친 대규모 수정이 예상될 때
+* 요구사항이 모호하여 구체화가 필요할 때
 
-## 工作原理
+## 작동 원리
 
-planner 代理将：
+Planner 에이전트는 다음 절차를 수행합니다:
 
-1. **分析请求** 并用清晰的术语重新阐述需求
-2. **分解为多个阶段**，每个阶段包含具体、可操作的步骤
-3. **识别组件之间的依赖关系**
-4. **评估风险和潜在阻碍**
-5. **估算复杂度**（高/中/低）
-6. **展示计划**并等待您明确的确认
+1. 사용자의 요청을 **분석**하고 명확한 용어로 요구사항을 다시 서술합니다.
+2. 구체적이고 실행 가능한 단계를 포함한 **단계별 계획**으로 세분화합니다.
+3. 컴포넌트 간의 **의존성**을 파악합니다.
+4. 발생 가능한 **리스크와 장애물**을 평가합니다.
+5. 작업의 **복잡도**를 추정합니다 (상/중/하).
+6. 수립된 계획을 **사용자에게 제시**하고 최종 확인을 기다립니다.
 
-## 使用示例
+---
 
-```
-User: /plan I need to add real-time notifications when markets resolve
+## 실행 예시
 
-Agent (planner):
-# Implementation Plan: Real-Time Market Resolution Notifications
+```text
+사용자: /plan 시장이 마감될 때 실시간 알림 기능을 추가해줘
 
-## Requirements Restatement
-- Send notifications to users when markets they're watching resolve
-- Support multiple notification channels (in-app, email, webhook)
-- Ensure notifications are delivered reliably
-- Include market outcome and user's position result
+에이전트 (planner):
+# 구현 계획: 시장 마감 실시간 알림 서비스
 
-## Implementation Phases
+## 요구사항 재분석
+- 관심 시장 마감 시 해당 사용자들에게 실시간 알림 전송
+- 다양한 채널 지원 (인앱, 이메일, 웹후크)
+- 알림 전송의 신뢰성 보장 및 결과 요약 포함
 
-### Phase 1: Database Schema
-- Add notifications table with columns: id, user_id, market_id, type, status, created_at
-- Add user_notification_preferences table for channel preferences
-- Create indexes on user_id and market_id for performance
+## 상세 구현 단계
 
-### Phase 2: Notification Service
-- Create notification service in lib/notifications.ts
-- Implement notification queue using BullMQ/Redis
-- Add retry logic for failed deliveries
-- Create notification templates
+### 1단계: 데이터베이스 스키마 설계
+- 알림 테이블(id, user_id, market_id, 유형, 상태 등) 추가
+- 사용자별 채널 선호도 테이블 추가 및 인덱스 설정
 
-### Phase 3: Integration Points
-- Hook into market resolution logic (when status changes to "resolved")
-- Query all users with positions in market
-- Enqueue notifications for each user
+### 2단계: 알림 서비스 구축
+- lib/notifications.ts 내 서비스 구현
+- Redis 기반 큐(BullMQ 등)를 활용한 안정적 처리 및 재시도 로직 추가
 
-### Phase 4: Frontend Components
-- Create NotificationBell component in header
-- Add NotificationList modal
-- Implement real-time updates via Supabase subscriptions
-- Add notification preferences page
+### 3단계: 시스템 통합
+- 시장 마감 로직에 후크(Hook) 연결
+- 해당 시장 참여자 쿼리 및 알림 큐 적재
 
-## Dependencies
-- Redis (for queue)
-- Email service (SendGrid/Resend)
-- Supabase real-time subscriptions
+### 4단계: 프론트엔드 작업
+- 헤더 내 알림(Bell) 컴포넌트 및 모달 창 제작
+- 실시간 구독(Subscription) 연동 및 환경설정 페이지 구축
 
-## Risks
-- HIGH: Email deliverability (SPF/DKIM required)
-- MEDIUM: Performance with 1000+ users per market
-- MEDIUM: Notification spam if markets resolve frequently
-- LOW: Real-time subscription overhead
+## 예상 복잡도: 중간 (MEDIUM)
+- 백엔드: 4~6시간 | 프론트엔드: 3~4시간 | 테스트: 2~3시간
 
-## Estimated Complexity: MEDIUM
-- Backend: 4-6 hours
-- Frontend: 3-4 hours
-- Testing: 2-3 hours
-- Total: 9-13 hours
-
-**WAITING FOR CONFIRMATION**: Proceed with this plan? (yes/no/modify)
+**승인 대기 중**: 이 계획대로 진행할까요? (yes/no/modify)
 ```
 
-## 重要说明
+---
 
-**关键**：planner 代理在您明确用“是”、“继续”或类似的肯定性答复确认计划之前，**不会**编写任何代码。
+## 수정 및 응답 가이드
 
-如果您希望修改，请回复：
+Planner 에이전트는 사용자가 "Yes", "진행해", "확인" 등 긍정적인 답변을 주기 전까지는 **절대로 코드를 수정하지 않습니다.**
 
-* "修改：\[您的修改内容]"
-* "不同方法：\[替代方案]"
-* "跳过阶段 2，先执行阶段 3"
+계획을 수정하고 싶다면 다음과 같이 요청하십시오:
+* "수정: [수정할 내용]"
+* "다른 방식 제안: [대안]"
+* "2단계는 생략하고 3단계부터 진행해"
 
-## 与其他命令的集成
+## 관련 정보
 
-计划之后：
-
-* 使用 `/tdd` 通过测试驱动开发来实现
-* 如果出现构建错误，请使用 `/build-fix`
-* 使用 `/code-review` 来审查已完成的实现
-
-## 相关代理
-
-此命令调用位于 `~/.claude/agents/planner.md` 的 `planner` 代理。
+* **연관 명령어**: 계획 확정 후 `/tdd` (테스트 주도 구현), 빌드 에러 시 `/build-fix`, 완료 후 `/code-review`
+* **호출 에이전트**: `~/.claude/agents/planner.md`

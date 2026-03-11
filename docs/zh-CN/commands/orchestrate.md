@@ -1,183 +1,103 @@
-# 编排命令
+---
+description: 복잡한 작업을 해결하기 위해 여러 에이전트를 순차적으로 연결하는 워크플로우를 조율(Orchestrate)합니다.
+---
 
-用于复杂任务的顺序代理工作流。
+# 조율 (Orchestrate) 명령어
 
-## 使用
+복잡하고 단계적인 작업을 위해 전문화된 에이전트들을 하나의 워크플로우로 묶어 실행합니다.
 
-`/orchestrate [workflow-type] [task-description]`
+## 사용법
 
-## 工作流类型
+`/orchestrate [워크플로우-유형] [작업-설명]`
 
-### feature
+## 주요 워크플로우 유형
 
-完整功能实现工作流：
-
-```
-planner -> tdd-guide -> code-reviewer -> security-reviewer
-```
-
-### bugfix
-
-错误调查与修复工作流：
-
-```
-planner -> tdd-guide -> code-reviewer
+### feature (기능 구현)
+전체 기능을 구현하기 위한 종합 워크플로우:
+```text
+planner (계획) -> tdd-guide (TDD 구현) -> code-reviewer (품질 검토) -> security-reviewer (보안 검토)
 ```
 
-### refactor
-
-安全重构工作流：
-
-```
-architect -> code-reviewer -> tdd-guide
+### bugfix (버그 수정)
+에러 조사 및 수정을 위한 워크플로우:
+```text
+planner (분석) -> tdd-guide (수정 구현) -> code-reviewer (검증)
 ```
 
-### security
-
-安全审查工作流：
-
-```
-security-reviewer -> code-reviewer -> architect
+### refactor (리팩토링)
+안전한 코드 구조 개선을 위한 워크플로우:
+```text
+architect (설계) -> code-reviewer (영향도 분석) -> tdd-guide (재구현)
 ```
 
-## 执行模式
+### security (보안 강화)
+보안 취약점 점검 및 조치 워크플로우:
+```text
+security-reviewer (취약점 점검) -> code-reviewer (코드 분석) -> architect (보안 설계)
+```
 
-针对工作流中的每个代理：
+## 에이전트 간 업무 인계(Handoff) 방식
 
-1. 使用来自上一个代理的上下文**调用代理**
-2. 将输出收集为结构化的交接文档
-3. 将文档**传递给链中的下一个代理**
-4. 将结果**汇总**到最终报告中
+각 단계의 에이전트는 다음 절차를 따릅니다:
 
-## 交接文档格式
+1. 이전 에이전트로부터 전달받은 컨텍스트와 함께 **에이전트를 호출**합니다.
+2. 수행 결과를 구조화된 **인계 문서(Handoff Document)**로 작성합니다.
+3. 인계 문서를 **다음 에이전트에게 전달**합니다.
+4. 모든 단계가 완료되면 결과를 최종 보고서로 **취합**합니다.
 
-在代理之间，创建交接文档：
+## 인계 문서(Handoff) 형식
 
 ```markdown
-## 交接：[前一位代理人] -> [下一位代理人]
+## 업무 인계: [보내는 에이전트] -> [받는 에이전트]
 
-### 背景
-[已完成工作的总结]
+### 배경 (Background)
+[지금까지 수행된 작업 요약]
 
-### 发现
-[关键发现或决定]
+### 주요 발견 사항 (Findings)
+[핵심 분석 결과 또는 결정 사항]
 
-### 已修改的文件
-[已触及的文件列表]
+### 수정된 파일 (Modified Files)
+[작업이 반영된 파일 목록]
 
-### 待解决的问题
-[留给下一位代理人的未决事项]
+### 남은 과제 (Pending Issues)
+[다음 에이전트가 처리해야 할 미결 사항]
 
-### 建议
-[建议的后续步骤]
-
+### 권장 조치 (Recommendations)
+[다음 단계에서 추천하는 작업 방향]
 ```
 
-## 示例：功能工作流
+---
 
-```
-/orchestrate feature "Add user authentication"
-```
+## 최종 보고서 (Orchestration Report) 형식
 
-执行：
-
-1. **规划代理**
-   * 分析需求
-   * 创建实施计划
-   * 识别依赖项
-   * 输出：`HANDOFF: planner -> tdd-guide`
-
-2. **TDD 指导代理**
-   * 读取规划交接文档
-   * 先编写测试
-   * 实施代码以通过测试
-   * 输出：`HANDOFF: tdd-guide -> code-reviewer`
-
-3. **代码审查代理**
-   * 审查实现
-   * 检查问题
-   * 提出改进建议
-   * 输出：`HANDOFF: code-reviewer -> security-reviewer`
-
-4. **安全审查代理**
-   * 安全审计
-   * 漏洞检查
-   * 最终批准
-   * 输出：最终报告
-
-## 最终报告格式
-
-```
+```text
 ORCHESTRATION REPORT
 ====================
-Workflow: feature
-Task: Add user authentication
-Agents: planner -> tdd-guide -> code-reviewer -> security-reviewer
+워크플로우: feature
+작업명: 사용자 인증 추가
+에이전트 체인: planner -> tdd-guide -> code-reviewer -> security-reviewer
 
-SUMMARY
--------
-[One paragraph summary]
+[요약] 작업 전체 내용에 대한 짧은 요약문
 
-AGENT OUTPUTS
--------------
-Planner: [summary]
-TDD Guide: [summary]
-Code Reviewer: [summary]
-Security Reviewer: [summary]
+[에이전트별 결과]
+- Planner: 계획 수립 완료
+- TDD Guide: 테스트 통과 및 구현 완료
+- ...
 
-FILES CHANGED
--------------
-[List all files modified]
-
-TEST RESULTS
-------------
-[Test pass/fail summary]
-
-SECURITY STATUS
----------------
-[Security findings]
-
-RECOMMENDATION
---------------
-[SHIP / NEEDS WORK / BLOCKED]
+[코드 변경] 수정된 모든 파일 목록
+[테스트 결과] 테스트 통과/실패 요약
+[보안 상태] 발견된 취약점 및 조치 사항
+[최종 권고] 배포 가능(SHIP) / 추가 보완 필요(NEEDS WORK) / 중단(BLOCKED)
 ```
 
-## 并行执行
+---
 
-对于独立的检查，并行运行代理：
+## 매개변수 (Arguments)
 
-```markdown
-### 并行阶段
-同时运行：
-- code-reviewer（质量）
-- security-reviewer（安全）
-- architect（设计）
+* `feature <설명>` - 신규 기능 구현용
+* `bugfix <설명>` - 오류 수정용
+* `refactor <설명>` - 리팩토링용
+* `security <설명>` - 보안 리뷰용
+* `custom <에이전트목록> <설명>` - 사용자 정의 에이전트 시퀀스 (예: "architect,code-reviewer")
 
-### 合并结果
-将输出合并为单一报告
-
-```
-
-## 参数
-
-$ARGUMENTS:
-
-* `feature <description>` - 完整功能工作流
-* `bugfix <description>` - 错误修复工作流
-* `refactor <description>` - 重构工作流
-* `security <description>` - 安全审查工作流
-* `custom <agents> <description>` - 自定义代理序列
-
-## 自定义工作流示例
-
-```
-/orchestrate custom "architect,tdd-guide,code-reviewer" "Redesign caching layer"
-```
-
-## 提示
-
-1. **从规划代理开始**处理复杂功能
-2. **始终在合并前包含代码审查代理**
-3. 处理认证/支付/个人身份信息时**使用安全审查代理**
-4. **保持交接文档简洁** - 关注下一个代理需要什么
-5. 如有需要，**在代理之间运行验证**
+**핵심**: Orchestrate 명령어는 개별 에이전트의 전문성을 결합하여 대규모 작업을 체계적으로 완성합니다. 특히 결제나 보안 등 민감한 작업에서는 에이전트 체인에 `security-reviewer`를 반드시 포함시키십시오.
