@@ -1,44 +1,44 @@
 ---
 name: strategic-compact
-description: Suggests manual context compaction at logical intervals to preserve context through task phases rather than arbitrary auto-compaction.
+description: 임의의 자동 압축 대신, 작업 단계별로 컨텍스트를 보존하기 위해 논리적 간격에 따라 수동 컨텍스트 압축(/compact)을 제안합니다.
 origin: ECC
 ---
 
-# Strategic Compact Skill
+# 전략적 압축 스킬 (Strategic Compact Skill)
 
-Suggests manual `/compact` at strategic points in your workflow rather than relying on arbitrary auto-compaction.
+임의의 자동 압축에 의존하는 대신, 워크플로우의 전략적 시점에 수동 `/compact`를 제안합니다.
 
-## When to Activate
+## 활성화 시기
 
-- Running long sessions that approach context limits (200K+ tokens)
-- Working on multi-phase tasks (research → plan → implement → test)
-- Switching between unrelated tasks within the same session
-- After completing a major milestone and starting new work
-- When responses slow down or become less coherent (context pressure)
+- 컨텍스트 제한(20만 개 이상의 토큰)에 도달하는 긴 세션을 실행할 때
+- 다단계 작업(조사 → 계획 → 구현 → 테스트)을 수행할 때
+- 동일한 세션 내에서 서로 관련 없는 작업으로 전환할 때
+- 주요 마일스톤을 완료하고 새로운 작업을 시작할 때
+- 응답 속도가 느려지거나 일관성이 떨어질 때 (컨텍스트 압박 상황)
 
-## Why Strategic Compaction?
+## 전략적 압축이 필요한 이유
 
-Auto-compaction triggers at arbitrary points:
-- Often mid-task, losing important context
-- No awareness of logical task boundaries
-- Can interrupt complex multi-step operations
+자동 압축은 임의의 시점에 트리거됩니다:
+- 작업 도중에 트리거되어 중요한 컨텍스트를 잃는 경우가 많습니다.
+- 논리적인 작업 경계를 인식하지 못합니다.
+- 복잡한 다단계 작업을 방해할 수 있습니다.
 
-Strategic compaction at logical boundaries:
-- **After exploration, before execution** — Compact research context, keep implementation plan
-- **After completing a milestone** — Fresh start for next phase
-- **Before major context shifts** — Clear exploration context before different task
+논리적 경계에서의 전략적 압축의 장점:
+- **탐색 후 실행 전** — 조사 관련 컨텍스트는 압축하고, 구현 계획은 유지합니다.
+- **마일스톤 완료 후** — 다음 단계를 위해 새롭게 시작합니다.
+- **주요 컨텍스트 전환 전** — 다른 종류의 작업을 시작하기 전에 이전의 탐색 컨텍스트를 정리합니다.
 
-## How It Works
+## 작동 방식
 
-The `suggest-compact.js` script runs on PreToolUse (Edit/Write) and:
+`suggest-compact.js` 스크립트가 PreToolUse (Edit/Write) 시점에 실행되어 다음 작업을 수행합니다:
 
-1. **Tracks tool calls** — Counts tool invocations in session
-2. **Threshold detection** — Suggests at configurable threshold (default: 50 calls)
-3. **Periodic reminders** — Reminds every 25 calls after threshold
+1. **도구 호출 추적** — 세션 내 도구 호출 횟수를 계산합니다.
+2. **임계값 감지** — 설정된 임계값(기본값: 50회)에 도달하면 압축을 제안합니다.
+3. **주기적 리마인더** — 임계값 도달 이후 매 25회 호출마다 다시 알림을 보냅니다.
 
-## Hook Setup
+## 후크(Hook) 설정
 
-Add to your `~/.claude/settings.json`:
+`~/.claude/settings.json` 파일에 다음 내용을 추가하십시오:
 
 ```json
 {
@@ -57,47 +57,47 @@ Add to your `~/.claude/settings.json`:
 }
 ```
 
-## Configuration
+## 설정
 
-Environment variables:
-- `COMPACT_THRESHOLD` — Tool calls before first suggestion (default: 50)
+환경 변수:
+- `COMPACT_THRESHOLD` — 첫 번째 제안이 나타나기 전까지의 도구 호출 횟수 (기본값: 50)
 
-## Compaction Decision Guide
+## 압축 결정 가이드
 
-Use this table to decide when to compact:
+압축 시점을 결정할 때 아래 표를 참고하십시오:
 
-| Phase Transition | Compact? | Why |
+| 단계 전환 | 압축 여부 | 이유 |
 |-----------------|----------|-----|
-| Research → Planning | Yes | Research context is bulky; plan is the distilled output |
-| Planning → Implementation | Yes | Plan is in TodoWrite or a file; free up context for code |
-| Implementation → Testing | Maybe | Keep if tests reference recent code; compact if switching focus |
-| Debugging → Next feature | Yes | Debug traces pollute context for unrelated work |
-| Mid-implementation | No | Losing variable names, file paths, and partial state is costly |
-| After a failed approach | Yes | Clear the dead-end reasoning before trying a new approach |
+| 조사 → 계획 | 예 | 조사 컨텍스트는 양이 많으므로, 정제된 결과물인 계획만 남깁니다. |
+| 계획 → 구현 | 예 | 계획은 TodoWrite나 파일에 저장되어 있으므로, 코드 작성을 위한 컨텍스트 공간을 확보합니다. |
+| 구현 → 테스트 | 선택 사항 | 테스트가 최근 코드를 참조해야 하면 유지하고, 주제를 바꾼다면 압축합니다. |
+| 디버깅 → 다음 기능 | 예 | 디버깅 기록은 관련 없는 다음 작업의 컨텍스트를 오염시킵니다. |
+| 구현 도중 | 아니요 | 변수명, 파일 경로 및 부분적인 상태 정보를 잃는 것은 손실이 큽니다. |
+| 접근 방식 실패 후 | 예 | 새로운 방식을 시도하기 전에 막다른 골목에 다다른 추론 과정을 정리합니다. |
 
-## What Survives Compaction
+## 압축 후 유지되는 것 vs 사라지는 것
 
-Understanding what persists helps you compact with confidence:
+무엇이 유지되는지 알면 안심하고 압축할 수 있습니다:
 
-| Persists | Lost |
+| 유지됨 | 사라짐 |
 |----------|------|
-| CLAUDE.md instructions | Intermediate reasoning and analysis |
-| TodoWrite task list | File contents you previously read |
-| Memory files (`~/.claude/memory/`) | Multi-step conversation context |
-| Git state (commits, branches) | Tool call history and counts |
-| Files on disk | Nuanced user preferences stated verbally |
+| CLAUDE.md 지침 | 중간 추론 과정 및 분석 내용 |
+| TodoWrite 작업 목록 | 이전에 읽었던 파일 내용들 |
+| 메모리 파일 (`~/.claude/memory/`) | 다단계 대화 컨텍스트 |
+| Git 상태 (커밋, 브랜치) | 도구 호출 기록 및 횟수 |
+| 디스크에 저장된 파일들 | 구두로 언급된 미묘한 사용자 선호도 |
 
-## Best Practices
+## 모범 사례
 
-1. **Compact after planning** — Once plan is finalized in TodoWrite, compact to start fresh
-2. **Compact after debugging** — Clear error-resolution context before continuing
-3. **Don't compact mid-implementation** — Preserve context for related changes
-4. **Read the suggestion** — The hook tells you *when*, you decide *if*
-5. **Write before compacting** — Save important context to files or memory before compacting
-6. **Use `/compact` with a summary** — Add a custom message: `/compact Focus on implementing auth middleware next`
+1. **계획 수립 후 압축** — TodoWrite에 계획이 확정되면 압축하여 새롭게 시작하십시오.
+2. **디버깅 완료 후 압축** — 작업을 계속하기 전에 에러 해결 관련 컨텍스트를 정리하십시오.
+3. **구현 도중에는 압축 지양** — 관련 변경 사항들에 대한 컨텍스트를 보존하십시오.
+4. **제안 메시지 확인** — 후크는 *언제* 해야 할지 알려주며, *실제로 할지*는 사용자가 결정합니다.
+5. **압축 전 기록** — 중요한 컨텍스트는 압축 전에 파일이나 메모리에 저장하십시오.
+6. **요약과 함께 `/compact` 사용** — `/compact 다음은 인증 미들웨어 구현에 집중함`과 같이 사용자 정의 메시지를 추가하십시오.
 
-## Related
+## 관련 정보
 
-- [The Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352) — Token optimization section
-- Memory persistence hooks — For state that survives compaction
-- `continuous-learning` skill — Extracts patterns before session ends
+- [The Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352) — 토큰 최적화 섹션
+- 메모리 보존 후크 — 압축 후에도 상태를 유지하기 위해 사용
+- `continuous-learning` 스킬 — 세션 종료 전 패턴을 추출하기 위해 사용

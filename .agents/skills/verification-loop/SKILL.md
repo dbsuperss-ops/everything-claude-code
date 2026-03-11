@@ -1,45 +1,45 @@
 ---
 name: verification-loop
-description: "A comprehensive verification system for Claude Code sessions."
+description: "Claude Code 세션을 위한 포괄적인 검증 시스템입니다."
 origin: ECC
 ---
 
-# Verification Loop Skill
+# 검증 루프 스킬 (Verification Loop Skill)
 
-A comprehensive verification system for Claude Code sessions.
+Claude Code 세션을 위한 포괄적인 검증 시스템입니다.
 
-## When to Use
+## 사용 시기
 
-Invoke this skill:
-- After completing a feature or significant code change
-- Before creating a PR
-- When you want to ensure quality gates pass
-- After refactoring
+다음 상황에서 이 스킬을 실행하십시오:
+- 기능 구현 또는 상당한 코드 변경을 완료한 후
+- PR(Pull Request)을 생성하기 전
+- 품질 게이트(Quality gates) 통과를 보장하고 싶을 때
+- 리팩토링을 마친 후
 
-## Verification Phases
+## 검증 단계
 
-### Phase 1: Build Verification
+### 1단계: 빌드 검증
 ```bash
-# Check if project builds
+# 프로젝트 빌드 확인
 npm run build 2>&1 | tail -20
-# OR
+# 또는
 pnpm build 2>&1 | tail -20
 ```
 
-If build fails, STOP and fix before continuing.
+빌드가 실패할 경우, 계속 진행하기 전에 작업을 중단(STOP)하고 수정하십시오.
 
-### Phase 2: Type Check
+### 2단계: 타입 체크 (Type Check)
 ```bash
-# TypeScript projects
+# TypeScript 프로젝트
 npx tsc --noEmit 2>&1 | head -30
 
-# Python projects
+# Python 프로젝트
 pyright . 2>&1 | head -30
 ```
 
-Report all type errors. Fix critical ones before continuing.
+모든 타입 에러를 보고하십시오. 치명적인 에러는 계속 진행하기 전에 수정해야 합니다.
 
-### Phase 3: Lint Check
+### 3단계: 린트 체크 (Lint Check)
 ```bash
 # JavaScript/TypeScript
 npm run lint 2>&1 | head -30
@@ -48,79 +48,79 @@ npm run lint 2>&1 | head -30
 ruff check . 2>&1 | head -30
 ```
 
-### Phase 4: Test Suite
+### 4단계: 테스트 슈트 실행
 ```bash
-# Run tests with coverage
+# 커버리지와 함께 테스트 실행
 npm run test -- --coverage 2>&1 | tail -50
 
-# Check coverage threshold
-# Target: 80% minimum
+# 커버리지 임계값 확인
+# 목표: 최소 80%
 ```
 
-Report:
-- Total tests: X
-- Passed: X
-- Failed: X
-- Coverage: X%
+다음 항목을 보고하십시오:
+- 총 테스트 수: X
+- 통과: X
+- 실패: X
+- 커버리지: X%
 
-### Phase 5: Security Scan
+### 5단계: 보안 스캔
 ```bash
-# Check for secrets
+# 시크릿(Secrets) 노출 확인
 grep -rn "sk-" --include="*.ts" --include="*.js" . 2>/dev/null | head -10
 grep -rn "api_key" --include="*.ts" --include="*.js" . 2>/dev/null | head -10
 
-# Check for console.log
+# console.log 확인
 grep -rn "console.log" --include="*.ts" --include="*.tsx" src/ 2>/dev/null | head -10
 ```
 
-### Phase 6: Diff Review
+### 6단계: 변경 사항(Diff) 검토
 ```bash
-# Show what changed
+# 변경된 내용 확인
 git diff --stat
 git diff HEAD~1 --name-only
 ```
 
-Review each changed file for:
-- Unintended changes
-- Missing error handling
-- Potential edge cases
+각 변경된 파일에서 다음을 검토하십시오:
+- 의도치 않은 변경 사항
+- 누락된 에러 처리 로직
+- 잠재적인 에제 케이스(Edge cases)
 
-## Output Format
+## 출력 형식
 
-After running all phases, produce a verification report:
+모든 단계를 실행한 후 검증 보고서를 작성하십시오:
 
 ```
-VERIFICATION REPORT
-==================
+검증 보고서 (VERIFICATION REPORT)
+=================================
 
-Build:     [PASS/FAIL]
-Types:     [PASS/FAIL] (X errors)
-Lint:      [PASS/FAIL] (X warnings)
-Tests:     [PASS/FAIL] (X/Y passed, Z% coverage)
-Security:  [PASS/FAIL] (X issues)
-Diff:      [X files changed]
+빌드:     [통과/실패]
+타입:     [통과/실패] (X개의 에러)
+린트:     [통과/실패] (X개의 경고)
+테스트:   [통과/실패] (X/Y 통과, Z% 커버리지)
+보안:     [통과/실패] (X개의 이슈)
+변경사항: [X개의 파일 변경됨]
 
-Overall:   [READY/NOT READY] for PR
+전체 상태: PR 생성 [준비됨/준비되지 않음]
 
-Issues to Fix:
+수정할 이슈:
 1. ...
 2. ...
 ```
 
-## Continuous Mode
+## 지속 모드
 
-For long sessions, run verification every 15 minutes or after major changes:
+긴 세션의 경우, 15분마다 또는 주요 변경 사항이 있을 때마다 검증을 수행하십시오:
 
 ```markdown
-Set a mental checkpoint:
-- After completing each function
-- After finishing a component
-- Before moving to next task
+정신적인 체크포인트를 설정하십시오:
+- 각 함수 작성을 마칠 때마다
+- 컴포넌트 하나를 완성할 때마다
+- 다음 작업으로 넘어가기 전
 
-Run: /verify
+실행: /verify
 ```
 
-## Integration with Hooks
+## 후크(Hooks)와의 통합
 
-This skill complements PostToolUse hooks but provides deeper verification.
-Hooks catch issues immediately; this skill provides comprehensive review.
+이 스킬은 PostToolUse 후크를 보완하며 더 깊이 있는 검증을 제공합니다.
+후크는 이슈를 즉각적으로 포착하며, 이 스킬은 포괄적인 검토를 제공합니다.

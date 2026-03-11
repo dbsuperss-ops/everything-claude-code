@@ -1,85 +1,85 @@
 ---
 name: article-writing
-description: Write articles, guides, blog posts, tutorials, newsletter issues, and other long-form content in a distinctive voice derived from supplied examples or brand guidance. Use when the user wants polished written content longer than a paragraph, especially when voice consistency, structure, and credibility matter.
+description: 제공된 예시나 브랜드 가이드를 바탕으로 독특한 어조를 살려 아티클, 가이드, 블로그 포스트, 튜토리얼, 뉴스레터 및 기타 장문의 콘텐츠를 작성합니다. 사용자가 한 단락 이상의 다듬어진 텍스트를 원하며, 특히 어조의 일관성, 구조 및 신뢰성이 중요할 때 사용하십시오.
 origin: ECC
 ---
 
-# Article Writing
+# 아티클 작성 (Article Writing)
 
-Write long-form content that sounds like a real person or brand, not generic AI output.
+일반적인 AI 출력물처럼 들리지 않고, 실제 사람이나 브랜드의 목소리처럼 들리는 장문의 콘텐츠를 작성합니다.
 
-## When to Activate
+## 활성화 시기
 
-- drafting blog posts, essays, launch posts, guides, tutorials, or newsletter issues
-- turning notes, transcripts, or research into polished articles
-- matching an existing founder, operator, or brand voice from examples
-- tightening structure, pacing, and evidence in already-written long-form copy
+- 블로그 포스트, 에세이, 출시 공지, 가이드, 튜토리얼 또는 뉴스레터 초안을 작성할 때
+- 메모, 녹취록 또는 리서치 자료를 다듬어진 아티클로 변환할 때
+- 예시를 바탕으로 특정 창업자, 운영자 또는 브랜드의 어조를 흉내 낼 때
+- 이미 작성된 장문의 원고에서 구조, 흐름 및 근거를 더 탄탄하게 다듬을 때
 
-## Core Rules
+## 핵심 규칙
 
-1. Lead with the concrete thing: example, output, anecdote, number, screenshot description, or code block.
-2. Explain after the example, not before.
-3. Prefer short, direct sentences over padded ones.
-4. Use specific numbers when available and sourced.
-5. Never invent biographical facts, company metrics, or customer evidence.
+1. 예시, 결과물, 일화, 수치, 스크린샷 설명 또는 코드 블록과 같은 구체적인 내용으로 시작하십시오.
+2. 설명은 예시 다음에 하십시오. 예시 앞에 오지 않도록 합니다.
+3. 미사여구가 섞인 문장보다는 짧고 직접적인 문장을 선호하십시오.
+4. 사실에 기반하고 출처가 명확한 구체적인 수치를 사용하십시오.
+5. 인물의 약력, 회사 지표 또는 고객 증언 등을 절대 지어내지 마십시오.
 
-## Voice Capture Workflow
+## 어조 파악(Voice Capture) 워크플로우
 
-If the user wants a specific voice, collect one or more of:
-- published articles
-- newsletters
-- X / LinkedIn posts
-- docs or memos
-- a short style guide
+사용자가 특정 어조를 원하는 경우, 다음 중 하나 이상을 수집하십시오:
+- 이미 발행된 아티클
+- 뉴스레터
+- X(트위터) / LinkedIn 게시물
+- 문서 또는 메모
+- 짤막한 스타일 가이드
 
-Then extract:
-- sentence length and rhythm
-- whether the voice is formal, conversational, or sharp
-- favored rhetorical devices such as parentheses, lists, fragments, or questions
-- tolerance for humor, opinion, and contrarian framing
-- formatting habits such as headers, bullets, code blocks, and pull quotes
+그 후 다음 사항들을 추출합니다:
+- 문장의 길이와 리듬
+- 어조가 격식 있는지, 대화체인지, 혹은 날카로운지 여부
+- 선호하는 수사 기구 (괄호, 리스트, 파편화된 문장, 질문 등)
+- 유머, 주관적 의견, 반대되는 프레임워크에 대한 허용 수준
+- 포매팅 습관 (헤더, 불렛 포인트, 코드 블록, 인용구 등)
 
-If no voice references are given, default to a direct, operator-style voice: concrete, practical, and low on hype.
+참고할 어조 예시가 없는 경우, 기본적으로 '운영자 스타일(Operator-style)'의 어조를 사용하십시오. 이는 구체적이고 실용적이며 과장이 없습니다.
 
-## Banned Patterns
+## 금지된 패턴 (Banned Patterns)
 
-Delete and rewrite any of these:
-- generic openings like "In today's rapidly evolving landscape"
-- filler transitions such as "Moreover" and "Furthermore"
-- hype phrases like "game-changer", "cutting-edge", or "revolutionary"
-- vague claims without evidence
-- biography or credibility claims not backed by provided context
+다음 중 해당하는 내용이 있다면 삭제하고 다시 작성하십시오:
+- "오늘날 급변하는 환경 속에서..."와 같은 상투적인 시작 문구
+- "게다가(Moreover)", "더 나아가(Furthermore)"와 같은 불필요한 접속사
+- "게임 체인저", "최첨단", "혁명적인"과 같은 과장된 수식어
+- 근거 없는 모호한 주장
+- 제공된 컨텍스트에 없는 인물 약력이나 신뢰성 주장
 
-## Writing Process
+## 작성 프로세스
 
-1. Clarify the audience and purpose.
-2. Build a skeletal outline with one purpose per section.
-3. Start each section with evidence, example, or scene.
-4. Expand only where the next sentence earns its place.
-5. Remove anything that sounds templated or self-congratulatory.
+1. 대상 독자와 목적을 명확히 합니다.
+2. 섹션별로 하나의 목적을 가진 뼈대(Outline)를 구축합니다.
+3. 각 섹션은 증거, 예시 또는 구체적인 장면으로 시작합니다.
+4. 다음 문장이 그 자리에 있어야 할 충분한 가치가 있을 때만 내용을 확장합니다.
+5. 템플릿 느낌이 나거나 자화자찬하는 듯한 내용은 모두 제거합니다.
 
-## Structure Guidance
+## 구조 가이드라인
 
-### Technical Guides
-- open with what the reader gets
-- use code or terminal examples in every major section
-- end with concrete takeaways, not a soft summary
+### 기술 가이드
+- 독자가 이 글을 통해 얻을 수 있는 것이 무엇인지 밝히며 시작하십시오.
+- 모든 주요 섹션에서 코드 또는 터미널 예시를 사용하십시오.
+- 모호한 요약이 아닌, 구체적으로 실행에 옮길 수 있는 결론(Takeaways)으로 끝맺으십시오.
 
-### Essays / Opinion Pieces
-- start with tension, contradiction, or a sharp observation
-- keep one argument thread per section
-- use examples that earn the opinion
+### 에세이 / 오피니언 리더용 글
+- 긴장감, 모순 또는 날카로운 관찰로 시작하십시오.
+- 섹션당 하나의 논점(Argument thread)만 유지하십시오.
+- 주장을 뒷받침할 만한 충분한 가치가 있는 예시를 사용하십시오.
 
-### Newsletters
-- keep the first screen strong
-- mix insight with updates, not diary filler
-- use clear section labels and easy skim structure
+### 뉴스레터
+- 첫 화면(First screen)의 내용을 강렬하게 구성하십시오.
+- 일기장 같은 일상 내용이 아닌, 인사이트와 업데이트 소식을 섞으십시오.
+- 명확한 섹션 이름과 훑어보기 쉬운 구조를 사용하십시오.
 
-## Quality Gate
+## 품질 검사 (Quality Gate)
 
-Before delivering:
-- verify factual claims against provided sources
-- remove filler and corporate language
-- confirm the voice matches the supplied examples
-- ensure every section adds new information
-- check formatting for the intended platform
+제출 전 확인 사항:
+- 제공된 출처를 바탕으로 사실 관계를 검증했는가
+- 불필요한 수식어와 기업용 전문 용어를 제거했는가
+- 어조가 제공된 예시와 일치하는가
+- 모든 섹션이 새로운 정보를 추가하고 있는가
+- 대상 플랫폼에 맞는 포매팅을 확인했는가
