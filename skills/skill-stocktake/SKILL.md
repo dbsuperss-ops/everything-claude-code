@@ -1,193 +1,74 @@
 ---
-description: "Use when auditing Claude skills and commands for quality. Supports Quick Scan (changed skills only) and Full Stocktake modes with sequential subagent batch evaluation."
+description: "Claude 스킬과 커맨드의 품질을 감사할 때 사용합니다. 변경된 스킬만 검사하는 'Quick Scan'과 전체를 리뷰하는 'Full Stocktake' 모드를 지원하며, 서브에이전트를 통한 순차적 배치 평가를 수행합니다."
 origin: ECC
 ---
 
 # skill-stocktake
 
-Slash command (`/skill-stocktake`) that audits all Claude skills and commands using a quality checklist + AI holistic judgment. Supports two modes: Quick Scan for recently changed skills, and Full Stocktake for a complete review.
+슬래시 커맨드 (`/skill-stocktake`)를 통해 모든 Claude 스킬과 커맨드를 품질 체크리스트와 AI의 종합적 판단을 바탕으로 감사(Audit)합니다. 최근 변경된 스킬만 확인하는 'Quick Scan'과 전체 리뷰를 수행하는 'Full Stocktake' 두 가지 모드를 지원합니다.
 
-## Scope
+## 대상 범위
 
-The command targets the following paths **relative to the directory where it is invoked**:
+이 커맨드는 **커맨드가 실행된 디렉토리를 기준**으로 다음 경로를 대상으로 합니다:
 
-| Path | Description |
+| 경로 | 설명 |
 |------|-------------|
-| `~/.claude/skills/` | Global skills (all projects) |
-| `{cwd}/.claude/skills/` | Project-level skills (if the directory exists) |
+| `~/.claude/skills/` | 글로벌 스킬 (모든 프로젝트 공통) |
+| `{cwd}/.claude/skills/` | 프로젝트 레벨 스킬 (디렉토리가 존재하는 경우) |
 
-**At the start of Phase 1, the command explicitly lists which paths were found and scanned.**
+**Phase 1 시작 시, 발견되어 스캔 대상에 포함된 경로를 명시적으로 표시합니다.**
 
-### Targeting a specific project
+### 특정 프로젝트 대상 실행
 
-To include project-level skills, run from that project's root directory:
+프로젝트 레벨의 스킬을 포함하려면 해당 프로젝트의 루트 디렉토리에서 실행하십시오:
 
 ```bash
 cd ~/path/to/my-project
 /skill-stocktake
 ```
 
-If the project has no `.claude/skills/` directory, only global skills and commands are evaluated.
+프로젝트에 `.claude/skills/` 디렉토리가 없으면 글로벌 스킬과 커맨드만 평가됩니다.
 
-## Modes
+## 모드 설명
 
-| Mode | Trigger | Duration |
+| 모드 | 트리거 요건 | 예상 소요 시간 |
 |------|---------|---------|
-| Quick Scan | `results.json` exists (default) | 5–10 min |
-| Full Stocktake | `results.json` absent, or `/skill-stocktake full` | 20–30 min |
+| **Quick Scan** | `results.json` 존재 시 (기본값) | 5~10분 |
+| **Full Stocktake** | `results.json` 부재 시, 또는 `/skill-stocktake full` 입력 시 | 20~30분 |
 
-**Results cache:** `~/.claude/skills/skill-stocktake/results.json`
+**결과 캐시 파일 경로:** `~/.claude/skills/skill-stocktake/results.json`
 
-## Quick Scan Flow
+## 품질 평가 기준 (Phase 2)
 
-Re-evaluate only skills that have changed since the last run (5–10 min).
+범용 에이전트(General-purpose agent)가 각 스킬을 다음 체크리스트에 따라 평가합니다:
 
-1. Read `~/.claude/skills/skill-stocktake/results.json`
-2. Run: `bash ~/.claude/skills/skill-stocktake/scripts/quick-diff.sh \
-         ~/.claude/skills/skill-stocktake/results.json`
-   (Project dir is auto-detected from `$PWD/.claude/skills`; pass it explicitly only if needed)
-3. If output is `[]`: report "No changes since last run." and stop
-4. Re-evaluate only those changed files using the same Phase 2 criteria
-5. Carry forward unchanged skills from previous results
-6. Output only the diff
-7. Run: `bash ~/.claude/skills/skill-stocktake/scripts/save-results.sh \
-         ~/.claude/skills/skill-stocktake/results.json <<< "$EVAL_RESULTS"`
+- [ ] 다른 스킬과의 콘텐츠 중복 여부 확인
+- [ ] MEMORY.md / CLAUDE.md와의 중복 여부 확인
+- [ ] 기술적 참조의 최신성 확인 (도구 이름, CLI 플래그, API 등 확인을 위해 웹 검색 활용)
+- [ ] 사용 빈도 고려
 
-## Full Stocktake Flow
+### 판정 종류 (Verdict)
 
-### Phase 1 — Inventory
-
-Run: `bash ~/.claude/skills/skill-stocktake/scripts/scan.sh`
-
-The script enumerates skill files, extracts frontmatter, and collects UTC mtimes.
-Project dir is auto-detected from `$PWD/.claude/skills`; pass it explicitly only if needed.
-Present the scan summary and inventory table from the script output:
-
-```
-Scanning:
-  ✓ ~/.claude/skills/         (17 files)
-  ✗ {cwd}/.claude/skills/    (not found — global skills only)
-```
-
-| Skill | 7d use | 30d use | Description |
-|-------|--------|---------|-------------|
-
-### Phase 2 — Quality Evaluation
-
-Launch an Agent tool subagent (**general-purpose agent**) with the full inventory and checklist:
-
-```text
-Agent(
-  subagent_type="general-purpose",
-  prompt="
-Evaluate the following skill inventory against the checklist.
-
-[INVENTORY]
-
-[CHECKLIST]
-
-Return JSON for each skill:
-{ \"verdict\": \"Keep\"|\"Improve\"|\"Update\"|\"Retire\"|\"Merge into [X]\", \"reason\": \"...\" }
-"
-)
-```
-
-The subagent reads each skill, applies the checklist, and returns per-skill JSON:
-
-`{ "verdict": "Keep"|"Improve"|"Update"|"Retire"|"Merge into [X]", "reason": "..." }`
-
-**Chunk guidance:** Process ~20 skills per subagent invocation to keep context manageable. Save intermediate results to `results.json` (`status: "in_progress"`) after each chunk.
-
-After all skills are evaluated: set `status: "completed"`, proceed to Phase 3.
-
-**Resume detection:** If `status: "in_progress"` is found on startup, resume from the first unevaluated skill.
-
-Each skill is evaluated against this checklist:
-
-```
-- [ ] Content overlap with other skills checked
-- [ ] Overlap with MEMORY.md / CLAUDE.md checked
-- [ ] Freshness of technical references verified (use WebSearch if tool names / CLI flags / APIs are present)
-- [ ] Usage frequency considered
-```
-
-Verdict criteria:
-
-| Verdict | Meaning |
+| 판정 | 의미 |
 |---------|---------|
-| Keep | Useful and current |
-| Improve | Worth keeping, but specific improvements needed |
-| Update | Referenced technology is outdated (verify with WebSearch) |
-| Retire | Low quality, stale, or cost-asymmetric |
-| Merge into [X] | Substantial overlap with another skill; name the merge target |
+| **Keep** | 유용하며 최신 상태임 |
+| **Improve** | 유지할 가치가 있으나 구체적인 개선이 필요함 |
+| **Update** | 참조된 기술이 구형임 (웹 검색으로 확인 필요) |
+| **Retire** | 품질이 낮거나, 낡았거나, 유지 비용 대비 가치가 낮음 |
+| **Merge into [X]** | 다른 스킬과 상당 부분 중복됨; 병합 대상 지정 필요 |
 
-Evaluation is **holistic AI judgment** — not a numeric rubric. Guiding dimensions:
-- **Actionability**: code examples, commands, or steps that let you act immediately
-- **Scope fit**: name, trigger, and content are aligned; not too broad or narrow
-- **Uniqueness**: value not replaceable by MEMORY.md / CLAUDE.md / another skill
-- **Currency**: technical references work in the current environment
+### 판단 차원 (Dimensions)
 
-**Reason quality requirements** — the `reason` field must be self-contained and decision-enabling:
-- Do NOT write "unchanged" alone — always restate the core evidence
-- For **Retire**: state (1) what specific defect was found, (2) what covers the same need instead
-  - Bad: `"Superseded"`
-  - Good: `"disable-model-invocation: true already set; superseded by continuous-learning-v2 which covers all the same patterns plus confidence scoring. No unique content remains."`
-- For **Merge**: name the target and describe what content to integrate
-  - Bad: `"Overlaps with X"`
-  - Good: `"42-line thin content; Step 4 of chatlog-to-article already covers the same workflow. Integrate the 'article angle' tip as a note in that skill."`
-- For **Improve**: describe the specific change needed (what section, what action, target size if relevant)
-  - Bad: `"Too long"`
-  - Good: `"276 lines; Section 'Framework Comparison' (L80–140) duplicates ai-era-architecture-principles; delete it to reach ~150 lines."`
-- For **Keep** (mtime-only change in Quick Scan): restate the original verdict rationale, do not write "unchanged"
-  - Bad: `"Unchanged"`
-  - Good: `"mtime updated but content unchanged. Unique Python reference explicitly imported by rules/python/; no overlap found."`
+- **실행 가능성 (Actionability)**: 즉시 실행 가능한 코드 예시, 명령어, 단계가 포함되어 있는가?
+- **범위 적합성 (Scope fit)**: 이름, 트리거, 콘텐츠가 서로 일치하며 너무 넓거나 좁지 않은가?
+- **고유성 (Uniqueness)**: MEMORY.md, CLAUDE.md 또는 다른 스킬로 대체 불가능한 고유한 가치가 있는가?
+- **최신성 (Currency)**: 기술적 참조가 현재 환경에서 작동하는가?
 
-### Phase 3 — Summary Table
+## 요약 및 정리 (Phase 3 & 4)
 
-| Skill | 7d use | Verdict | Reason |
-|-------|--------|---------|--------|
+평가 완료 후 요약 테이블을 제시하고 다음 조치를 제안합니다:
+1. **Retire / Merge**: 사용자의 확인을 거쳐 파일을 아카이브하거나 삭제하고, 중복된 콘텐츠는 대상 파일로 통합합니다.
+2. **Improve / Update**: 특정 섹션 삭제, 내용 요약, 최신 API 반영 등 구체적인 개선안을 제시합니다.
+3. **메모리 최적화**: MEMORY.md의 라인 수가 100을 초과하는 경우 압축을 제안합니다.
 
-### Phase 4 — Consolidation
-
-1. **Retire / Merge**: present detailed justification per file before confirming with user:
-   - What specific problem was found (overlap, staleness, broken references, etc.)
-   - What alternative covers the same functionality (for Retire: which existing skill/rule; for Merge: the target file and what content to integrate)
-   - Impact of removal (any dependent skills, MEMORY.md references, or workflows affected)
-2. **Improve**: present specific improvement suggestions with rationale:
-   - What to change and why (e.g., "trim 430→200 lines because sections X/Y duplicate python-patterns")
-   - User decides whether to act
-3. **Update**: present updated content with sources checked
-4. Check MEMORY.md line count; propose compression if >100 lines
-
-## Results File Schema
-
-`~/.claude/skills/skill-stocktake/results.json`:
-
-**`evaluated_at`**: Must be set to the actual UTC time of evaluation completion.
-Obtain via Bash: `date -u +%Y-%m-%dT%H:%M:%SZ`. Never use a date-only approximation like `T00:00:00Z`.
-
-```json
-{
-  "evaluated_at": "2026-02-21T10:00:00Z",
-  "mode": "full",
-  "batch_progress": {
-    "total": 80,
-    "evaluated": 80,
-    "status": "completed"
-  },
-  "skills": {
-    "skill-name": {
-      "path": "~/.claude/skills/skill-name/SKILL.md",
-      "verdict": "Keep",
-      "reason": "Concrete, actionable, unique value for X workflow",
-      "mtime": "2026-01-15T08:30:00Z"
-    }
-  }
-}
-```
-
-## Notes
-
-- Evaluation is blind: the same checklist applies to all skills regardless of origin (ECC, self-authored, auto-extracted)
-- Archive / delete operations always require explicit user confirmation
-- No verdict branching by skill origin
+**기억하십시오**: 이 감사는 에코시스템 전체의 품질을 유지하기 위한 과정입니다. 출처(작성자)에 관계없이 모든 스킬에 동일한 기준이 적용됩니다. 삭제나 아카이브 작업은 항상 사용자의 명시적인 승인 후에 이루어집니다.

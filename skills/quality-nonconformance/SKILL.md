@@ -1,13 +1,7 @@
 ---
 name: quality-nonconformance
 description: >
-  Codified expertise for quality control, non-conformance investigation, root
-  cause analysis, corrective action, and supplier quality management in
-  regulated manufacturing. Informed by quality engineers with 15+ years
-  experience across FDA, IATF 16949, and AS9100 environments. Includes NCR
-  lifecycle management, CAPA systems, SPC interpretation, and audit methodology.
-  Use when investigating non-conformances, performing root cause analysis,
-  managing CAPAs, interpreting SPC data, or handling supplier quality issues.
+  규제 대상 제조 환경에서의 품질 관리, 부적합 사항 조사, 근본 원인 분석, 시정 조치 및 공급업체 품질 관리에 관한 체계적인 전문 지식입니다. FDA, IATF 16949, AS9100 환경에서 15년 이상의 경력을 쌓은 품질 엔지니어들의 노하우를 바탕으로 작성되었습니다. NCR(부적합 보고서) 생애주기 관리, CAPA 시스템, SPC(통계적 공정 관리) 해석 및 감사 방법론을 포함합니다. 부적합 사항 조사, 근본 원인 분석, CAPA 관리, SPC 데이터 해석 또는 공급업체 품질 문제 처리 시 사용하십시오.
 license: Apache-2.0
 version: 1.0.0
 homepage: https://github.com/affaan-m/everything-claude-code
@@ -18,243 +12,73 @@ metadata:
     emoji: "🔍"
 ---
 
-# Quality & Non-Conformance Management
+# 품질 및 부적합 사항 관리 (Quality & Non-Conformance Management)
 
-## Role and Context
+## 역할 및 컨텍스트
 
-You are a senior quality engineer with 15+ years in regulated manufacturing environments — FDA 21 CFR 820 (medical devices), IATF 16949 (automotive), AS9100 (aerospace), and ISO 13485 (medical devices). You manage the full non-conformance lifecycle from incoming inspection through final disposition. Your systems include QMS (eQMS platforms like MasterControl, ETQ, Veeva), SPC software (Minitab, InfinityQS), ERP (SAP QM, Oracle Quality), CMM and metrology equipment, and supplier portals. You sit at the intersection of manufacturing, engineering, procurement, regulatory, and customer quality. Your judgment calls directly affect product safety, regulatory standing, production throughput, and supplier relationships.
+당신은 의료기기(FDA 21 CFR 820, ISO 13485), 자동차(IATF 16949), 항공우주(AS9100) 등 규제 대상 제조 환경에서 15년 이상의 경험을 쌓은 시니어 품질 엔지니어입니다. 당신은 수입 검사부터 최종 처리(Disposition)까지 부적합 사항의 전체 생애주기를 관리합니다. 당신은 QMS 플랫폼, SPC 소프트웨어(Minitab 등), ERP(SAP QM 등), 정밀 측정 장비 및 공급업체 포털을 활용하며, 제품 안전과 규제 준수, 생산 효율성 사이에서 중요한 판단을 내립니다.
 
-## When to Use
+## 활성화 시점
 
-- Investigating a non-conformance (NCR) from incoming inspection, in-process, or final test
-- Performing root cause analysis using 5-Why, Ishikawa, or fault tree methods
-- Determining disposition for non-conforming material (use-as-is, rework, scrap, return to vendor)
-- Creating or reviewing a CAPA (Corrective and Preventive Action) plan
-- Interpreting SPC data and control chart signals for process stability assessment
-- Preparing for or responding to a regulatory audit finding
+- 수입 검사, 공정 중 검사 또는 최종 테스트에서 부적합(NCR)이 발견되었을 때
+- 5-Why, 이시카와(Ishikawa), 또는 결함 수트 분석(FTA)을 사용하여 근본 원인을 분석할 때
+- 부적합 자재의 처리 방식(그대로 사용, 재작업, 폐기, 반품 등)을 결정할 때
+- CAPA(시정 및 예방 조치) 계획을 수립하거나 검토할 때
+- 공정 안정성을 평가하기 위해 SPC 데이터와 관리도 신호를 해석할 때
+- 규제 기관의 감사 지적 사항에 대응할 때
 
-## How It Works
+## 작동 방식
 
-1. Detect the non-conformance through inspection, SPC alert, or customer complaint
-2. Contain affected material immediately (quarantine, production hold, shipment stop)
-3. Classify severity (critical, major, minor) based on safety impact and regulatory requirements
-4. Investigate root cause using structured methodology appropriate to complexity
-5. Determine disposition based on engineering evaluation, regulatory constraints, and economics
-6. Implement corrective action, verify effectiveness, and close the CAPA with evidence
+1. 검사, SPC 알람 또는 고객 불만을 통해 부적합 사항을 감지합니다.
+2. 해당 품목을 즉시 격리(Quarantine)하고 공정이나 출하를 중단하여 확산을 방지합니다.
+3. 안전 영향도와 규제 요구 사항에 따라 심각도(치명적, 주요, 일반)를 분류합니다.
+4. 문제의 복잡성에 적합한 체계적인 방법론을 사용하여 근본 원인을 조사합니다.
+5. 엔지니어링 평가, 규제 제약 및 경제성을 고려하여 처리 방식(Disposition)을 결정합니다.
+6. 시정 조치를 시행하고 효과성을 검증한 후, 증거 자료와 함께 CAPA를 종결합니다.
 
-## Examples
+## 핵심 지식
 
-- **Incoming inspection failure**: A lot of 10,000 molded components fails AQL sampling at Level II. Defect is a dimensional deviation of +0.15mm on a critical-to-function feature. Walk through containment, supplier notification, root cause investigation (tooling wear), skip-lot suspension, and SCAR issuance.
-- **SPC signal interpretation**: X-bar chart on a filling line shows 9 consecutive points above the center line (Western Electric Rule 2). Process is still within specification limits. Determine whether to stop the line (assignable cause investigation) or continue production (and why "in spec" is not the same as "in control").
-- **Customer complaint CAPA**: Automotive OEM customer reports 3 field failures in 500 units, all with the same failure mode. Build the 8D response, perform fault tree analysis, identify the escape point in final test, and design verification testing for the corrective action.
+### NCR 생애주기 관리
 
-## Core Knowledge
+- **식별 및 격리**: 누구나 부적합을 발견할 수 있으며, 발견 즉시 물리적(레드 태그 등) 및 시스템적(ERP 홀딩) 격리가 이루어져야 합니다.
+- **문서화**: 부적합 번호를 부여하고 부품 번호, 로트 추적 정보, 위반된 규격, 실제 측정값, 사진 등을 기록합니다.
+- **처리 방식 (Disposition)**:
+  - **그대로 사용 (Use-as-is)**: 도면과는 다르지만 기능적으로 수용 가능할 때. 엔지니어링 근거가 필수이며, 산업군에 따라 고객 승인이 필요할 수 있습니다.
+  - **재작업 (Rework)**: 승인된 절차에 따라 부품을 규격에 맞게 수정하는 것. 재작업 후에는 반드시 재검사를 거쳐야 합니다.
+  - **수리 (Repair)**: 규격을 완전히 만족시키지는 못하지만 기능을 하도록 조치하는 것. 재작업과는 구분되며 영구적인 편차(Deviation)로 관리됩니다.
+  - **반품 (RTV)**: 공급업체 과실일 경우 반품하고 공급업체 시정 조치 요구(SCAR)를 발행합니다.
+  - **폐기 (Scrap)**: 수리나 재작업이 불가능하거나 비경제적일 때 진행하며, 안전 관련 부품은 파쇄 증명이 필요할 수 있습니다.
 
-### NCR Lifecycle
+### 근본 원인 분석 (RCA)
 
-Every non-conformance follows a controlled lifecycle. Skipping steps creates audit findings and regulatory risk:
+- **5-Why**: "왜?"를 반복하여 근본 원인에 도달합니다. 현상(Symptom)에 머물지 않도록 주의하십시오. "작업자 실수"는 근본 원인이 아닙니다. "왜 시스템이 실수를 허용했는가?"가 중요합니다.
+- **이시카와(물고기 뼈) 다이어그램**: 6M(사람, 기계, 자재, 방법, 측정, 환경) 프레임워크를 사용하여 잠재적 원인을 누락 없이 도출합니다.
+- **8D 방법론**: 팀 기반의 구조화된 문제 해결 방식으로, 자동차 산업에서 표준으로 사용됩니다. 격리, 근본 원인 분석, 시정 조치 시행, 재발 방지책 수립 단계를 포함합니다.
 
-- **Identification:** Anyone can initiate. Record: who found it, where (incoming, in-process, final, field), what standard/spec was violated, quantity affected, lot/batch traceability. Tag or quarantine nonconforming material immediately — no exceptions. Physical segregation with red-tag or hold-tag in a designated MRB area. Electronic hold in ERP to prevent inadvertent shipment.
-- **Documentation:** NCR number assigned per your QMS numbering scheme. Link to part number, revision, PO/work order, specification clause violated, measurement data (actuals vs. tolerances), photographs, and inspector ID. For FDA-regulated products, records must satisfy 21 CFR 820.90; for automotive, IATF 16949 §8.7.
-- **Investigation:** Determine scope — is this an isolated piece or a systemic lot issue? Check upstream and downstream: other lots from the same supplier shipment, other units from the same production run, WIP and finished goods inventory from the same period. Containment actions must happen before root cause analysis begins.
-- **Disposition via MRB (Material Review Board):** The MRB typically includes quality, engineering, and manufacturing representatives. For aerospace (AS9100), the customer may need to participate. Disposition options:
-  - **Use-as-is:** Part does not meet drawing but is functionally acceptable. Requires engineering justification (concession/deviation). In aerospace, requires customer approval per AS9100 §8.7.1. In automotive, customer notification is typically required. Document the rationale — "because we need the parts" is not a justification.
-  - **Rework:** Bring the part into conformance using an approved rework procedure. The rework instruction must be documented, and the reworked part must be re-inspected to the original specification. Track rework costs.
-  - **Repair:** Part will not fully meet the original specification but will be made functional. Requires engineering disposition and often customer concession. Different from rework — repair accepts a permanent deviation.
-  - **Return to Vendor (RTV):** Issue a Supplier Corrective Action Request (SCAR) or CAR. Debit memo or replacement PO. Track supplier response within agreed timelines. Update supplier scorecard.
-  - **Scrap:** Document scrap with quantity, cost, lot traceability, and authorized scrap approval (often requires management sign-off above a dollar threshold). For serialized or safety-critical parts, witness destruction.
+### CAPA 시스템 (시정 및 예방 조치)
 
-### Root Cause Analysis
+- **트리거**: 반복되는 부적합, 고객 불만, 심각한 품질 사고, 감사 지적 사항 등이 CAPA 발행의 기준이 됩니다.
+- **시정 vs 예방**: 시정 조치는 발생한 문제의 재발을 막는 것이고, 예방 조치는 아직 발생하지 않았으나 트렌드 분석 등을 통해 예측되는 문제의 발생을 미연에 방지하는 것입니다.
+- **효과성 검증**: 단순히 "조치를 완료했다"는 확인(Verification)뿐만 아니라, 일정 기간(보통 90일 또는 3로트 이상) 동안 동일한 문제가 발생하지 않았음을 데이터로 증명(Validation)해야 종결할 수 있습니다.
 
-Stopping at symptoms is the most common failure mode in quality investigations:
+### 통계적 공정 관리 (SPC)
 
-- **5 Whys:** Simple, effective for straightforward process failures. Limitation: assumes a single linear causal chain. Fails on complex, multi-factor problems. Each "why" must be verified with data, not opinion — "Why did the dimension drift?" → "Because the tool wore" is only valid if you measured tool wear.
-- **Ishikawa (Fishbone) Diagram:** Use the 6M framework (Man, Machine, Material, Method, Measurement, Mother Nature/Environment). Forces consideration of all potential cause categories. Most useful as a brainstorming framework to prevent premature convergence on a single cause. Not a root cause tool by itself — it generates hypotheses that need verification.
-- **Fault Tree Analysis (FTA):** Top-down, deductive. Start with the failure event and decompose into contributing causes using AND/OR logic gates. Quantitative when failure rate data is available. Required or expected in aerospace (AS9100) and medical device (ISO 14971 risk analysis) contexts. Most rigorous method but resource-intensive.
-- **8D Methodology:** Team-based, structured problem-solving. D0: Symptom recognition and emergency response. D1: Team formation. D2: Problem definition (IS/IS-NOT). D3: Interim containment. D4: Root cause identification (use fishbone + 5 Whys within 8D). D5: Corrective action selection. D6: Implementation. D7: Prevention of recurrence. D8: Team recognition. Automotive OEMs (GM, Ford, Stellantis) expect 8D reports for significant supplier quality issues.
-- **Red flags that you stopped at symptoms:** Your "root cause" contains the word "error" (human error is never a root cause — why did the system allow the error?), your corrective action is "retrain the operator" (training alone is the weakest corrective action), or your root cause matches the problem statement reworded.
+- **관리도 신호**: 관리 한계선(Control Limits)을 벗어나는 점뿐만 아니라, 중심선 한쪽에 점들이 몰리거나 지속적으로 상승/하락하는 패턴(Western Electric Rules)도 이상 신호로 간주하여 조사해야 합니다.
+- **공정 능력 (Cpk/Ppk)**: 규격 대비 공정이 얼마나 안정적이고 타이트하게 관리되는지 수치화합니다. 자동차 산업에서는 보통 1.33 이상을 요구합니다.
 
-### CAPA System
+## 의사결정 프레임워크
 
-CAPA is the regulatory backbone. FDA cites CAPA deficiencies more than any other subsystem:
+### 처리 방식 결정 로직
 
-- **Initiation:** Not every NCR requires a CAPA. Triggers: repeat non-conformances (same failure mode 3+ times), customer complaints, audit findings, field failures, trend analysis (SPC signals), regulatory observations. Over-initiating CAPAs dilutes resources and creates closure backlogs. Under-initiating creates audit findings.
-- **Corrective Action vs. Preventive Action:** Corrective addresses an existing non-conformance and prevents its recurrence. Preventive addresses a potential non-conformance that hasn't occurred yet — typically identified through trend analysis, risk assessment, or near-miss events. FDA expects both; don't conflate them.
-- **Writing Effective CAPAs:** The action must be specific, measurable, and address the verified root cause. Bad: "Improve inspection procedures." Good: "Add torque verification step at Station 12 with calibrated torque wrench (±2%), documented on traveler checklist WI-4401 Rev C, effective by 2025-04-15." Every CAPA must have an owner, a target date, and defined evidence of completion.
-- **Verification vs. Validation of Effectiveness:** Verification confirms the action was implemented as planned (did we install the poka-yoke fixture?). Validation confirms the action actually prevented recurrence (did the defect rate drop to zero over 90 days of production data?). FDA expects both. Closing a CAPA at verification without validation is a common audit finding.
-- **Closure Criteria:** Objective evidence that the corrective action was implemented AND effective. Minimum effectiveness monitoring period: 90 days for process changes, 3 production lots for material changes, or the next audit cycle for system changes. Document the effectiveness data — charts, rejection rates, audit results.
-- **Regulatory Expectations:** FDA 21 CFR 820.198 (complaint handling) and 820.90 (nonconforming product) feed into 820.100 (CAPA). IATF 16949 §10.2.3-10.2.6. AS9100 §10.2. ISO 13485 §8.5.2-8.5.3. Each standard has specific documentation and timing expectations.
+1. **안전/규제 관련인가?** → 그대로 사용 불가. 재작업하거나 폐기하십시오.
+2. **고객 전용 규격인가?** → 제품이 일반 설계는 만족해도 고객 규격에 어긋난다면 반드시 고객 승인(Concession)을 받으십시오.
+3. **기능적 영향이 있는가?** → 형상, 조립 또는 기능에 영향을 준다면 재작업 또는 폐기하십시오. 영향이 없다면 엔지니어링 근거를 남기고 '그대로 사용'할 수 있습니다.
+4. **재작업 비용이 적절한가?** → 재작업 비용이 신규 제작 비용의 60%를 초과하면 폐기가 경제적입니다.
 
-### Statistical Process Control (SPC)
+## 성과 지표 (KPI)
 
-SPC separates signal from noise. Misinterpreting charts causes more problems than not charting at all:
-
-- **Chart Selection:** X-bar/R for continuous data with subgroups (n=2-10). X-bar/S for subgroups n>10. Individual/Moving Range (I-MR) for continuous data with subgroup n=1 (batch processes, destructive testing). p-chart for proportion defective (variable sample size). np-chart for count of defectives (fixed sample size). c-chart for count of defects per unit (fixed opportunity area). u-chart for defects per unit (variable opportunity area).
-- **Capability Indices:** Cp measures process spread vs. specification width (potential capability). Cpk adjusts for centering (actual capability). Pp/Ppk use overall variation (long-term) vs. Cp/Cpk which use within-subgroup variation (short-term). A process with Cp=2.0 but Cpk=0.8 is capable but not centered — fix the mean, not the variation. Automotive (IATF 16949) typically requires Cpk ≥ 1.33 for established processes, Ppk ≥ 1.67 for new processes.
-- **Western Electric Rules (signals beyond control limits):** Rule 1: One point beyond 3σ. Rule 2: Nine consecutive points on one side of the center line. Rule 3: Six consecutive points steadily increasing or decreasing. Rule 4: Fourteen consecutive points alternating up and down. Rule 1 demands immediate action. Rules 2-4 indicate systematic causes requiring investigation before the process goes out of spec.
-- **The Over-Adjustment Problem:** Reacting to common cause variation by tweaking the process increases variation — this is tampering. If the chart shows a stable process within control limits but individual points "look high," do not adjust. Only adjust for special cause signals confirmed by the Western Electric rules.
-- **Common vs. Special Cause:** Common cause variation is inherent to the process — reducing it requires fundamental process changes (better equipment, different material, environmental controls). Special cause variation is assignable to a specific event — a worn tool, a new raw material lot, an untrained operator on second shift. SPC's primary function is detecting special causes quickly.
-
-### Incoming Inspection
-
-- **AQL Sampling Plans (ANSI/ASQ Z1.4 / ISO 2859-1):** Determine inspection level (I, II, III — Level II is standard), lot size, AQL value, and sample size code letter. Tightened inspection: switch after 2 of 5 consecutive lots rejected. Normal: default. Reduced: switch after 10 consecutive lots accepted AND production stable. Critical defects: AQL = 0 with appropriate sample size. Major defects: typically AQL 1.0-2.5. Minor defects: typically AQL 2.5-6.5.
-- **LTPD (Lot Tolerance Percent Defective):** The defect level the plan is designed to reject. AQL protects the producer (low risk of rejecting good lots). LTPD protects the consumer (low risk of accepting bad lots). Understanding both sides is critical for communicating inspection risk to management.
-- **Skip-Lot Qualification:** After a supplier demonstrates consistent quality (typically 10+ consecutive lots accepted at normal inspection), reduce frequency to inspecting every 2nd, 3rd, or 5th lot. Revert immediately upon any rejection. Requires formal qualification criteria and documented decision.
-- **Certificate of Conformance (CoC) Reliance:** When to trust supplier CoCs vs. performing incoming inspection: new supplier = always inspect; qualified supplier with history = CoC + reduced verification; critical/safety dimensions = always inspect regardless of history. CoC reliance requires a documented agreement and periodic audit verification (audit the supplier's final inspection process, not just the paperwork).
-
-### Supplier Quality Management
-
-- **Audit Methodology:** Process audits assess how work is done (observe, interview, sample). System audits assess QMS compliance (document review, record sampling). Product audits verify specific product characteristics. Use a risk-based audit schedule — high-risk suppliers annually, medium biennially, low every 3 years plus cause-based. Announce audits for system assessments; unannounced audits for process verification when performance concerns exist.
-- **Supplier Scorecards:** Measure PPM (parts per million defective), on-time delivery, SCAR response time, SCAR effectiveness (recurrence rate), and lot acceptance rate. Weight the metrics by business impact. Share scorecards quarterly. Scores drive inspection level adjustments, business allocation, and ASL status.
-- **Corrective Action Requests (CARs/SCARs):** Issue for each significant non-conformance or repeated minor non-conformances. Expect 8D or equivalent root cause analysis. Set response deadline (typically 10 business days for initial response, 30 days for full corrective action plan). Follow up on effectiveness verification.
-- **Approved Supplier List (ASL):** Entry requires qualification (first article, capability study, system audit). Maintenance requires ongoing performance meeting scorecard thresholds. Removal is a significant business decision requiring procurement, engineering, and quality agreement plus a transition plan. Provisional status (approved with conditions) is useful for suppliers under improvement plans.
-- **Develop vs. Switch Decisions:** Supplier development (investment in training, process improvement, tooling) makes sense when: the supplier has unique capability, switching costs are high, the relationship is otherwise strong, and the quality gaps are addressable. Switching makes sense when: the supplier is unwilling to invest, the quality trend is deteriorating despite CARs, or alternative qualified sources exist with lower total cost of quality.
-
-### Regulatory Frameworks
-
-- **FDA 21 CFR 820 (QSR):** Covers medical device quality systems. Key sections: 820.90 (nonconforming product), 820.100 (CAPA), 820.198 (complaint handling), 820.250 (statistical techniques). FDA auditors specifically look at CAPA system effectiveness, complaint trending, and whether root cause analysis is rigorous.
-- **IATF 16949 (Automotive):** Adds customer-specific requirements on top of ISO 9001. Control plans, PPAP (Production Part Approval Process), MSA (Measurement Systems Analysis), 8D reporting, special characteristics management. Customer notification required for process changes and non-conformance disposition.
-- **AS9100 (Aerospace):** Adds requirements for product safety, counterfeit part prevention, configuration management, first article inspection (FAI per AS9102), and key characteristic management. Customer approval required for use-as-is dispositions. OASIS database for supplier management.
-- **ISO 13485 (Medical Devices):** Harmonized with FDA QSR but with European regulatory alignment. Emphasis on risk management (ISO 14971), traceability, and design controls. Clinical investigation requirements feed into non-conformance management.
-- **Control Plans:** Define inspection characteristics, methods, frequencies, sample sizes, reaction plans, and responsible parties for each process step. Required by IATF 16949 and good practice universally. Must be a living document updated when processes change.
-
-### Cost of Quality
-
-Build the business case for quality investment using Juran's COQ model:
-
-- **Prevention costs:** Training, process validation, design reviews, supplier qualification, SPC implementation, poka-yoke fixtures. Typically 5-10% of total COQ. Every dollar invested here returns $10-$100 in failure cost avoidance.
-- **Appraisal costs:** Incoming inspection, in-process inspection, final inspection, testing, calibration, audit costs. Typically 20-25% of total COQ.
-- **Internal failure costs:** Scrap, rework, re-inspection, MRB processing, production delays due to non-conformances, root cause investigation labor. Typically 25-40% of total COQ.
-- **External failure costs:** Customer returns, warranty claims, field service, recalls, regulatory actions, liability exposure, reputation damage. Typically 25-40% of total COQ but most volatile and highest per-incident cost.
-
-## Decision Frameworks
-
-### NCR Disposition Decision Logic
-
-Evaluate in this sequence — the first path that applies governs the disposition:
-
-1. **Safety/regulatory critical:** If the non-conformance affects a safety-critical characteristic or regulatory requirement → do not use-as-is. Rework if possible to full conformance, otherwise scrap. No exceptions without formal engineering risk assessment and, where required, regulatory notification.
-2. **Customer-specific requirements:** If the customer specification is tighter than the design spec and the part meets design but not customer requirements → contact customer for concession before disposing. Automotive and aerospace customers have explicit concession processes.
-3. **Functional impact:** Engineering evaluates whether the non-conformance affects form, fit, or function. If no functional impact and within material review authority → use-as-is with documented engineering justification. If functional impact exists → rework or scrap.
-4. **Reworkability:** If the part can be brought into full conformance through an approved rework process → rework. Verify rework cost vs. replacement cost. If rework cost exceeds 60% of replacement cost, scrap is usually more economical.
-5. **Supplier accountability:** If the non-conformance is supplier-caused → RTV with SCAR. Exception: if production cannot wait for replacement parts, use-as-is or rework may be needed with cost recovery from the supplier.
-
-### RCA Method Selection
-
-- **Single-event, simple causal chain:** 5 Whys. Budget: 1-2 hours.
-- **Single-event, multiple potential cause categories:** Ishikawa + 5 Whys on the most likely branches. Budget: 4-8 hours.
-- **Recurring issue, process-related:** 8D with full team. Budget: 20-40 hours across D0-D8.
-- **Safety-critical or high-severity event:** Fault Tree Analysis with quantitative risk assessment. Budget: 40-80 hours. Required for aerospace product safety events and medical device post-market analysis.
-- **Customer-mandated format:** Use whatever the customer requires (most automotive OEMs mandate 8D).
-
-### CAPA Effectiveness Verification
-
-Before closing any CAPA, verify:
-
-1. **Implementation evidence:** Documented proof the action was completed (updated work instruction with revision, installed fixture with validation, modified inspection plan with effective date).
-2. **Monitoring period data:** Minimum 90 days of production data, 3 consecutive production lots, or one full audit cycle — whichever provides the most meaningful evidence.
-3. **Recurrence check:** Zero recurrences of the specific failure mode during the monitoring period. If recurrence occurs, the CAPA is not effective — reopen and re-investigate. Do not close and open a new CAPA for the same issue.
-4. **Leading indicator review:** Beyond the specific failure, have related metrics improved? (e.g., overall PPM for that process, customer complaint rate for that product family).
-
-### Inspection Level Adjustment
-
-| Condition | Action |
-|---|---|
-| New supplier, first 5 lots | Tightened inspection (Level III or 100%) |
-| 10+ consecutive lots accepted at normal | Qualify for reduced or skip-lot |
-| 1 lot rejected under reduced inspection | Revert to normal immediately |
-| 2 of 5 consecutive lots rejected under normal | Switch to tightened |
-| 5 consecutive lots accepted under tightened | Revert to normal |
-| 10 consecutive lots rejected under tightened | Suspend supplier; escalate to procurement |
-| Customer complaint traced to incoming material | Revert to tightened regardless of current level |
-
-### Supplier Corrective Action Escalation
-
-| Stage | Trigger | Action | Timeline |
-|---|---|---|---|
-| Level 1: SCAR issued | Single significant NC or 3+ minor NCs in 90 days | Formal SCAR requiring 8D response | 10 days for response, 30 for implementation |
-| Level 2: Supplier on watch | SCAR not responded to in time, or corrective action not effective | Increased inspection, supplier on probation, procurement notified | 60 days to demonstrate improvement |
-| Level 3: Controlled shipping | Continued quality failures during watch period | Supplier must submit inspection data with each shipment; or third-party sort at supplier's expense | 90 days to demonstrate sustained improvement |
-| Level 4: New source qualification | No improvement under controlled shipping | Initiate alternate supplier qualification; reduce business allocation | Qualification timeline (3-12 months depending on industry) |
-| Level 5: ASL removal | Failure to improve or unwillingness to invest | Formal removal from Approved Supplier List; transition all parts | Complete transition before final PO |
-
-## Key Edge Cases
-
-These are situations where the obvious approach is wrong. Brief summaries are included here so you can expand them into project-specific playbooks if needed.
-
-1. **Customer-reported field failure with no internal detection:** Your inspection and testing passed this lot, but customer field data shows failures. The instinct is to question the customer's data — resist it. Check whether your inspection plan covers the actual failure mode. Often, field failures expose gaps in test coverage rather than test execution errors.
-
-2. **Supplier audit reveals falsified Certificates of Conformance:** The supplier has been submitting CoCs with fabricated test data. Quarantine all material from that supplier immediately, including WIP and finished goods. This is a regulatory reportable event in aerospace (counterfeit prevention per AS9100) and potentially in medical devices. The scale of the containment drives the response, not the individual NCR.
-
-3. **SPC shows process in-control but customer complaints are rising:** The chart is stable within control limits, but the customer's assembly process is sensitive to variation within your spec. Your process is "capable" by the numbers but not capable enough. This requires customer collaboration to understand the true functional requirement, not just a spec review.
-
-4. **Non-conformance discovered on already-shipped product:** Containment must extend to the customer's incoming stock, WIP, and potentially their customers. The speed of notification depends on safety risk — safety-critical issues require immediate customer notification, others can follow the standard process with urgency.
-
-5. **CAPA that addresses a symptom, not the root cause:** The defect recurs after CAPA closure. Before reopening, verify the original root cause analysis — if the root cause was "operator error" and the corrective action was "retrain," neither the root cause nor the action was adequate. Start the RCA over with the assumption the first investigation was insufficient.
-
-6. **Multiple root causes for a single non-conformance:** A single defect results from the interaction of machine wear, material lot variation, and a measurement system limitation. The 5 Whys forces a single chain — use Ishikawa or FTA to capture the interaction. Corrective actions must address all contributing causes; fixing only one may reduce frequency but won't eliminate the failure mode.
-
-7. **Intermittent defect that cannot be reproduced on demand:** Cannot reproduce ≠ does not exist. Increase sample size and monitoring frequency. Check for environmental correlations (shift, ambient temperature, humidity, vibration from adjacent equipment). Component of Variation studies (Gauge R&R with nested factors) can reveal intermittent measurement system contributions.
-
-8. **Non-conformance discovered during a regulatory audit:** Do not attempt to minimize or explain away. Acknowledge the finding, document it in the audit response, and treat it as you would any NCR — with a formal investigation, root cause analysis, and CAPA. Auditors specifically test whether your system catches what they find; demonstrating a robust response is more valuable than pretending it's an anomaly.
-
-## Communication Patterns
-
-### Tone Calibration
-
-Match communication tone to situation severity and audience:
-
-- **Routine NCR, internal team:** Direct and factual. "NCR-2025-0412: Incoming lot 4471 of part 7832-A has OD measurements at 12.52mm against a 12.45±0.05mm specification. 18 of 50 sample pieces out of spec. Material quarantined in MRB cage, Bay 3."
-- **Significant NCR, management reporting:** Summarize impact first — production impact, customer risk, financial exposure — then the details. Managers need to know what it means before they need to know what happened.
-- **Supplier notification (SCAR):** Professional, specific, and documented. State the nonconformance, the specification violated, the impact, and the expected response format and timeline. Never accusatory; the data speaks.
-- **Customer notification (non-conformance on shipped product):** Lead with what you know, what you've done (containment), what the customer needs to do, and the timeline for full resolution. Transparency builds trust; delay destroys it.
-- **Regulatory response (audit finding):** Factual, accountable, and structured per the regulatory expectation (e.g., FDA Form 483 response format). Acknowledge the observation, describe the investigation, state the corrective action, provide evidence of implementation and effectiveness.
-
-### Key Templates
-
-Brief templates appear below. Adapt them to your MRB, supplier quality, and CAPA workflows before using them in production.
-
-**NCR Notification (internal):** Subject: `NCR-{number}: {part_number} — {defect_summary}`. State: what was found, specification violated, quantity affected, current containment status, and initial assessment of scope.
-
-**SCAR to Supplier:** Subject: `SCAR-{number}: Non-Conformance on PO# {po_number} — Response Required by {date}`. Include: part number, lot, specification, measurement data, quantity affected, impact statement, expected response format.
-
-**Customer Quality Notification:** Lead with: containment actions taken, product traceability (lot/serial numbers), recommended customer actions, timeline for corrective action, and direct contact for quality engineering.
-
-## Escalation Protocols
-
-### Automatic Escalation Triggers
-
-| Trigger | Action | Timeline |
-|---|---|---|
-| Safety-critical non-conformance | Notify VP Quality and Regulatory immediately | Within 1 hour |
-| Field failure or customer complaint | Assign dedicated investigator, notify account team | Within 4 hours |
-| Repeat NCR (same failure mode, 3+ occurrences) | Mandatory CAPA initiation, management review | Within 24 hours |
-| Supplier falsified documentation | Quarantine all supplier material, notify regulatory and legal | Immediately |
-| Non-conformance on shipped product | Initiate customer notification protocol, containment | Within 4 hours |
-| Audit finding (external) | Management review, response plan development | Within 48 hours |
-| CAPA overdue > 30 days past target | Escalate to Quality Director for resource allocation | Within 1 week |
-| NCR backlog exceeds 50 open items | Process review, resource allocation, management briefing | Within 1 week |
-
-### Escalation Chain
-
-Level 1 (Quality Engineer) → Level 2 (Quality Supervisor, 4 hours) → Level 3 (Quality Manager, 24 hours) → Level 4 (Quality Director, 48 hours) → Level 5 (VP Quality, 72+ hours or any safety-critical event)
-
-## Performance Indicators
-
-Track these metrics weekly and trend monthly:
-
-| Metric | Target | Red Flag |
-|---|---|---|
-| NCR closure time (median) | < 15 business days | > 30 business days |
-| CAPA on-time closure rate | > 90% | < 75% |
-| CAPA effectiveness rate (no recurrence) | > 85% | < 70% |
-| Supplier PPM (incoming) | < 500 PPM | > 2,000 PPM |
-| Cost of quality (% of revenue) | < 3% | > 5% |
-| Internal defect rate (in-process) | < 1,000 PPM | > 5,000 PPM |
-| Customer complaint rate (per 1M units) | < 50 | > 200 |
-| Aged NCRs (> 30 days open) | < 10% of total | > 25% |
-
-## Additional Resources
-
-- Pair this skill with your NCR template, disposition authority matrix, and SPC rule set so investigators use the same definitions every time.
-- Keep CAPA closure criteria and effectiveness-check evidence requirements beside the workflow before using it in production.
+- **NCR 종결 시간 (Median)**: 부적합 발견부터 종결까지 걸리는 시간 (목표 < 15영업일)
+- **CAPA 적기 준수율**: 계획된 기한 내에 CAPA를 마쳤는가? (목표 > 90%)
+- **CAPA 효과성**: 종결 후 동일 문제 재발률 (목표 < 15%)
+- **수입 검사 PPM**: 공급업체로부터 들어온 부적합품 비율 (목표 < 500 PPM)
+- **품질 비용 (COQ)**: 매출 대비 품질 관련 비용(예방, 평가, 실패 비용)의 비중 (목표 < 3~5%)

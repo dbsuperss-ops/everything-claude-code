@@ -5,27 +5,27 @@ paths:
   - "**/*.js"
   - "**/*.jsx"
 ---
-# TypeScript/JavaScript Coding Style
+# TypeScript/JavaScript 코딩 스타일 (Coding Style)
 
-> This file extends [common/coding-style.md](../common/coding-style.md) with TypeScript/JavaScript specific content.
+> 이 파일은 [common/coding-style.md](../common/coding-style.md)의 내용을 TypeScript/JavaScript 전용 콘텐츠로 확장합니다.
 
-## Types and Interfaces
+## 타입 및 인터페이스 (Types and Interfaces)
 
-Use types to make public APIs, shared models, and component props explicit, readable, and reusable.
+공개 API, 공유 모델 및 컴포넌트 Props를 명시적이고 읽기 쉬우며 재사용 가능하게 만들기 위해 타입을 사용하십시오.
 
-### Public APIs
+### 공개 API (Public APIs)
 
-- Add parameter and return types to exported functions, shared utilities, and public class methods
-- Let TypeScript infer obvious local variable types
-- Extract repeated inline object shapes into named types or interfaces
+- 내보낸(export) 함수, 공유 유틸리티 및 공개 클래스 메서드에 매개변수 및 반환 타입을 추가하십시오.
+- 명확한 지역 변수 타입은 TypeScript가 추론하도록 하십시오.
+- 반복되는 인라인 객체 구조는 명명된 타입(Type)이나 인터페이스(Interface)로 추출하십시오.
 
 ```typescript
-// WRONG: Exported function without explicit types
+// ❌ 잘못된 예: 명시적 타입이 없는 내보낸 함수
 export function formatUser(user) {
   return `${user.firstName} ${user.lastName}`
 }
 
-// CORRECT: Explicit types on public APIs
+// ✅ 올바른 예: 공개 API에 명시적 타입 적용
 interface User {
   firstName: string
   lastName: string
@@ -36,11 +36,11 @@ export function formatUser(user: User): string {
 }
 ```
 
-### Interfaces vs. Type Aliases
+### 인터페이스 vs. 타입 별칭 (Interfaces vs. Type Aliases)
 
-- Use `interface` for object shapes that may be extended or implemented
-- Use `type` for unions, intersections, tuples, mapped types, and utility types
-- Prefer string literal unions over `enum` unless an `enum` is required for interoperability
+- 확장하거나 구현(Implement)할 수 있는 객체 구조에는 `interface`를 사용하십시오.
+- 유니온(Union), 인터섹션(Intersection), 튜플, 매핑된 타입 및 유틸리티 타입에는 `type`을 사용하십시오.
+- 상호 운용성을 위해 `enum`이 반드시 필요한 경우가 아니라면, `enum` 대신 문자열 리터럴 유니온을 선호하십시오.
 
 ```typescript
 interface User {
@@ -54,19 +54,19 @@ type UserWithRole = User & {
 }
 ```
 
-### Avoid `any`
+### `any` 금지
 
-- Avoid `any` in application code
-- Use `unknown` for external or untrusted input, then narrow it safely
-- Use generics when a value's type depends on the caller
+- 애플리케이션 코드에서 `any` 사용을 피하십시오.
+- 외부 또는 신뢰할 수 없는 입력에는 `unknown`을 사용하고, 안전하게 타입을 좁혀서(Narrowing) 사용하십시오.
+- 값의 타입이 호출자에 따라 달라지는 경우 제네릭(Generics)을 사용하십시오.
 
 ```typescript
-// WRONG: any removes type safety
+// ❌ 잘못된 예: any는 타입 안전성을 제거함
 function getErrorMessage(error: any) {
   return error.message
 }
 
-// CORRECT: unknown forces safe narrowing
+// ✅ 올바른 예: unknown은 안전한 타입 좁히기를 강제함
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message
@@ -78,9 +78,9 @@ function getErrorMessage(error: unknown): string {
 
 ### React Props
 
-- Define component props with a named `interface` or `type`
-- Type callback props explicitly
-- Do not use `React.FC` unless there is a specific reason to do so
+- 컴포넌트 Props는 명명된 `interface` 또는 `type`으로 정의하십시오.
+- 콜백(Callback) Props의 타입을 명시적으로 지정하십시오.
+- 특별한 이유가 없는 한 `React.FC`를 사용하지 마십시오.
 
 ```typescript
 interface User {
@@ -98,10 +98,10 @@ function UserCard({ user, onSelect }: UserCardProps) {
 }
 ```
 
-### JavaScript Files
+### JavaScript 파일
 
-- In `.js` and `.jsx` files, use JSDoc when types improve clarity and a TypeScript migration is not practical
-- Keep JSDoc aligned with runtime behavior
+- `.js` 및 `.jsx` 파일에서, 타입 표시가 명확성을 높이지만 TypeScript 마이그레이션이 실질적으로 어려운 경우 JSDoc을 사용하십시오.
+- JSDoc을 런타임 동작과 일치시키십시오.
 
 ```javascript
 /**
@@ -113,9 +113,9 @@ export function formatUser(user) {
 }
 ```
 
-## Immutability
+## 불변성 (Immutability)
 
-Use spread operator for immutable updates:
+불변 업데이트를 위해 스프레드(Spread) 연산자를 사용하십시오:
 
 ```typescript
 interface User {
@@ -123,13 +123,13 @@ interface User {
   name: string
 }
 
-// WRONG: Mutation
+// ❌ 잘못된 예: 직접 수정 (Mutation)
 function updateUser(user: User, name: string): User {
-  user.name = name // MUTATION!
+  user.name = name // 원본 변경!
   return user
 }
 
-// CORRECT: Immutability
+// ✅ 올바른 예: 불변성 유지
 function updateUser(user: Readonly<User>, name: string): User {
   return {
     ...user,
@@ -138,9 +138,9 @@ function updateUser(user: Readonly<User>, name: string): User {
 }
 ```
 
-## Error Handling
+## 에러 처리 (Error Handling)
 
-Use async/await with try-catch and narrow unknown errors safely:
+async/await와 try-catch를 사용하고, `unknown` 에러의 타입을 안전하게 좁히십시오:
 
 ```typescript
 interface User {
@@ -160,7 +160,7 @@ function getErrorMessage(error: unknown): string {
 
 const logger = {
   error: (message: string, error: unknown) => {
-    // Replace with your production logger (for example, pino or winston).
+    // 실제 운영 환경의 로거(pino, winston 등)로 대체하십시오.
   }
 }
 
@@ -175,9 +175,9 @@ async function loadUser(userId: string): Promise<User> {
 }
 ```
 
-## Input Validation
+## 입력값 검증 (Input Validation)
 
-Use Zod for schema-based validation and infer types from the schema:
+스키마 기반 검증을 위해 Zod를 사용하고 스키마로부터 타입을 추론하십시오:
 
 ```typescript
 import { z } from 'zod'
@@ -194,6 +194,6 @@ const validated: UserInput = userSchema.parse(input)
 
 ## Console.log
 
-- No `console.log` statements in production code
-- Use proper logging libraries instead
-- See hooks for automatic detection
+- 프로덕션 코드에 `console.log` 문을 남기지 마십시오.
+- 대신 적절한 로깅 라이브러리를 사용하십시오.
+- 자동 감지를 위해 후크(Hooks)를 확인하십시오.

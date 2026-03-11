@@ -1,49 +1,49 @@
 ---
 name: kotlin-coroutines-flows
-description: Kotlin Coroutines and Flow patterns for Android and KMP — structured concurrency, Flow operators, StateFlow, error handling, and testing.
+description: Android 및 KMP를 위한 Kotlin Coroutines 및 Flow 패턴 — 구조화된 동시성, Flow 연산자, StateFlow, 에러 처리 및 테스트 가이드입니다.
 origin: ECC
 ---
 
 # Kotlin Coroutines & Flows
 
-Patterns for structured concurrency, Flow-based reactive streams, and coroutine testing in Android and Kotlin Multiplatform projects.
+Android 및 Kotlin Multiplatform(KMP) 프로젝트에서 구조화된 동시성, Flow 기반 리액티브 스트림, 코루틴 테스트를 위한 패턴을 안내합니다.
 
-## When to Activate
+## 활성화 시점
 
-- Writing async code with Kotlin coroutines
-- Using Flow, StateFlow, or SharedFlow for reactive data
-- Handling concurrent operations (parallel loading, debounce, retry)
-- Testing coroutines and Flows
-- Managing coroutine scopes and cancellation
+- Kotlin 코루틴을 사용하여 비동기 코드를 작성할 때
+- 리액티브 데이터를 위해 Flow, StateFlow 또는 SharedFlow를 사용할 때
+- 동시 작업(병렬 로딩, 디바운스, 재시도 등)을 처리할 때
+- 코루틴 및 Flow를 테스트할 때
+- 코루틴 범위(Scope) 및 취소(Cancellation)를 관리할 때
 
-## Structured Concurrency
+## 구조화된 동시성 (Structured Concurrency)
 
-### Scope Hierarchy
+### 범위 계층 구조
 
 ```
 Application
   └── viewModelScope (ViewModel)
-        └── coroutineScope { } (structured child)
-              ├── async { } (concurrent task)
-              └── async { } (concurrent task)
+        └── coroutineScope { } (구조적 자식)
+              ├── async { } (동시 작업)
+              └── async { } (동시 작업)
 ```
 
-Always use structured concurrency — never `GlobalScope`:
+항상 구조화된 동시성을 사용하십시오. `GlobalScope`는 절대로 사용하지 마십시오.
 
 ```kotlin
-// BAD
+// 나쁨
 GlobalScope.launch { fetchData() }
 
-// GOOD — scoped to ViewModel lifecycle
+// 좋음 — ViewModel 생명주기에 종속됨
 viewModelScope.launch { fetchData() }
 
-// GOOD — scoped to composable lifecycle
+// 좋음 — Composable 생명주기에 종속됨
 LaunchedEffect(key) { fetchData() }
 ```
 
-### Parallel Decomposition
+### 병렬 분해 (Parallel Decomposition)
 
-Use `coroutineScope` + `async` for parallel work:
+병렬 작업을 위해 `coroutineScope`와 `async`를 사용하십시오.
 
 ```kotlin
 suspend fun loadDashboard(): Dashboard = coroutineScope {
@@ -60,30 +60,19 @@ suspend fun loadDashboard(): Dashboard = coroutineScope {
 
 ### SupervisorScope
 
-Use `supervisorScope` when child failures should not cancel siblings:
+자식 코루틴의 실패가 형제 코루틴에게 영향을 주지 않아야 할 때 사용하십시오.
 
 ```kotlin
 suspend fun syncAll() = supervisorScope {
-    launch { syncItems() }       // failure here won't cancel syncStats
+    launch { syncItems() }       // 여기서 실패해도 syncStats는 계속 진행됨
     launch { syncStats() }
     launch { syncSettings() }
 }
 ```
 
-## Flow Patterns
+## Flow 패턴
 
-### Cold Flow — One-Shot to Stream Conversion
-
-```kotlin
-fun observeItems(): Flow<List<Item>> = flow {
-    // Re-emits whenever the database changes
-    itemDao.observeAll()
-        .map { entities -> entities.map { it.toDomain() } }
-        .collect { emit(it) }
-}
-```
-
-### StateFlow for UI State
+### StateFlow (UI 상태 관리용)
 
 ```kotlin
 class DashboardViewModel(
@@ -92,30 +81,16 @@ class DashboardViewModel(
     val progress: StateFlow<UserProgress> = observeProgress()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = SharingStarted.WhileSubscribed(5_000), // 마지막 구독자 이탈 후 5초간 유지
             initialValue = UserProgress.EMPTY
         )
 }
 ```
 
-`WhileSubscribed(5_000)` keeps the upstream active for 5 seconds after the last subscriber leaves — survives configuration changes without restarting.
-
-### Combining Multiple Flows
+### Flow 연산자 활용
 
 ```kotlin
-val uiState: StateFlow<HomeState> = combine(
-    itemRepository.observeItems(),
-    settingsRepository.observeTheme(),
-    userRepository.observeProfile()
-) { items, theme, profile ->
-    HomeState(items = items, theme = theme, profile = profile)
-}.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeState())
-```
-
-### Flow Operators
-
-```kotlin
-// Debounce search input
+// 검색 입력 디바운스
 searchQuery
     .debounce(300)
     .distinctUntilChanged()
@@ -123,7 +98,7 @@ searchQuery
     .catch { emit(emptyList()) }
     .collect { results -> _state.update { it.copy(results = results) } }
 
-// Retry with exponential backoff
+// 지수 백오프를 이용한 재시도
 fun fetchWithRetry(): Flow<Data> = flow { emit(api.fetch()) }
     .retryWhen { cause, attempt ->
         if (cause is IOException && attempt < 3) {
@@ -135,97 +110,36 @@ fun fetchWithRetry(): Flow<Data> = flow { emit(api.fetch()) }
     }
 ```
 
-### SharedFlow for One-Time Events
+### SharedFlow (일회성 이벤트용)
 
-```kotlin
-class ItemListViewModel : ViewModel() {
-    private val _effects = MutableSharedFlow<Effect>()
-    val effects: SharedFlow<Effect> = _effects.asSharedFlow()
+스낵바 메시지나 내비게이션 이동과 같은 일회성 이벤트에 사용하십시오.
 
-    sealed interface Effect {
-        data class ShowSnackbar(val message: String) : Effect
-        data class NavigateTo(val route: String) : Effect
-    }
+## 디스패처 (Dispatchers)
 
-    private fun deleteItem(id: String) {
-        viewModelScope.launch {
-            repository.delete(id)
-            _effects.emit(Effect.ShowSnackbar("Item deleted"))
-        }
-    }
-}
+- `Dispatchers.Default`: CPU 집약적 작업
+- `Dispatchers.IO`: 입출력(DB, 네트워크) 작업
+- `Dispatchers.Main`: UI 스레드 작업
 
-// Collect in Composable
-LaunchedEffect(Unit) {
-    viewModel.effects.collect { effect ->
-        when (effect) {
-            is Effect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
-            is Effect.NavigateTo -> navController.navigate(effect.route)
-        }
-    }
-}
-```
+KMP 프로젝트에서는 모든 플랫폼에서 사용 가능한 `Default`와 `Main`을 주로 사용하십시오.
 
-## Dispatchers
+## 취소 (Cancellation)
 
-```kotlin
-// CPU-intensive work
-withContext(Dispatchers.Default) { parseJson(largePayload) }
+코루틴은 협력적으로 취소되어야 합니다. 긴 루프 내에서는 `ensureActive()` 호출을 통해 취소 여부를 확인하십시오. `try-finally` 블록의 `finally` 절은 취소 시에도 자원 정리를 위해 항상 실행됩니다.
 
-// IO-bound work
-withContext(Dispatchers.IO) { database.query() }
+## 테스트
 
-// Main thread (UI) — default in viewModelScope
-withContext(Dispatchers.Main) { updateUi() }
-```
-
-In KMP, use `Dispatchers.Default` and `Dispatchers.Main` (available on all platforms). `Dispatchers.IO` is JVM/Android only — use `Dispatchers.Default` on other platforms or provide via DI.
-
-## Cancellation
-
-### Cooperative Cancellation
-
-Long-running loops must check for cancellation:
-
-```kotlin
-suspend fun processItems(items: List<Item>) = coroutineScope {
-    for (item in items) {
-        ensureActive()  // throws CancellationException if cancelled
-        process(item)
-    }
-}
-```
-
-### Cleanup with try/finally
-
-```kotlin
-viewModelScope.launch {
-    try {
-        _state.update { it.copy(isLoading = true) }
-        val data = repository.fetch()
-        _state.update { it.copy(data = data) }
-    } finally {
-        _state.update { it.copy(isLoading = false) }  // always runs, even on cancellation
-    }
-}
-```
-
-## Testing
-
-### Testing StateFlow with Turbine
+### Turbine을 이용한 Flow 테스트
 
 ```kotlin
 @Test
 fun `search updates item list`() = runTest {
-    val fakeRepository = FakeItemRepository().apply { emit(testItems) }
-    val viewModel = ItemListViewModel(GetItemsUseCase(fakeRepository))
+    val viewModel = ItemListViewModel(...)
 
     viewModel.state.test {
-        assertEquals(ItemListState(), awaitItem())  // initial
+        assertEquals(ItemListState(), awaitItem())  // 초기 상태 확인
 
         viewModel.onSearch("query")
-        val loading = awaitItem()
-        assertTrue(loading.isLoading)
+        assertTrue(awaitItem().isLoading) // 로딩 상태 확인
 
         val loaded = awaitItem()
         assertFalse(loaded.isLoading)
@@ -234,51 +148,8 @@ fun `search updates item list`() = runTest {
 }
 ```
 
-### Testing with TestDispatcher
+## 안티 패턴 (주의 사항)
 
-```kotlin
-@Test
-fun `parallel load completes correctly`() = runTest {
-    val viewModel = DashboardViewModel(
-        itemRepo = FakeItemRepo(),
-        statsRepo = FakeStatsRepo()
-    )
-
-    viewModel.load()
-    advanceUntilIdle()
-
-    val state = viewModel.state.value
-    assertNotNull(state.items)
-    assertNotNull(state.stats)
-}
-```
-
-### Faking Flows
-
-```kotlin
-class FakeItemRepository : ItemRepository {
-    private val _items = MutableStateFlow<List<Item>>(emptyList())
-
-    override fun observeItems(): Flow<List<Item>> = _items
-
-    fun emit(items: List<Item>) { _items.value = items }
-
-    override suspend fun getItemsByCategory(category: String): Result<List<Item>> {
-        return Result.success(_items.value.filter { it.category == category })
-    }
-}
-```
-
-## Anti-Patterns to Avoid
-
-- Using `GlobalScope` — leaks coroutines, no structured cancellation
-- Collecting Flows in `init {}` without a scope — use `viewModelScope.launch`
-- Using `MutableStateFlow` with mutable collections — always use immutable copies: `_state.update { it.copy(list = it.list + newItem) }`
-- Catching `CancellationException` — let it propagate for proper cancellation
-- Using `flowOn(Dispatchers.Main)` to collect — collection dispatcher is the caller's dispatcher
-- Creating `Flow` in `@Composable` without `remember` — recreates the flow every recomposition
-
-## References
-
-See skill: `compose-multiplatform-patterns` for UI consumption of Flows.
-See skill: `android-clean-architecture` for where coroutines fit in layers.
+- **`GlobalScope` 사용**: 코루틴 누수 및 취소 불가능의 원인입니다.
+- **수정 가능한 컬렉션을 `MutableStateFlow`에 사용**: 항상 불변 복사본을 만들어 `update { it.copy(...) }` 방식으로 상태를 갱신하십시오.
+- **`CancellationException` 캐치**: 취소가 정상적으로 전파되도록 이 예외는 다시 던지거나 잡지 마십시오.

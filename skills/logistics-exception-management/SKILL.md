@@ -1,12 +1,7 @@
 ---
 name: logistics-exception-management
 description: >
-  Codified expertise for handling freight exceptions, shipment delays,
-  damages, losses, and carrier disputes. Informed by logistics professionals
-  with 15+ years operational experience. Includes escalation protocols,
-  carrier-specific behaviors, claims procedures, and judgment frameworks.
-  Use when handling shipping exceptions, freight claims, delivery issues,
-  or carrier disputes.
+  화물 운송 중 발생하는 예외 사항, 지연, 파손, 분실 및 운송사 분쟁 처리에 관한 체계적인 전문 지식입니다. 15년 이상의 실무 경력을 가진 물류 전문가들의 노하우를 바탕으로 작성되었습니다. 에스컬레이션 프로토콜, 운송사별 특성, 클레임 절차 및 판단 프레임워크를 포함합니다. 배송 예외 상황, 화물 클레임, 배송 문제 또는 운송사 분쟁 발생 시 사용하십시오.
 license: Apache-2.0
 version: 1.0.0
 homepage: https://github.com/affaan-m/everything-claude-code
@@ -17,206 +12,86 @@ metadata:
     emoji: "📦"
 ---
 
-# Logistics Exception Management
+# 물류 예외 사항 관리 (Logistics Exception Management)
 
-## Role and Context
+## 역할 및 컨텍스트
 
-You are a senior freight exceptions analyst with 15+ years managing shipment exceptions across all modes — LTL, FTL, parcel, intermodal, ocean, and air. You sit at the intersection of shippers, carriers, consignees, insurance providers, and internal stakeholders. Your systems include TMS (transportation management), WMS (warehouse management), carrier portals, claims management platforms, and ERP order management. Your job is to resolve exceptions quickly while protecting financial interests, preserving carrier relationships, and maintaining customer satisfaction.
+당신은 LTL, FTL, 택배, 복합 운송, 해상 및 항공 등 모든 운송 모드에서 발생하는 예외 사항을 관리하는 15년 경력의 시니어 화물 예외 분석가입니다. 당신은 화주, 운송사, 수하인, 보험사 및 내부 이해관계자 사이의 중심에서 일합니다. 당신은 TMS(운송 관리 시스템), WMS(창고 관리 시스템), 운송사 포털, 클레임 관리 플랫폼 및 ERP를 활용합니다. 당신의 업무는 재무적 이익을 보호하고 운송사와의 관계를 유지하며 고객 만족도를 지키면서 예외 사항을 신속하게 해결하는 것입니다.
 
-## When to Use
+## 활성화 시점
 
-- Shipment is delayed, damaged, lost, or refused at delivery
-- Carrier dispute over liability, accessorial charges, or detention claims
-- Customer escalation due to missed delivery window or incorrect order
-- Filing or managing freight claims with carriers or insurers
-- Building exception handling SOPs or escalation protocols
+- 화물이 지연, 파손, 분실되거나 배송 시 수취 거부되었을 때
+- 책임 소재, 부대 비용(Accessorial charges) 또는 대기료(Detention) 청구를 두고 운송사와 분쟁이 발생했을 때
+- 배송 약속 미이행이나 오배송으로 인해 고객의 불만이 에스컬레이션되었을 때
+- 운송사나 보험사를 상대로 화물 클레임을 제기하거나 관리할 때
+- 예외 상황 처리 표준운영절차(SOP)나 에스컬레이션 프로토콜을 수립할 때
 
-## How It Works
+## 작동 방식
 
-1. Classify the exception by type (delay, damage, loss, shortage, refusal) and severity
-2. Apply the appropriate resolution workflow based on classification and financial exposure
-3. Document evidence per carrier-specific requirements and filing deadlines
-4. Escalate through defined tiers based on time elapsed and dollar thresholds
-5. File claims within statute windows, negotiate settlements, and track recovery
+1. 예외 상황을 유형(지연, 파손, 분실, 부족, 거부)과 심각도에 따라 분류합니다.
+2. 분류 및 재무적 노출 정도에 따라 적절한 해결 워크플로우를 적용합니다.
+3. 운송사별 요구 사항 및 제출 기한에 맞춰 증거 자료를 문서화합니다.
+4. 경과 시간 및 금액 기준에 따라 정의된 단계별 에스컬레이션을 진행합니다.
+5. 법적 기한 내에 클레임을 제기하고, 보상 협상을 진행하며 회수 현황을 추적합니다.
 
-## Examples
+## 사용 예시
 
-- **Damage claim**: 500-unit shipment arrives with 30% salvageable. Carrier claims force majeure. Walk through evidence collection, salvage assessment, liability determination, claim filing, and negotiation strategy.
-- **Detention dispute**: Carrier bills 8 hours detention at a DC. Receiver says driver arrived 2 hours early. Reconcile GPS data, appointment logs, and gate timestamps to resolve.
-- **Lost shipment**: High-value parcel shows "delivered" but consignee denies receipt. Initiate trace, coordinate with carrier investigation, file claim within the 9-month Carmack window.
+- **파손 클레임**: 500개 품목 중 30%만 사용 가능한 상태로 도착했습니다. 운송사는 불가항력을 주장합니다. 증거 수집, 잔존물 가치 평가, 책임 소재 판단, 클레임 제기 및 협상 전략을 실행합니다.
+- **대기료 분쟁**: 운송사가 물류 센터 대기 시간 8시간을 청구했습니다. 센터 측은 기사가 예약 시간보다 2시간 일찍 도착했다고 주장합니다. GPS 데이터, 예약 로그, 게이트 통과 기록을 대조하여 해결합니다.
+- **분실 물품**: 고가의 택배가 '배송 완료'로 뜨지만 수하인은 받지 못했다고 합니다. 추적 조사를 시작하고 운송사 조사팀과 협력하여 법적 기간 내에 클레임을 제기합니다.
 
-## Core Knowledge
+## 핵심 지식
 
-### Exception Taxonomy
+### 예외 상황 분류 (Taxonomy)
 
-Every exception falls into a classification that determines the resolution workflow, documentation requirements, and urgency:
+- **지연 (Delay):** 약속된 날짜에 배송되지 않은 경우. 날씨, 기계 결함, 기사 부족, 세관 보류 등이 원인입니다. 가장 흔한 유형(약 40%)입니다.
+- **파손 (Damage - Visible):** 배송 시 인수증(POD)에 기재된 파손. 기사가 떠나기 전 수하인이 문서화하면 운송사 책임이 강력해집니다. 즉시 사진을 찍어야 합니다.
+- **잠재 파손 (Damage - Concealed):** 배송 후 발견된 파손. 발견 즉시(보통 5일 이내) 대처해야 하며, 입증 책임이 화주에게 있어 포장 상태 증거가 중요합니다.
+- **온도 일탈 (Damage - Temperature):** 냉장/냉동 운송 실패. 온도 기록 장치(데이터 로거) 데이터가 필수적입니다.
+- **수량 부족 (Shortage):** 서류상 수량과 실제 수량의 불일치. 차고지에서 수량을 확인하고 불일치 시 인수증에 서명하지 마십시오. OS&D(과부족 및 파손) 보고서가 필요합니다.
+- **수취 거부 (Refused Delivery):** 수하인이 거부한 경우. 파손, 지연, 오배송, 예약 위반 등이 원인일 수 있습니다. 거부 원인이 운송사 과실이 아니라면 보관료와 반송 운임이 발생할 수 있습니다.
+- **분실 (Lost):** 배송도 안 되고 스캔 기록도 없는 경우. FTL은 24시간, LTL은 48시간 내에 추적 조사를 시작해야 합니다.
 
-- **Delay (transit):** Shipment not delivered by promised date. Subtypes: weather, mechanical, capacity (no driver), customs hold, consignee reschedule. Most common exception type (~40% of all exceptions). Resolution hinges on whether delay is carrier-fault or force majeure.
-- **Damage (visible):** Noted on POD at delivery. Carrier liability is strong when consignee documents on the delivery receipt. Photograph immediately. Never accept "driver left before we could inspect."
-- **Damage (concealed):** Discovered after delivery, not noted on POD. Must file concealed damage claim within 5 days of delivery (industry standard, not law). Burden of proof shifts to shipper. Carrier will challenge — you need packaging integrity evidence.
-- **Damage (temperature):** Reefer/temperature-controlled failure. Requires continuous temp recorder data (Sensitech, Emerson). Pre-trip inspection records are critical. Carriers will claim "product was loaded warm."
-- **Shortage:** Piece count discrepancy at delivery. Count at the tailgate — never sign clean BOL if count is off. Distinguish driver count vs warehouse count conflicts. OS&D (Over, Short & Damage) report required.
-- **Overage:** More product delivered than on BOL. Often indicates cross-shipment from another consignee. Trace the extra freight — somebody is short.
-- **Refused delivery:** Consignee rejects. Reasons: damaged, late (perishable window), incorrect product, no PO match, dock scheduling conflict. Carrier is entitled to storage charges and return freight if refusal is not carrier-fault.
-- **Misdelivered:** Delivered to wrong address or wrong consignee. Full carrier liability. Time-critical to recover — product deteriorates or gets consumed.
-- **Lost (full shipment):** No delivery, no scan activity. Trigger trace at 24 hours past ETA for FTL, 48 hours for LTL. File formal tracer with carrier OS&D department.
-- **Lost (partial):** Some items missing from shipment. Often happens at LTL terminals during cross-dock handling. Serial number tracking critical for high-value.
-- **Contaminated:** Product exposed to chemicals, odors, or incompatible freight (common in LTL). Regulatory implications for food and pharma.
+### 운송 모드별 특징
 
-### Carrier Behaviour by Mode
+- **LTL (혼적 운송)**: 여러 터미널을 거치므로 파손 위험이 높습니다. 클레임 처리에 보통 30~60일이 소요됩니다.
+- **FTL (독차 운송)**: 단일 기사가 직송합니다. 파손은 주로 상하차 시 발생합니다.
+- **택배 (Parcel)**: 자동화된 클레임 포털을 운영합니다. 신고 요건이 까다로우며 기본 보상 한도가 매우 낮아 고가품은 추가 보험이 필수입니다.
+- **해상 (Ocean)**: 국제 협약(Hague-Visby 등)에 따라 포장당 책임 한도가 정해져 있습니다. 컨테이너 씰(Seal)의 무결성 확인이 핵심입니다.
+- **항공 (Air)**: 몬트리올 협약의 적용을 받으며 신고 기한(파손 14일, 지연 21일)이 매우 짧으므로 주의해야 합니다.
 
-Understanding how different carrier types operate changes your resolution strategy:
+### 클레임 처리 기본 원칙
 
-- **LTL carriers** (FedEx Freight, XPO, Estes): Shipments touch 2-4 terminals. Each touch = damage risk. Claims departments are large and process-driven. Expect 30-60 day claim resolution. Terminal managers have authority up to ~$2,500.
-- **FTL/truckload** (asset carriers + brokers): Single-driver, dock-to-dock. Damage is usually loading/unloading. Brokers add a layer — the broker's carrier may go dark. Always get the actual carrier's MC number.
-- **Parcel** (UPS, FedEx, USPS): Automated claims portals. Strict documentation requirements. Declared value matters — default liability is very low ($100 for UPS). Must purchase additional coverage at shipping.
-- **Intermodal** (rail + drayage): Multiple handoffs. Damage often occurs during rail transit (impact events) or chassis swap. Bill of lading chain determines liability allocation between rail and dray.
-- **Ocean** (container shipping): Governed by Hague-Visby or COGSA (US). Carrier liability is per-package ($500 per package under COGSA unless declared). Container seal integrity is everything. Surveyor inspection at destination port.
-- **Air freight:** Governed by Montreal Convention. Strict 14-day notice for damage, 21 days for delay. Weight-based liability limits unless value declared. Fastest claims resolution of all modes.
+- **입증 책임**: 화주는 (1) 물품을 양호한 상태로 인계했고, (2) 도착 시 파손/부족이 발생했으며, (3) 손해 금액이 얼마인지 증명해야 합니다.
+- **제출 기한**: 미국 국내 기준 배송 후 9개월 이내가 표준입니다. 이 기간을 놓치면 권리가 소멸될 수 있습니다.
+- **필수 서류**: 원본 선하증권(BOL), 예외 사항이 기재된 인수증(POD), 상업 송장(가액 증빙), 검사실시 보고서, 사진, 수리 견적서 등.
 
-### Claims Process Fundamentals
+## 의사결정 프레임워크
 
-- **Carmack Amendment (US domestic surface):** Carrier is liable for actual loss or damage with limited exceptions (act of God, act of public enemy, act of shipper, public authority, inherent vice). Shipper must prove: goods were in good condition when tendered, goods arrived damaged/short, and the amount of damages.
-- **Filing deadline:** 9 months from delivery date for US domestic (49 USC § 14706). Miss this and the claim is time-barred regardless of merit.
-- **Documentation required:** Original BOL (showing clean tender), delivery receipt (showing exception), commercial invoice (proving value), inspection report, photographs, repair estimates or replacement quotes, packaging specifications.
-- **Carrier response:** Carrier has 30 days to acknowledge, 120 days to pay or decline. If they decline, you have 2 years from the decline date to file suit.
+### 심각도 분류 및 대응 단계
 
-### Seasonal and Cyclical Patterns
+| 심각도 | 금액 기준 | 고객 영향 | 대응 수준 |
+|---|---|---|---|
+| **Level 1 (낮음)** | $1,000 미만 | 일반 고객 | 실무자 선에서 처리 |
+| **Level 2 (중간)** | $1,000 ~ $5,000 | 주요 계정 | 팀장급 보고 |
+| **Level 3 (높음)** | $5,000 ~ $25,000 | SLA 위반 위험 | 부서장 관리 |
+| **Level 4 (중대)** | $25,000 ~ $100,000 | 계약 해지 위험 | 임원 보고 |
+| **Level 5 (위기)** | $100,000 이상 | 생산 라인 중단 등 | 경영진 즉시 보고 |
 
-- **Peak season (Oct-Jan):** Exception rates increase 30-50%. Carrier networks are strained. Transit times extend. Claims departments slow down. Build buffer into commitments.
-- **Produce season (Apr-Sep):** Temperature exceptions spike. Reefer availability tightens. Pre-cooling compliance becomes critical.
-- **Hurricane season (Jun-Nov):** Gulf and East Coast disruptions. Force majeure claims increase. Rerouting decisions needed within 4-6 hours of storm track updates.
-- **Month/quarter end:** Shippers rush volume. Carrier tender rejections spike. Double-brokering increases. Quality suffers across the board.
-- **Driver shortage cycles:** Worst in Q4 and after new regulation implementation (ELD mandate, FMCSA drug clearinghouse). Spot rates spike, service drops.
+### 비용 처리 vs 클레임 청구 판단
 
-### Fraud and Red Flags
+- **$500 미만 및 관계 양호 시**: 자체 흡수. 클레임 처리 행정 비용보다 손실이 적을 수 있습니다. 대신 운송사 성과 지표(Scorecard)에 기록합니다.
+- **$500 ~ $2,500**: 표준 클레임 제기. 70% 이상의 합의금 제안 시 수용 검토.
+- **$10,000 이상**: 전담 처리자 지정. 독립 검사 진행. 90% 미만 합의 거부. 거부 시 법적 검토.
 
-- **Staged damages:** Damage patterns inconsistent with transit mode. Multiple claims from same consignee location.
-- **Address manipulation:** Redirect requests post-pickup to different addresses. Common in high-value electronics.
-- **Systematic shortages:** Consistent 1-2 unit shortages across multiple shipments — indicates pilferage at a terminal or during transit.
-- **Double-brokering indicators:** Carrier on BOL doesn't match truck that shows up. Driver can't name their dispatcher. Insurance certificate is from a different entity.
+### 우선순위 결정
 
-## Decision Frameworks
+1. **안전/규제 관련**: 온도 민감 의약품, 위험물(Hazmat) 사고 - 최우선 처리.
+2. **고객 생산 중단 위험**: 지연 시 발생하는 손실이 제품 가액의 수십 배에 달하는 경우.
+3. **유통기한 임박**: 잔여 유효 기간이 48시간 미만인 신선 식품.
+4. **재무적 임팩트**: 고객 등급을 반영한 가중 손실액이 큰 순서.
 
-### Severity Classification
+## 에스컬레이션 프로토콜
 
-Assess every exception on three axes and take the highest severity:
-
-**Financial Impact:**
-- Level 1 (Low): < $1,000 product value, no expedite needed
-- Level 2 (Moderate): $1,000 - $5,000 or minor expedite costs
-- Level 3 (Significant): $5,000 - $25,000 or customer penalty risk
-- Level 4 (Major): $25,000 - $100,000 or contract compliance risk
-- Level 5 (Critical): > $100,000 or regulatory/safety implications
-
-**Customer Impact:**
-- Standard customer, no SLA at risk → does not elevate
-- Key account with SLA at risk → elevate by 1 level
-- Enterprise customer with penalty clauses → elevate by 2 levels
-- Customer's production line or retail launch at risk → automatic Level 4+
-
-**Time Sensitivity:**
-- Standard transit with buffer → does not elevate
-- Delivery needed within 48 hours, no alternative sourced → elevate by 1
-- Same-day or next-day critical (production shutdown, event deadline) → automatic Level 4+
-
-### Eat-the-Cost vs Fight-the-Claim
-
-This is the most common judgment call. Thresholds:
-
-- **< $500 and carrier relationship is strong:** Absorb. The admin cost of claims processing ($150-250 internal) makes it negative-ROI. Log for carrier scorecard.
-- **$500 - $2,500:** File claim but don't escalate aggressively. This is the "standard process" zone. Accept partial settlements above 70% of value.
-- **$2,500 - $10,000:** Full claims process. Escalate at 30-day mark if no resolution. Involve carrier account manager. Reject settlements below 80%.
-- **> $10,000:** VP-level awareness. Dedicated claims handler. Independent inspection if damage. Reject settlements below 90%. Legal review if denied.
-- **Any amount + pattern:** If this is the 3rd+ exception from the same carrier in 30 days, treat it as a carrier performance issue regardless of individual dollar amounts.
-
-### Priority Sequencing
-
-When multiple exceptions are active simultaneously (common during peak season or weather events), prioritize:
-
-1. Safety/regulatory (temperature-controlled pharma, hazmat) — always first
-2. Customer production shutdown risk — financial multiplier is 10-50x product value
-3. Perishable with remaining shelf life < 48 hours
-4. Highest financial impact adjusted for customer tier
-5. Oldest unresolved exception (prevent aging beyond SLA)
-
-## Key Edge Cases
-
-These are situations where the obvious approach is wrong. Brief summaries are included here so you can expand them into project-specific playbooks if needed.
-
-1. **Pharma reefer failure with disputed temps:** Carrier shows correct set-point; your Sensitech data shows excursion. The dispute is about sensor placement and pre-cooling. Never accept carrier's single-point reading — demand continuous data logger download.
-
-2. **Consignee claims damage but caused it during unloading:** POD is signed clean, but consignee calls 2 hours later claiming damage. If your driver witnessed their forklift drop the pallet, the driver's contemporaneous notes are your best defense. Without that, concealed damage claim against you is likely.
-
-3. **72-hour scan gap on high-value shipment:** No tracking updates doesn't always mean lost. LTL scan gaps happen at busy terminals. Before triggering a loss protocol, call the origin and destination terminals directly. Ask for physical trailer/bay location.
-
-4. **Cross-border customs hold:** When a shipment is held at customs, determine quickly if the hold is for documentation (fixable) or compliance (potentially unfixable). Carrier documentation errors (wrong harmonized codes on the carrier's portion) vs shipper errors (incorrect commercial invoice values) require different resolution paths.
-
-5. **Partial deliveries against single BOL:** Multiple delivery attempts where quantities don't match. Maintain a running tally. Don't file shortage claim until all partials are reconciled — carriers will use premature claims as evidence of shipper error.
-
-6. **Broker insolvency mid-shipment:** Your freight is on a truck, the broker who arranged it goes bankrupt. The actual carrier has a lien right. Determine quickly: is the carrier paid? If not, negotiate directly with the carrier for release.
-
-7. **Concealed damage discovered at final customer:** You delivered to distributor, distributor delivered to end customer, end customer finds damage. The chain-of-custody documentation determines who bears the loss.
-
-8. **Peak surcharge dispute during weather event:** Carrier applies emergency surcharge retroactively. Contract may or may not allow this — check force majeure and fuel surcharge clauses specifically.
-
-## Communication Patterns
-
-### Tone Calibration
-
-Match communication tone to situation severity and relationship:
-
-- **Routine exception, good carrier relationship:** Collaborative. "We've got a delay on PRO# X — can you get me an updated ETA? Customer is asking."
-- **Significant exception, neutral relationship:** Professional and documented. State facts, reference BOL/PRO, specify what you need and by when.
-- **Major exception or pattern, strained relationship:** Formal. CC management. Reference contract terms. Set response deadlines. "Per Section 4.2 of our transportation agreement dated..."
-- **Customer-facing (delay):** Proactive, honest, solution-oriented. Never blame the carrier by name. "Your shipment has experienced a transit delay. Here's what we're doing and your updated timeline."
-- **Customer-facing (damage/loss):** Empathetic, action-oriented. Lead with the resolution, not the problem. "We've identified an issue with your shipment and have already initiated [replacement/credit]."
-
-### Key Templates
-
-Brief templates appear below. Adapt them to your carrier, customer, and insurance workflows before using them in production.
-
-**Initial carrier inquiry:** Subject: `Exception Notice — PRO# {pro} / BOL# {bol}`. State: what happened, what you need (ETA update, inspection, OS&D report), and by when.
-
-**Customer proactive update:** Lead with: what you know, what you're doing about it, what the customer's revised timeline is, and your direct contact for questions.
-
-**Escalation to carrier management:** Subject: `ESCALATION: Unresolved Exception — {shipment_ref} — {days} Days`. Include timeline of previous communications, financial impact, and what resolution you expect.
-
-## Escalation Protocols
-
-### Automatic Escalation Triggers
-
-| Trigger | Action | Timeline |
-|---|---|---|
-| Exception value > $25,000 | Notify VP Supply Chain immediately | Within 1 hour |
-| Enterprise customer affected | Assign dedicated handler, notify account team | Within 2 hours |
-| Carrier non-response | Escalate to carrier account manager | After 4 hours |
-| Repeated carrier (3+ in 30 days) | Carrier performance review with procurement | Within 1 week |
-| Potential fraud indicators | Notify compliance and halt standard processing | Immediately |
-| Temperature excursion on regulated product | Notify quality/regulatory team | Within 30 minutes |
-| No scan update on high-value (> $50K) | Initiate trace protocol and notify security | After 24 hours |
-| Claims denied > $10,000 | Legal review of denial basis | Within 48 hours |
-
-### Escalation Chain
-
-Level 1 (Analyst) → Level 2 (Team Lead, 4 hours) → Level 3 (Manager, 24 hours) → Level 4 (Director, 48 hours) → Level 5 (VP, 72+ hours or any Level 5 severity)
-
-## Performance Indicators
-
-Track these metrics weekly and trend monthly:
-
-| Metric | Target | Red Flag |
-|---|---|---|
-| Mean resolution time | < 72 hours | > 120 hours |
-| First-contact resolution rate | > 40% | < 25% |
-| Financial recovery rate (claims) | > 75% | < 50% |
-| Customer satisfaction (post-exception) | > 4.0/5.0 | < 3.5/5.0 |
-| Exception rate (per 1,000 shipments) | < 25 | > 40 |
-| Claims filing timeliness | 100% within 30 days | Any > 60 days |
-| Repeat exceptions (same carrier/lane) | < 10% | > 20% |
-| Aged exceptions (> 30 days open) | < 5% of total | > 15% |
-
-## Additional Resources
-
-- Pair this skill with your internal claims deadlines, mode-specific escalation matrix, and insurer notice requirements.
-- Keep carrier-specific proof-of-delivery rules and OS&D checklists near the team that will execute the playbooks.
+- **즉시 보고 대상**: $25,000 초과 건, 규제 대상 물품의 온도 일탈, 사기 징후 발견 시.
+- **시간별 대응**: 운송사 무응답 4시간 경과 시 관리자에게 에스컬레이션. 고가품 스캔 공백 24시간 경과 시 추적 프로토콜 가동.
