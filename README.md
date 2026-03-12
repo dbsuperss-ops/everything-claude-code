@@ -1,6 +1,6 @@
-**Language:** English | [繁體中文](docs/zh-TW/README.md)
+**언어:** [English](README.md) | **한국어** | [简体中文](README.zh-CN.md) | [繁體中文](docs/zh-TW/README.md) | [日本語](docs/ja-JP/README.md)
 
-# Everything Claude Code
+# Everything Claude Code (모든 클로드 코드)
 
 [![Stars](https://img.shields.io/github/stars/affaan-m/everything-claude-code?style=flat)](https://github.com/affaan-m/everything-claude-code/stargazers)
 [![Forks](https://img.shields.io/github/forks/affaan-m/everything-claude-code?style=flat)](https://github.com/affaan-m/everything-claude-code/network/members)
@@ -9,365 +9,348 @@
 [![npm ecc-agentshield](https://img.shields.io/npm/dw/ecc-agentshield?label=ecc-agentshield%20weekly%20downloads&logo=npm)](https://www.npmjs.com/package/ecc-agentshield)
 [![GitHub App Install](https://img.shields.io/badge/GitHub%20App-150%20installs-2ea44f?logo=github)](https://github.com/marketplace/ecc-tools)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Shell](https://img.shields.io/badge/-Shell-4EAA25?logo=gnu-bash&logoColor=white)
-![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white)
-![Python](https://img.shields.io/badge/-Python-3776AB?logo=python&logoColor=white)
-![Go](https://img.shields.io/badge/-Go-00ADD8?logo=go&logoColor=white)
-![Java](https://img.shields.io/badge/-Java-ED8B00?logo=openjdk&logoColor=white)
-![Perl](https://img.shields.io/badge/-Perl-39457E?logo=perl&logoColor=white)
-![Markdown](https://img.shields.io/badge/-Markdown-000000?logo=markdown&logoColor=white)
 
-> **50K+ stars** | **6K+ forks** | **30 contributors** | **5 languages supported** | **Anthropic Hackathon Winner**
+> **50K+ 스타** | **6K+ 포크** | **30명의 기여자** | **5개 언어 지원** | **Anthropic 해커톤 우승작**
 
 ---
 
-<div align="center">
+**AI 에이전트 하네스를 위한 성능 최적화 시스템. Anthropic 해커톤 우승자의 작품입니다.**
 
-**🌐 Language / 语言 / 語言**
+단순한 설정 모음이 아닙니다. 스킬, 본능, 메모리 최적화, 지속적 학습, 보안 스캔, 리서치 기반 개발을 아우르는 완체 시스템입니다. 실제 제품을 구축하며 10개월 이상 매일 집약적으로 사용하며 진화시킨 프로덕션급 에이전트, 후크, 명령어, 규칙 및 MCP 설정들이 포함되어 있습니다.
 
-[**English**](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](docs/zh-TW/README.md) | [日本語](docs/ja-JP/README.md)
-
-</div>
+**Claude Code**, **Codex**, **Cowork** 및 기타 AI 에이전트 하네스에서 작동합니다.
 
 ---
 
-**The performance optimization system for AI agent harnesses. From an Anthropic hackathon winner.**
+## 가이드 (The Guides)
 
-Not just configs. A complete system: skills, instincts, memory optimization, continuous learning, security scanning, and research-first development. Production-ready agents, hooks, commands, rules, and MCP configurations evolved over 10+ months of intensive daily use building real products.
-
-Works across **Claude Code**, **Codex**, **Cowork**, and other AI agent harnesses.
-
----
-
-## The Guides
-
-This repo is the raw code only. The guides explain everything.
+이 레포지토리는 원본 코드만 포함하고 있습니다. 가이드에서 모든 것을 설명합니다.
 
 <table>
 <tr>
 <td width="50%">
 <a href="https://x.com/affaanmustafa/status/2012378465664745795">
-<img src="https://github.com/user-attachments/assets/1a471488-59cc-425b-8345-5245c7efbcef" alt="The Shorthand Guide to Everything Claude Code" />
+<img src="https://github.com/user-attachments/assets/1a471488-59cc-425b-8345-5245c7efbcef" alt="Everything Claude Code 단축 가이드" />
 </a>
 </td>
 <td width="50%">
 <a href="https://x.com/affaanmustafa/status/2014040193557471352">
-<img src="https://github.com/user-attachments/assets/c9ca43bc-b149-427f-b551-af6840c368f0" alt="The Longform Guide to Everything Claude Code" />
+<img src="https://github.com/user-attachments/assets/c9ca43bc-b149-427f-b551-af6840c368f0" alt="Everything Claude Code 상세 가이드" />
 </a>
 </td>
 </tr>
 <tr>
-<td align="center"><b>Shorthand Guide</b><br/>Setup, foundations, philosophy. <b>Read this first.</b></td>
-<td align="center"><b>Longform Guide</b><br/>Token optimization, memory persistence, evals, parallelization.</td>
+<td align="center"><b>단축 가이드(Shorthand)</b><br/>설정, 기초, 철학. <b>먼저 읽어보세요.</b></td>
+<td align="center"><b>상세 가이드(Longform)</b><br/>토큰 최적화, 메모리 지속성, 평가(Evals), 병렬화.</td>
 </tr>
 </table>
 
-| Topic | What You'll Learn |
+| 주제 | 학습 내용 |
 |-------|-------------------|
-| Token Optimization | Model selection, system prompt slimming, background processes |
-| Memory Persistence | Hooks that save/load context across sessions automatically |
-| Continuous Learning | Auto-extract patterns from sessions into reusable skills |
-| Verification Loops | Checkpoint vs continuous evals, grader types, pass@k metrics |
-| Parallelization | Git worktrees, cascade method, when to scale instances |
-| Subagent Orchestration | The context problem, iterative retrieval pattern |
+| 토큰 최적화 | 모델 선택, 시스템 프롬프트 슬리밍(Slimming), 백그라운드 프로세스 |
+| 메모리 지속성 | 세션 간 컨텍스트를 자동으로 저장/로드하는 후크 |
+| 지속적 학습 | 세션의 패턴을 재사용 가능한 스킬로 자동 추출 |
+| 검증 루프 | 체크포인트 vs 지속적 평가, 채점자 유형, pass@k 메트릭 |
+| 병렬화 | Git worktrees, 캐스케이드(Cascade) 방식, 인스턴스 확장 시점 |
+| 서브에이전트 오케스트레이션 | 컨텍스트 문제, 반복적 검색(Iterative retrieval) 패턴 |
 
 ---
 
-## What's New
+## 새로운 소식 (What's New)
 
-### v1.8.0 — Harness Performance System (Mar 2026)
+### v1.8.0 — 하네스 성능 시스템 (2026년 3월)
 
-- **Harness-first release** — ECC is now explicitly framed as an agent harness performance system, not just a config pack.
-- **Hook reliability overhaul** — SessionStart root fallback, Stop-phase session summaries, and script-based hooks replacing fragile inline one-liners.
-- **Hook runtime controls** — `ECC_HOOK_PROFILE=minimal|standard|strict` and `ECC_DISABLED_HOOKS=...` for runtime gating without editing hook files.
-- **New harness commands** — `/harness-audit`, `/loop-start`, `/loop-status`, `/quality-gate`, `/model-route`.
-- **NanoClaw v2** — model routing, skill hot-load, session branch/search/export/compact/metrics.
-- **Cross-harness parity** — behavior tightened across Claude Code, Cursor, OpenCode, and Codex app/CLI.
-- **997 internal tests passing** — full suite green after hook/runtime refactor and compatibility updates.
+- **하네스 우선 릴리스** — ECC는 이제 단순한 설정팩이 아니라 AI 에이전트 하네스 성능 시스템으로 명확히 정의됩니다.
+- **후크 안정성 개선** — SessionStart 루트 폴백, 중단 단계(Stop-phase) 세션 요약, 그리고 취약한 인라인 명령어를 대체하는 스크립트 기반 후크가 도입되었습니다.
+- **후크 런타임 제어** — 후크 파일을 수정하지 않고도 `ECC_HOOK_PROFILE=minimal|standard|strict` 및 `ECC_DISABLED_HOOKS=...`를 통해 실행 시점을 제어할 수 있습니다.
+- **새로운 하네스 명령어** — `/harness-audit`, `/loop-start`, `/loop-status`, `/quality-gate`, `/model-route`.
+- **NanoClaw v2** — 모델 라우팅, 스킬 즉시 로드(Hot-load), 세션 브랜치/검색/내보내기/압축/메트릭 기능이 추가되었습니다.
+- **크로스 하네스 호환성** — Claude Code, Cursor, OpenCode, Codex 앱/CLI 전반에서 동작이 일관되게 조정되었습니다.
+- **997개 내부 테스트 통과** — 후크/런타임 리팩토링 및 호환성 업데이트 후 모든 테스트가 통과되었습니다.
 
-### v1.7.0 — Cross-Platform Expansion & Presentation Builder (Feb 2026)
+### v1.7.0 — 크로스 플랫폼 확장 및 프레젠테이션 빌더 (2026년 2월)
 
-- **Codex app + CLI support** — Direct `AGENTS.md`-based Codex support, installer targeting, and Codex docs
-- **`frontend-slides` skill** — Zero-dependency HTML presentation builder with PPTX conversion guidance and strict viewport-fit rules
-- **5 new generic business/content skills** — `article-writing`, `content-engine`, `market-research`, `investor-materials`, `investor-outreach`
-- **Broader tool coverage** — Cursor, Codex, and OpenCode support tightened so the same repo ships cleanly across all major harnesses
-- **992 internal tests** — Expanded validation and regression coverage across plugin, hooks, skills, and packaging
+- **Codex 앱 + CLI 지원** — `AGENTS.md` 기반의 직접적인 Codex 지원, 인스톨러 대상 지정 및 Codex 문서가 추가되었습니다.
+- **`frontend-slides` 스킬** — 의존성 없는 HTML 프레젠테이션 빌더로, PPTX 변환 가이드 및 엄격한 뷰포트 맞춤 규칙이 포함되었습니다.
+- **5개의 새로운 비즈니스/콘텐츠 스킬** — `article-writing`, `content-engine`, `market-research`, `investor-materials`, `investor-outreach`
+- **광범위한 도구 지원** — 모든 주요 하네스에서 동일한 레포지토리가 깨끗하게 작동하도록 Cursor, Codex, OpenCode 지원을 강화했습니다.
+- **992개 내부 테스트** — 플러그인, 후크, 스킬 및 패키징 전반에 걸쳐 검증 및 회귀 테스트 범위를 확대했습니다.
 
-### v1.6.0 — Codex CLI, AgentShield & Marketplace (Feb 2026)
+### v1.6.0 — Codex CLI, AgentShield 및 마켓플레이스 (2026년 2월)
 
-- **Codex CLI support** — New `/codex-setup` command generates `codex.md` for OpenAI Codex CLI compatibility
-- **7 new skills** — `search-first`, `swift-actor-persistence`, `swift-protocol-di-testing`, `regex-vs-llm-structured-text`, `content-hash-cache-pattern`, `cost-aware-llm-pipeline`, `skill-stocktake`
-- **AgentShield integration** — `/security-scan` skill runs AgentShield directly from Claude Code; 1282 tests, 102 rules
-- **GitHub Marketplace** — ECC Tools GitHub App live at [github.com/marketplace/ecc-tools](https://github.com/marketplace/ecc-tools) with free/pro/enterprise tiers
-- **30+ community PRs merged** — Contributions from 30 contributors across 6 languages
-- **978 internal tests** — Expanded validation suite across agents, skills, commands, hooks, and rules
+- **Codex CLI 지원** — OpenAI Codex CLI 호환성을 위해 `codex.md`를 생성하는 새로운 `/codex-setup` 명령어가 추가되었습니다.
+- **7개의 새로운 스킬** — `search-first`, `swift-actor-persistence`, `swift-protocol-di-testing`, `regex-vs-llm-structured-text`, `content-hash-cache-pattern`, `cost-aware-llm-pipeline`, `skill-stocktake`
+- **AgentShield 통합** — Claude Code에서 직접 AgentShield를 실행하는 `/security-scan` 스킬이 추가되었습니다. (1282개 테스트, 102개 규칙)
+- **GitHub 마켓플레이스** — [github.com/marketplace/ecc-tools](https://github.com/marketplace/ecc-tools)에서 Free/Pro/Enterprise 티어로 제공됩니다.
+- **30개 이상의 커뮤니티 PR 머지** — 6개 언어에 걸쳐 30명의 기여자가 참여했습니다.
+- **978개 내부 테스트** — 에이전트, 스킬, 명령어, 후크 및 규칙 전반에 걸쳐 검증 세트를 확대했습니다.
 
-### v1.4.1 — Bug Fix (Feb 2026)
+### v1.4.1 — 버그 수정 (2026년 2월)
 
-- **Fixed instinct import content loss** — `parse_instinct_file()` was silently dropping all content after frontmatter (Action, Evidence, Examples sections) during `/instinct-import`. Fixed by community contributor @ericcai0814 ([#148](https://github.com/affaan-m/everything-claude-code/issues/148), [#161](https://github.com/affaan-m/everything-claude-code/pull/161))
+- **인스팅트(Instinct) 임포트 시 내용 소실 문제 수정** — `/instinct-import` 중 프론트매터 이후의 내용(Action, Evidence, Examples 섹션)을 누락하던 `parse_instinct_file()` 함수가 수정되었습니다. (기여자 @ericcai0814)
 
-### v1.4.0 — Multi-Language Rules, Installation Wizard & PM2 (Feb 2026)
+### v1.4.0 — 다국어 규칙, 설치 마법사 및 PM2 (2026년 2월)
 
-- **Interactive installation wizard** — New `configure-ecc` skill provides guided setup with merge/overwrite detection
-- **PM2 & multi-agent orchestration** — 6 new commands (`/pm2`, `/multi-plan`, `/multi-execute`, `/multi-backend`, `/multi-frontend`, `/multi-workflow`) for managing complex multi-service workflows
-- **Multi-language rules architecture** — Rules restructured from flat files into `common/` + `typescript/` + `python/` + `golang/` directories. Install only the languages you need
-- **Chinese (zh-CN) translations** — Complete translation of all agents, commands, skills, and rules (80+ files)
-- **GitHub Sponsors support** — Sponsor the project via GitHub Sponsors
-- **Enhanced CONTRIBUTING.md** — Detailed PR templates for each contribution type
+- **대화형 설치 마법사** — 머지/덮어쓰기 감지 기능이 포함된 가이드 설정 스킬인 `configure-ecc`가 추가되었습니다.
+- **PM2 및 멀티 에이전트 오케스트레이션** — 복잡한 멀티 서비스 워크플로우 관리를 위한 6개의 새로운 명령어가 추가되었습니다. (`/pm2`, `/multi-plan` 등)
+- **다국어 규칙 아키텍처** — 규칙 파일이 `common/` + 언어별 디렉토리 구조로 재구성되었습니다. 필요한 언어만 설치하십시오.
+- **중국어(zh-CN) 번역** — 모든 에이전트, 명령어, 스킬 및 규칙(80개 이상의 파일)의 번역이 완료되었습니다.
+- **GitHub 스폰서 지원** — 프로젝트를 후원할 수 있습니다.
+- **개선된 CONTRIBUTING.md** — 각 기여 유형별 상세 PR 템플릿이 추가되었습니다.
 
-### v1.3.0 — OpenCode Plugin Support (Feb 2026)
+### v1.3.0 — OpenCode 플러그인 지원 (2026년 2월)
 
-- **Full OpenCode integration** — 12 agents, 24 commands, 16 skills with hook support via OpenCode's plugin system (20+ event types)
-- **3 native custom tools** — run-tests, check-coverage, security-audit
-- **LLM documentation** — `llms.txt` for comprehensive OpenCode docs
+- **완벽한 OpenCode 통합** — OpenCode의 플러그인 시스템을 통해 12개 에이전트, 24개 명령어, 16개 스킬이 후크를 지원합니다.
+- **3개의 네이티브 커스텀 도구** — run-tests, check-coverage, security-audit
+- **LLM용 문서** — 종합적인 OpenCode 문서를 담은 `llms.txt`
 
-### v1.2.0 — Unified Commands & Skills (Feb 2026)
+### v1.2.0 — 통합 명령어 및 스킬 (2026년 2월)
 
-- **Python/Django support** — Django patterns, security, TDD, and verification skills
-- **Java Spring Boot skills** — Patterns, security, TDD, and verification for Spring Boot
-- **Session management** — `/sessions` command for session history
-- **Continuous learning v2** — Instinct-based learning with confidence scoring, import/export, evolution
+- **Python/Django 지원** — Django 패턴, 보안, TDD 및 검증 스킬
+- **Java Spring Boot 스킬** — Spring Boot용 패턴, 보안, TDD 및 검증
+- **세션 관리** — 세션 히스토리를 위한 `/sessions` 명령어
+- **지속적 학습 v2** — 신뢰도 점수, 임포트/익스포트, 진화 기능이 포함된 인스팅트 기반 학습
 
-See the full changelog in [Releases](https://github.com/affaan-m/everything-claude-code/releases).
+전체 변경 이력은 [Releases](https://github.com/affaan-m/everything-claude-code/releases)에서 확인하십시오.
 
 ---
 
-## 🚀 Quick Start
+## 🚀 빠른 시작 (Quick Start)
 
-Get up and running in under 2 minutes:
+2분 안에 시작하기:
 
-### Step 1: Install the Plugin
+### 1단계: 플러그인 설치
 
 ```bash
-# Add marketplace
+# 마켓플레이스 추가
 /plugin marketplace add affaan-m/everything-claude-code
 
-# Install plugin
+# 플러그인 설치
 /plugin install everything-claude-code@everything-claude-code
 ```
 
-### Step 2: Install Rules (Required)
+### 2단계: 규칙 설치 (필수)
 
-> ⚠️ **Important:** Claude Code plugins cannot distribute `rules` automatically. Install them manually:
+> ⚠️ **중요:** Claude Code 플러그인은 `rules`(규칙)를 자동으로 배포할 수 없습니다. 수동으로 설치하십시오:
 
 ```bash
-# Clone the repo first
+# 먼저 레포지토리를 클론합니다
 git clone https://github.com/affaan-m/everything-claude-code.git
 cd everything-claude-code
 
-# Recommended: use the installer (handles common + language rules safely)
-./install.sh typescript    # or python or golang or swift or php
-# You can pass multiple languages:
+# 권장: 인스톨러 사용 (공통 및 언어별 규칙을 안전하게 처리)
+./install.sh typescript    # 또는 python, golang, swift, php 등
+# 여러 언어 전달 가능:
 # ./install.sh typescript python golang swift php
-# or target cursor:
+# 또는 대상(Target) 지정:
 # ./install.sh --target cursor typescript
-# or target antigravity:
 # ./install.sh --target antigravity typescript
 ```
 
-For manual install instructions see the README in the `rules/` folder.
+수동 설치 지침은 `rules/` 폴더의 README를 참고하십시오.
 
-### Step 3: Start Using
+### 3단계: 사용 시작
 
 ```bash
-# Try a command (plugin install uses namespaced form)
-/everything-claude-code:plan "Add user authentication"
+# 명령어 실행 (플러그인 설치 시 네임스페이스 포함 형태)
+/everything-claude-code:plan "사용자 인증 추가"
 
-# Manual install (Option 2) uses the shorter form:
-# /plan "Add user authentication"
+# 수동 설치(옵션 2) 시에는 짧은 형식 사용 가능:
+# /plan "사용자 인증 추가"
 
-# Check available commands
+# 사용 가능한 명령어 확인
 /plugin list everything-claude-code@everything-claude-code
 ```
 
-✨ **That's it!** You now have access to 16 agents, 65 skills, and 40 commands.
+✨ **끝났습니다!** 이제 16개 에이전트, 65개 스킬, 40개 명령어를 사용할 수 있습니다.
 
 ---
 
-## 🌐 Cross-Platform Support
+## 🌐 크로스 플랫폼 지원 (Cross-Platform Support)
 
-This plugin now fully supports **Windows, macOS, and Linux**, alongside tight integration across major IDEs (Cursor, OpenCode, Antigravity) and CLI harnesses. All hooks and scripts have been rewritten in Node.js for maximum compatibility.
+이 플러그인은 **Windows, macOS, Linux**를 완벽하게 지원하며, 주요 IDE(Cursor, OpenCode, Antigravity) 및 CLI 하네스와 긴밀하게 통합됩니다. 모든 후크와 스크립트는 최대 호환성을 위해 Node.js로 작성되었습니다.
 
-### Package Manager Detection
+### 패키지 매니저 감지
 
-The plugin automatically detects your preferred package manager (npm, pnpm, yarn, or bun) with the following priority:
+플러그인은 다음 우선순위에 따라 선호하는 패키지 매니저(npm, pnpm, yarn, bun)를 자동으로 감지합니다:
 
-1. **Environment variable**: `CLAUDE_PACKAGE_MANAGER`
-2. **Project config**: `.claude/package-manager.json`
-3. **package.json**: `packageManager` field
-4. **Lock file**: Detection from package-lock.json, yarn.lock, pnpm-lock.yaml, or bun.lockb
-5. **Global config**: `~/.claude/package-manager.json`
-6. **Fallback**: First available package manager
+1. **환경 변수**: `CLAUDE_PACKAGE_MANAGER`
+2. **프로젝트 설정**: `.claude/package-manager.json`
+3. **package.json**: `packageManager` 필드
+4. **락 파일(Lock file)**: package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb 감지
+5. **글로벌 설정**: `~/.claude/package-manager.json`
+6. **폴백(Fallback)**: 사용 가능한 첫 번째 패키지 매니저
 
-To set your preferred package manager:
+선호하는 패키지 매니저 설정 방법:
 
 ```bash
-# Via environment variable
+# 환경 변수 사용
 export CLAUDE_PACKAGE_MANAGER=pnpm
 
-# Via global config
+# 글로벌 설정 사용
 node scripts/setup-package-manager.js --global pnpm
 
-# Via project config
+# 프로젝트 설정 사용
 node scripts/setup-package-manager.js --project bun
 
-# Detect current setting
+# 현재 설정 감지
 node scripts/setup-package-manager.js --detect
 ```
 
-Or use the `/setup-pm` command in Claude Code.
+또는 Claude Code에서 `/setup-pm` 명령어를 사용하십시오.
 
-### Hook Runtime Controls
+### 후크 런타임 제어
 
-Use runtime flags to tune strictness or disable specific hooks temporarily:
+런타임 플래그를 사용하여 엄격도를 조정하거나 특정 후크를 일시적으로 비활성화할 수 있습니다:
 
 ```bash
-# Hook strictness profile (default: standard)
+# 후크 엄격도 프로필 (기본값: standard)
 export ECC_HOOK_PROFILE=standard
 
-# Comma-separated hook IDs to disable
+# 비활성화할 후크 ID (쉼표로 구분)
 export ECC_DISABLED_HOOKS="pre:bash:tmux-reminder,post:edit:typecheck"
 ```
 
 ---
 
-## 📦 What's Inside
+## 📦 구성 요소 (What's Inside)
 
-This repo is a **Claude Code plugin** - install it directly or copy components manually.
+이 레포지토리는 **Claude Code 플러그인**입니다. 직접 설치하거나 각 구성 요소를 수동으로 복사하여 사용할 수 있습니다.
 
 ```
 everything-claude-code/
-|-- .claude-plugin/   # Plugin and marketplace manifests
-|   |-- plugin.json         # Plugin metadata and component paths
-|   |-- marketplace.json    # Marketplace catalog for /plugin marketplace add
+|-- .claude-plugin/   # 플러그인 및 마켓플레이스 매니페스트
+|   |-- plugin.json         # 플러그인 메타데이터 및 컴포넌트 경로
+|   |-- marketplace.json    # 마켓플레이스 카탈로그
 |
-|-- agents/           # Specialized subagents for delegation
-|   |-- planner.md           # Feature implementation planning
-|   |-- architect.md         # System design decisions
-|   |-- tdd-guide.md         # Test-driven development
-|   |-- code-reviewer.md     # Quality and security review
-|   |-- security-reviewer.md # Vulnerability analysis
+|-- agents/           # 태스크 위임을 위한 전문 서브에이전트
+|   |-- planner.md           # 기능 구현 계획
+|   |-- architect.md         # 시스템 설계 결정
+|   |-- tdd-guide.md         # 테스트 주도 개발
+|   |-- code-reviewer.md     # 품질 및 보안 리뷰
+|   |-- security-reviewer.md # 취약점 분석
 |   |-- build-error-resolver.md
-|   |-- e2e-runner.md        # Playwright E2E testing
-|   |-- refactor-cleaner.md  # Dead code cleanup
-|   |-- doc-updater.md       # Documentation sync
-|   |-- go-reviewer.md       # Go code review
-|   |-- go-build-resolver.md # Go build error resolution
-|   |-- python-reviewer.md   # Python code review (NEW)
-|   |-- database-reviewer.md # Database/Supabase review (NEW)
+|   |-- e2e-runner.md        # Playwright E2E 테스트
+|   |-- refactor-cleaner.md  # 데드 코드 정리
+|   |-- doc-updater.md       # 문서 동기화
+|   |-- go-reviewer.md       # Go 코드 리뷰
+|   |-- go-build-resolver.md # Go 빌드 에러 해결
+|   |-- python-reviewer.md   # Python 코드 리뷰 (새로 추가)
+|   |-- database-reviewer.md # 데이터베이스/Supabase 리뷰 (새로 추가)
 |
-|-- skills/           # Workflow definitions and domain knowledge
-|   |-- coding-standards/           # Language best practices
-|   |-- clickhouse-io/              # ClickHouse analytics, queries, data engineering
-|   |-- backend-patterns/           # API, database, caching patterns
-|   |-- frontend-patterns/          # React, Next.js patterns
-|   |-- frontend-slides/            # HTML slide decks and PPTX-to-web presentation workflows (NEW)
-|   |-- article-writing/            # Long-form writing in a supplied voice without generic AI tone (NEW)
-|   |-- content-engine/             # Multi-platform social content and repurposing workflows (NEW)
-|   |-- market-research/            # Source-attributed market, competitor, and investor research (NEW)
-|   |-- investor-materials/         # Pitch decks, one-pagers, memos, and financial models (NEW)
-|   |-- investor-outreach/          # Personalized fundraising outreach and follow-up (NEW)
-|   |-- continuous-learning/        # Auto-extract patterns from sessions (Longform Guide)
-|   |-- continuous-learning-v2/     # Instinct-based learning with confidence scoring
-|   |-- iterative-retrieval/        # Progressive context refinement for subagents
-|   |-- strategic-compact/          # Manual compaction suggestions (Longform Guide)
-|   |-- tdd-workflow/               # TDD methodology
-|   |-- security-review/            # Security checklist
-|   |-- eval-harness/               # Verification loop evaluation (Longform Guide)
-|   |-- verification-loop/          # Continuous verification (Longform Guide)
-|   |-- videodb/                   # Video and audio: ingest, search, edit, generate, stream (NEW)
-|   |-- golang-patterns/            # Go idioms and best practices
-|   |-- golang-testing/             # Go testing patterns, TDD, benchmarks
-|   |-- cpp-coding-standards/         # C++ coding standards from C++ Core Guidelines (NEW)
-|   |-- cpp-testing/                # C++ testing with GoogleTest, CMake/CTest (NEW)
-|   |-- django-patterns/            # Django patterns, models, views (NEW)
-|   |-- django-security/            # Django security best practices (NEW)
-|   |-- django-tdd/                 # Django TDD workflow (NEW)
-|   |-- django-verification/        # Django verification loops (NEW)
-|   |-- python-patterns/            # Python idioms and best practices (NEW)
-|   |-- python-testing/             # Python testing with pytest (NEW)
-|   |-- springboot-patterns/        # Java Spring Boot patterns (NEW)
-|   |-- springboot-security/        # Spring Boot security (NEW)
-|   |-- springboot-tdd/             # Spring Boot TDD (NEW)
-|   |-- springboot-verification/    # Spring Boot verification (NEW)
-|   |-- configure-ecc/              # Interactive installation wizard (NEW)
-|   |-- security-scan/              # AgentShield security auditor integration (NEW)
-|   |-- java-coding-standards/     # Java coding standards (NEW)
-|   |-- jpa-patterns/              # JPA/Hibernate patterns (NEW)
-|   |-- postgres-patterns/         # PostgreSQL optimization patterns (NEW)
-|   |-- nutrient-document-processing/ # Document processing with Nutrient API (NEW)
-|   |-- project-guidelines-example/   # Template for project-specific skills
-|   |-- database-migrations/         # Migration patterns (Prisma, Drizzle, Django, Go) (NEW)
-|   |-- api-design/                  # REST API design, pagination, error responses (NEW)
-|   |-- deployment-patterns/         # CI/CD, Docker, health checks, rollbacks (NEW)
-|   |-- docker-patterns/            # Docker Compose, networking, volumes, container security (NEW)
-|   |-- e2e-testing/                 # Playwright E2E patterns and Page Object Model (NEW)
-|   |-- content-hash-cache-pattern/  # SHA-256 content hash caching for file processing (NEW)
-|   |-- cost-aware-llm-pipeline/     # LLM cost optimization, model routing, budget tracking (NEW)
-|   |-- regex-vs-llm-structured-text/ # Decision framework: regex vs LLM for text parsing (NEW)
-|   |-- swift-actor-persistence/     # Thread-safe Swift data persistence with actors (NEW)
-|   |-- swift-protocol-di-testing/   # Protocol-based DI for testable Swift code (NEW)
-|   |-- search-first/               # Research-before-coding workflow (NEW)
-|   |-- skill-stocktake/            # Audit skills and commands for quality (NEW)
-|   |-- liquid-glass-design/         # iOS 26 Liquid Glass design system (NEW)
-|   |-- foundation-models-on-device/ # Apple on-device LLM with FoundationModels (NEW)
-|   |-- swift-concurrency-6-2/       # Swift 6.2 Approachable Concurrency (NEW)
-|   |-- perl-patterns/             # Modern Perl 5.36+ idioms and best practices (NEW)
-|   |-- perl-security/             # Perl security patterns, taint mode, safe I/O (NEW)
-|   |-- perl-testing/              # Perl TDD with Test2::V0, prove, Devel::Cover (NEW)
-|   |-- autonomous-loops/           # Autonomous loop patterns: sequential pipelines, PR loops, DAG orchestration (NEW)
-|   |-- plankton-code-quality/      # Write-time code quality enforcement with Plankton hooks (NEW)
+|-- skills/           # 워크플로우 정의 및 도메인 지식
+|   |-- coding-standards/           # 언어별 최선 관행
+|   |-- clickhouse-io/              # ClickHouse 분석, 쿼리, 데이터 엔지니어링
+|   |-- backend-patterns/           # API, 데이터베이스, 캐싱 패턴
+|   |-- frontend-patterns/          # React, Next.js 패턴
+|   |-- frontend-slides/            # HTML 슬라이드 데크 및 웹 프레젠테이션 워크플로우 (새로 추가)
+|   |-- article-writing/            # AI 티가 나지 않는 고유한 어조의 장문 작성 (새로 추가)
+|   |-- content-engine/             # 멀티 플랫폼 소셜 콘텐츠 제작 및 재가공 (새로 추가)
+|   |-- market-research/            # 출처가 명확한 시장, 경쟁사, 투자자리서치 (새로 추가)
+|   |-- investor-materials/         # 피치 데크, 요약서, 메모, 재무 모델 (새로 추가)
+|   |-- investor-outreach/          # 개인화된 투자 유치 지원 및 후속 조치 (새로 추가)
+|   |-- continuous-learning/        # 세션에서 패턴 자동 추출 (상세 가이드)
+|   |-- continuous-learning-v2/     # 신뢰도 점수가 포함된 인스팅트 기반 학습
+|   |-- iterative-retrieval/        # 서브에이전트를 위한 점진적 컨텍스트 정교화
+|   |-- strategic-compact/          # 수동 압축 제안 (상세 가이드)
+|   |-- tdd-workflow/               # TDD 방법론
+|   |-- security-review/            # 보안 체크리스트
+|   |-- eval-harness/               # 검증 루프 평가 (상세 가이드)
+|   |-- verification-loop/          # 지속적 검증 (상세 가이드)
+|   |-- videodb/                   # 비디오/오디오: 수집, 검색, 편집, 생성, 스트리밍 (새로 추가)
+|   |-- golang-patterns/            # Go 관용구 및 최선 관행
+|   |-- golang-testing/             # Go 테스트 패턴, TDD, 벤치마크
+|   |-- cpp-coding-standards/         # C++ 코어 가이드라인 기반 표준 (새로 추가)
+|   |-- cpp-testing/                # GoogleTest, CMake/CTest를 이용한 C++ 테스트 (새로 추가)
+|   |-- django-patterns/            # Django 패턴, 모델, 뷰 (새로 추가)
+|   |-- django-security/            # Django 보안 최선 관행 (새로 추가)
+|   |-- django-tdd/                 # Django TDD 워크플로우 (새로 추가)
+|   |-- django-verification/        # Django 검증 루프 (새로 추가)
+|   |-- python-patterns/            # Python 관용구 및 최선 관행 (새로 추가)
+|   |-- python-testing/             # pytest를 이용한 Python 테스트 (새로 추가)
+|   |-- springboot-patterns/        # Java Spring Boot 패턴 (새로 추가)
+|   |-- springboot-security/        # Spring Boot 보안 (새로 추가)
+|   |-- springboot-tdd/             # Spring Boot TDD (새로 추가)
+|   |-- springboot-verification/    # Spring Boot 검증 (새로 추가)
+|   |-- configure-ecc/              # 대화형 설치 마법사 (새로 추가)
+|   |-- security-scan/              # AgentShield 보안 오디터 통합 (새로 추가)
+|   |-- java-coding-standards/     # Java 코딩 표준 (새로 추가)
+|   |-- jpa-patterns/              # JPA/Hibernate 패턴 (새로 추가)
+|   |-- postgres-patterns/         # PostgreSQL 최적화 패턴 (새로 추가)
+|   |-- nutrient-document-processing/ # Nutrient API를 이용한 문서 처리 (새로 추가)
+|   |-- project-guidelines-example/   # 프로젝트 전용 스킬 템플릿
+|   |-- database-migrations/         # 마이그레이션 패턴 (Prisma, Drizzle, Django, Go) (새로 추가)
+|   |-- api-design/                  # REST API 설계, 페이지네이션, 에러 응답 (새로 추가)
+|   |-- deployment-patterns/         # CI/CD, Docker, 상태 확인, 롤백 (새로 추가)
+|   |-- docker-patterns/            # Docker Compose, 네트워킹, 볼륨, 컨테이너 보안 (새로 추가)
+|   |-- e2e-testing/                 # Playwright E2E 패턴 및 POM (새로 추가)
+|   |-- content-hash-cache-pattern/  # 파일 처리를 위한 SHA-256 해시 캐싱 (새로 추가)
+|   |-- cost-aware-llm-pipeline/     # LLM 비용 최적화, 모델 라우팅, 예산 추적 (새로 추가)
+|   |-- regex-vs-llm-structured-text/ # 텍스트 파싱을 위한 정규식 vs LLM 결정 프레임워크 (새로 추가)
+|   |-- swift-actor-persistence/     # 액터를 이용한 스레드 안전한 Swift 데이터 지속성 (새로 추가)
+|   |-- swift-protocol-di-testing/   # 테스트 가능한 코드를 위한 프로토콜 기반 DI (새로 추가)
+|   |-- search-first/               # 코딩 전 리서치 워크플로우 (새로 추가)
+|   |-- skill-stocktake/            # 품질을 위한 스킬 및 명령어 점검 (새로 추가)
+|   |-- liquid-glass-design/         # iOS 26 Liquid Glass 디자인 시스템 (새로 추가)
+|   |-- foundation-models-on-device/ # Apple 온디바이스 모델 활용 (새로 추가)
+|   |-- swift-concurrency-6-2/       # Swift 6.2 동시성 접근 (새로 추가)
+|   |-- perl-patterns/             # 현대적인 Perl 5.36+ 관용구 (새로 추가)
+|   |-- perl-security/             # Perl 보안 패턴, 테인트 모드, 안전한 I/O (새로 추가)
+|   |-- perl-testing/              # Test2::V0를 이용한 Perl TDD (새로 추가)
+|   |-- autonomous-loops/           # 자율 루프 패턴: 파이프라인, PR 루프, DAG (새로 추가)
+|   |-- plankton-code-quality/      # Plankton 후크를 이용한 실시간 코드 품질 강제 (새로 추가)
 |
-|-- commands/         # Slash commands for quick execution
-|   |-- tdd.md              # /tdd - Test-driven development
-|   |-- plan.md             # /plan - Implementation planning
-|   |-- e2e.md              # /e2e - E2E test generation
-|   |-- code-review.md      # /code-review - Quality review
-|   |-- build-fix.md        # /build-fix - Fix build errors
-|   |-- refactor-clean.md   # /refactor-clean - Dead code removal
-|   |-- learn.md            # /learn - Extract patterns mid-session (Longform Guide)
-|   |-- learn-eval.md       # /learn-eval - Extract, evaluate, and save patterns (NEW)
-|   |-- checkpoint.md       # /checkpoint - Save verification state (Longform Guide)
-|   |-- verify.md           # /verify - Run verification loop (Longform Guide)
-|   |-- setup-pm.md         # /setup-pm - Configure package manager
-|   |-- go-review.md        # /go-review - Go code review (NEW)
-|   |-- go-test.md          # /go-test - Go TDD workflow (NEW)
-|   |-- go-build.md         # /go-build - Fix Go build errors (NEW)
-|   |-- skill-create.md     # /skill-create - Generate skills from git history (NEW)
-|   |-- instinct-status.md  # /instinct-status - View learned instincts (NEW)
-|   |-- instinct-import.md  # /instinct-import - Import instincts (NEW)
-|   |-- instinct-export.md  # /instinct-export - Export instincts (NEW)
-|   |-- evolve.md           # /evolve - Cluster instincts into skills
-|   |-- pm2.md              # /pm2 - PM2 service lifecycle management (NEW)
-|   |-- multi-plan.md       # /multi-plan - Multi-agent task decomposition (NEW)
-|   |-- multi-execute.md    # /multi-execute - Orchestrated multi-agent workflows (NEW)
-|   |-- multi-backend.md    # /multi-backend - Backend multi-service orchestration (NEW)
-|   |-- multi-frontend.md   # /multi-frontend - Frontend multi-service orchestration (NEW)
-|   |-- multi-workflow.md   # /multi-workflow - General multi-service workflows (NEW)
-|   |-- orchestrate.md      # /orchestrate - Multi-agent coordination
-|   |-- sessions.md         # /sessions - Session history management
-|   |-- eval.md             # /eval - Evaluate against criteria
-|   |-- test-coverage.md    # /test-coverage - Test coverage analysis
-|   |-- update-docs.md      # /update-docs - Update documentation
-|   |-- update-codemaps.md  # /update-codemaps - Update codemaps
-|   |-- python-review.md    # /python-review - Python code review (NEW)
+|-- commands/         # 빠른 실행을 위한 슬래시 명령어
+|   |-- tdd.md              # /tdd - 테스트 주도 개발
+|   |-- plan.md             # /plan - 구현 계획 수립
+|   |-- e2e.md              # /e2e - E2E 테스트 생성
+|   |-- code-review.md      # /code-review - 품질 리뷰
+|   |-- build-fix.md        # /build-fix - 빌드 에러 수정
+|   |-- refactor-clean.md   # /refactor-clean - 데드 코드 제거
+|   |-- learn.md            # /learn - 세션 도중 패턴 추출
+|   |-- learn-eval.md       # /learn-eval - 패턴 추출, 평가 및 저장 (새로 추가)
+|   |-- checkpoint.md       # /checkpoint - 검증 상태 저장
+|   |-- verify.md           # /verify - 검증 루프 실행
+|   |-- setup-pm.md         # /setup-pm - 패키지 매니저 설정
+|   |-- go-review.md        # /go-review - Go 코드 리뷰 (새로 추가)
+|   |-- go-test.md          # /go-test - Go TDD 워크플로우 (새로 추가)
+|   |-- go-build.md         # /go-build - Go 빌드 에러 수정 (새로 추가)
+|   |-- skill-create.md     # /skill-create - git 이력 기반 스킬 생성 (새로 추가)
+|   |-- instinct-status.md  # /instinct-status - 학습된 인스팅트 확인 (새로 추가)
+|   |-- instinct-import.md  # /instinct-import - 인스팅트 임포트 (새로 추가)
+|   |-- instinct-export.md  # /instinct-export - 인스팅트 익스포트 (새로 추가)
+|   |-- evolve.md           # /evolve - 인스팅트를 스킬로 클러스터링
+|   |-- pm2.md              # /pm2 - PM2 서비스 생애주기 관리 (새로 추가)
+|   |-- multi-plan.md       # /multi-plan - 멀티 에이전트 작업 분해 (새로 추가)
+|   |-- multi-execute.md    # /multi-execute - 멀티 에이전트 워크플로우 (새로 추가)
+|   |-- multi-backend.md    # /multi-backend - 백엔드 멀티 서비스 오케스트레이션 (새로 추가)
+|   |-- multi-frontend.md   # /multi-frontend - 프론트엔드 멀티 서비스 오케스트레이션 (새로 추가)
+|   |-- multi-workflow.md   # /multi-workflow - 일반 멀티 서비스 워크플로우 (새로 추가)
+|   |-- orchestrate.md      # /orchestrate - 멀티 에이전트 조정
+|   |-- sessions.md         # /sessions - 세션 히스토리 관리
+|   |-- eval.md             # /eval - 기준에 따른 평가
+|   |-- test-coverage.md    # /test-coverage - 테스트 커버리지 분석
+|   |-- update-docs.md      # /update-docs - 문서 업데이트
+|   |-- update-codemaps.md  # /update-codemaps - 코드맵 업데이트
+|   |-- python-review.md    # /python-review - Python 코드 리뷰 (새로 추가)
 |
-|-- rules/            # Always-follow guidelines (copy to ~/.claude/rules/)
-|   |-- README.md            # Structure overview and installation guide
-|   |-- common/              # Language-agnostic principles
-|   |   |-- coding-style.md    # Immutability, file organization
-|   |   |-- git-workflow.md    # Commit format, PR process
-|   |   |-- testing.md         # TDD, 80% coverage requirement
-|   |   |-- performance.md     # Model selection, context management
-|   |   |-- patterns.md        # Design patterns, skeleton projects
-|   |   |-- hooks.md           # Hook architecture, TodoWrite
-|   |   |-- agents.md          # When to delegate to subagents
-|   |   |-- security.md        # Mandatory security checks
-|   |-- typescript/          # TypeScript/JavaScript specific
-|   |-- python/              # Python specific
-|   |-- golang/              # Go specific
-|   |-- swift/               # Swift specific
-|   |-- php/                 # PHP specific (NEW)
+|-- rules/            # 상시 준수 가이드라인 (~/.claude/rules/ 에 복사)
+|   |-- README.md            # 구조 개요 및 설치 가이드
+|   |-- common/              # 언어 무관 공통 원칭
+|   |   |-- coding-style.md    # 불변성, 파일 구성
+|   |   |-- git-workflow.md    # 커밋 형식, PR 프로세스
+|   |   |-- testing.md         # TDD, 80% 커버리지 요구 사항
+|   |   |-- performance.md     # 모델 선택, 컨텍스트 관리
+|   |   |-- patterns.md        # 디자인 패턴, 스켈레톤 프로젝트
+|   |   |-- hooks.md           # 후크 아키텍처, TodoWrite
+|   |   |-- agents.md          # 서브에이전트 위임 시점
+|   |   |-- security.md        # 필수 보안 검사
+|   |-- typescript/          # TypeScript/JavaScript 전용
+|   |-- python/              # Python 전용
+|   |-- golang/              # Go 전용
+|   |-- swift/               # Swift 전용
+|   |-- php/                 # PHP 전용 (새로 추가)
+```
 |
 |-- hooks/            # Trigger-based automations
 |   |-- README.md                 # Hook documentation, recipes, and customization guide
@@ -405,140 +388,124 @@ everything-claude-code/
 |   |-- django-api-CLAUDE.md      # Real-world Django REST API (DRF + Celery)
 |   |-- rust-api-CLAUDE.md        # Real-world Rust API (Axum + SQLx + PostgreSQL) (NEW)
 |
-|-- mcp-configs/      # MCP server configurations
-|   |-- mcp-servers.json    # GitHub, Supabase, Vercel, Railway, etc.
-|
-|-- marketplace.json  # Self-hosted marketplace config (for /plugin marketplace add)
-```
-
 ---
 
-## 🛠️ Ecosystem Tools
+## 🛠️ 생태계 도구 (Ecosystem Tools)
 
-### Skill Creator
+### 스킬 생성기 (Skill Creator)
 
-Two ways to generate Claude Code skills from your repository:
+사용자의 레포지토리에서 Claude Code 스킬을 생성하는 두 가지 방법이 있습니다:
 
-#### Option A: Local Analysis (Built-in)
+#### 옵션 A: 로컬 분석 (기본 제공)
 
-Use the `/skill-create` command for local analysis without external services:
+외부 서비스 없이 로컬 분석을 위해 `/skill-create` 명령어를 사용하십시오:
 
 ```bash
-/skill-create                    # Analyze current repo
-/skill-create --instincts        # Also generate instincts for continuous-learning
+/skill-create                    # 현재 레포지토리 분석
+/skill-create --instincts        # 지속적 학습을 위한 인스팅트도 함께 생성
 ```
 
-This analyzes your git history locally and generates SKILL.md files.
+이 명령어는 로컬 git 이력을 분석하여 `SKILL.md` 파일을 생성합니다.
 
-#### Option B: GitHub App (Advanced)
+#### 옵션 B: GitHub 앱 (고급)
 
-For advanced features (10k+ commits, auto-PRs, team sharing):
+고급 기능(1만 개 이상의 커밋, 자동 PR, 팀 공유)이 필요한 경우:
 
-[Install GitHub App](https://github.com/apps/skill-creator) | [ecc.tools](https://ecc.tools)
+[GitHub 앱 설치](https://github.com/apps/skill-creator) | [ecc.tools](https://ecc.tools)
 
 ```bash
-# Comment on any issue:
+# 이슈에 댓글 작성:
 /skill-creator analyze
 
-# Or auto-triggers on push to default branch
+# 또는 기본 브랜치에 푸시할 때 자동 트리거
 ```
 
-Both options create:
-- **SKILL.md files** - Ready-to-use skills for Claude Code
-- **Instinct collections** - For continuous-learning-v2
-- **Pattern extraction** - Learns from your commit history
+두 옵션 모두 다음을 생성합니다:
+- **SKILL.md 파일** — Claude Code에서 즉시 사용 가능한 스킬
+- **인스팅트 컬렉션** — 지속적 학습 v2를 위한 데이터
+- **패턴 추출** — 커밋 이력으로부터 패턴 학습
 
-### AgentShield — Security Auditor
+### AgentShield — 보안 오디터
 
-> Built at the Claude Code Hackathon (Cerebral Valley x Anthropic, Feb 2026). 1282 tests, 98% coverage, 102 static analysis rules.
+> Claude Code 해커톤(2026년 2월) 우승작. 1282개 테스트, 98% 커버리지, 102개 정적 분석 규칙 보유.
 
-Scan your Claude Code configuration for vulnerabilities, misconfigurations, and injection risks.
+Claude Code 설정의 취약점, 오설정 및 인젝션 리스크를 스캔합니다.
 
 ```bash
-# Quick scan (no install needed)
+# 빠른 스캔 (설치 불필요)
 npx ecc-agentshield scan
 
-# Auto-fix safe issues
+# 안전한 이슈 자동 수정
 npx ecc-agentshield scan --fix
 
-# Deep analysis with three Opus 4.6 agents
+# 세 명의 Opus 4.6 에이전트를 이용한 심층 분석
 npx ecc-agentshield scan --opus --stream
 
-# Generate secure config from scratch
+# 처음부터 보안 설정 생성
 npx ecc-agentshield init
 ```
 
-**What it scans:** CLAUDE.md, settings.json, MCP configs, hooks, agent definitions, and skills across 5 categories — secrets detection (14 patterns), permission auditing, hook injection analysis, MCP server risk profiling, and agent config review.
+**스캔 대상:** CLAUDE.md, settings.json, MCP 설정, 후크, 에이전트 정의 및 스킬을 5개 카테고리(시크릿 감지, 권한 오디팅, 후크 인젝션 분석, MCP 서버 리스크 프로파일링, 에이전트 설정 리뷰)에 걸쳐 검사합니다.
 
-**The `--opus` flag** runs three Claude Opus 4.6 agents in a red-team/blue-team/auditor pipeline. The attacker finds exploit chains, the defender evaluates protections, and the auditor synthesizes both into a prioritized risk assessment. Adversarial reasoning, not just pattern matching.
-
-**Output formats:** Terminal (color-graded A-F), JSON (CI pipelines), Markdown, HTML. Exit code 2 on critical findings for build gates.
-
-Use `/security-scan` in Claude Code to run it, or add to CI with the [GitHub Action](https://github.com/affaan-m/agentshield).
+**`--opus` 플래그**는 공격자/방어자/감사자 파이프라인으로 구성된 세 명의 Claude Opus 4.6 에이전트를 실행합니다. 단순한 패턴 매칭이 아닌 적대적 추론(Adversarial reasoning)을 통해 리스크를 평가합니다.
 
 [GitHub](https://github.com/affaan-m/agentshield) | [npm](https://www.npmjs.com/package/ecc-agentshield)
 
-### 🔬 Plankton — Write-Time Code Quality Enforcement
+### 🔬 Plankton — 작성 시점 코드 품질 강제
 
-Plankton (credit: @alxfazio) is a recommended companion for write-time code quality enforcement. It runs formatters and 20+ linters on every file edit via PostToolUse hooks, then spawns Claude subprocesses (routed to Haiku/Sonnet/Opus by violation complexity) to fix issues the main agent missed. Three-phase architecture: auto-format silently (40-50% of issues), collect remaining violations as structured JSON, delegate fixes to a subprocess. Includes config protection hooks that prevent agents from modifying linter configs to pass instead of fixing code. Supports Python, TypeScript, Shell, YAML, JSON, TOML, Markdown, and Dockerfile. Use alongside AgentShield for security + quality coverage. See `skills/plankton-code-quality/` for full integration guide.
+Plankton(제작: @alxfazio)은 작성 시점의 코드 품질 강제를 위한 도구입니다. `PostToolUse` 후크를 통해 모든 파일 편집 시 포맷터와 20개 이상의 린터를 실행하며, 메인 에이전트가 놓친 부분을 수정하기 위해 Claude 서브프로세스를 가동합니다. 설정 보호 후크를 통해 에이전트가 코드를 고치는 대신 린터 설정을 수정하는 편법을 차단합니다. `skills/plankton-code-quality/`에서 자세한 가이드를 확인하십시오.
 
-### 🧠 Continuous Learning v2
+### 🧠 지속적 학습 v2 (Continuous Learning v2)
 
-The instinct-based learning system automatically learns your patterns:
+인스팅트 기반 학습 시스템이 사용자의 패턴을 자동으로 학습합니다:
 
 ```bash
-/instinct-status        # Show learned instincts with confidence
-/instinct-import <file> # Import instincts from others
-/instinct-export        # Export your instincts for sharing
-/evolve                 # Cluster related instincts into skills
+/instinct-status        # 신뢰도와 함께 학습된 인스팅트 표시
+/instinct-import <file> # 다른 사람의 인스팅트 임포트
+/instinct-export        # 공유를 위해 인스팅트 익스포트
+/evolve                 # 관련 인스팅트를 스킬로 클러스터링
 ```
 
-See `skills/continuous-learning-v2/` for full documentation.
+자세한 문서는 `skills/continuous-learning-v2/`를 참조하십시오.
 
 ---
 
-## 📋 Requirements
+## 📋 요구 사항 (Requirements)
 
-### Claude Code CLI Version
+### Claude Code CLI 버전
 
-**Minimum version: v2.1.0 or later**
+**최소 버전: v2.1.0 이상**
 
-This plugin requires Claude Code CLI v2.1.0+ due to changes in how the plugin system handles hooks.
+이 플러그인은 후크 시스템 변경으로 인해 Claude Code CLI v2.1.0 이상이 필요합니다.
 
-Check your version:
+버전 확인:
 ```bash
 claude --version
 ```
 
-### Important: Hooks Auto-Loading Behavior
+### 중요: 후크 자동 로드 동작
 
-> ⚠️ **For Contributors:** Do NOT add a `"hooks"` field to `.claude-plugin/plugin.json`. This is enforced by a regression test.
+> ⚠️ **기여자 주의:** `.claude-plugin/plugin.json`에 `"hooks"` 필드를 추가하지 마십시오. 회귀 테스트에서 강제됩니다.
 
-Claude Code v2.1+ **automatically loads** `hooks/hooks.json` from any installed plugin by convention. Explicitly declaring it in `plugin.json` causes a duplicate detection error:
-
-```
-Duplicate hooks file detected: ./hooks/hooks.json resolves to already-loaded file
-```
-
-**History:** This has caused repeated fix/revert cycles in this repo ([#29](https://github.com/affaan-m/everything-claude-code/issues/29), [#52](https://github.com/affaan-m/everything-claude-code/issues/52), [#103](https://github.com/affaan-m/everything-claude-code/issues/103)). The behavior changed between Claude Code versions, leading to confusion. We now have a regression test to prevent this from being reintroduced.
+Claude Code v2.1+ 버전은 설치된 플러그인의 `hooks/hooks.json`을 관례에 따라 **자동으로 로드**합니다. 명시적으로 선언하면 중복 감지 에러가 발생합니다.
 
 ---
 
-## 📥 Installation
+## 📥 설치 방법 (Installation)
 
-### Option 1: Install as Plugin (Recommended)
+### 옵션 1: 플러그인으로 설치 (권장)
 
-The easiest way to use this repo - install as a Claude Code plugin:
+가장 쉬운 방법입니다:
 
 ```bash
-# Add this repo as a marketplace
+# 마켓플레이스로 추가
 /plugin marketplace add affaan-m/everything-claude-code
 
-# Install the plugin
+# 플러그인 설치
 /plugin install everything-claude-code@everything-claude-code
 ```
 
-Or add directly to your `~/.claude/settings.json`:
+또는 `~/.claude/settings.json`에 직접 추가:
 
 ```json
 {
@@ -556,619 +523,187 @@ Or add directly to your `~/.claude/settings.json`:
 }
 ```
 
-This gives you instant access to all commands, agents, skills, and hooks.
-
-> **Note:** The Claude Code plugin system does not support distributing `rules` via plugins ([upstream limitation](https://code.claude.com/docs/en/plugins-reference)). You need to install rules manually:
+> **참고:** Claude Code 플러그인 시스템은 현재 `rules` 배포를 지원하지 않습니다. 다음과 같이 수동으로 규칙을 설치해야 합니다:
 >
-> ```bash
-> # Clone the repo first
-> git clone https://github.com/affaan-m/everything-claude-code.git
->
-> # Option A: User-level rules (applies to all projects)
-> mkdir -p ~/.claude/rules
-> cp -r everything-claude-code/rules/common/* ~/.claude/rules/
-> cp -r everything-claude-code/rules/typescript/* ~/.claude/rules/   # pick your stack
-> cp -r everything-claude-code/rules/python/* ~/.claude/rules/
-> cp -r everything-claude-code/rules/golang/* ~/.claude/rules/
-> cp -r everything-claude-code/rules/php/* ~/.claude/rules/
->
-> # Option B: Project-level rules (applies to current project only)
-> mkdir -p .claude/rules
-> cp -r everything-claude-code/rules/common/* .claude/rules/
-> cp -r everything-claude-code/rules/typescript/* .claude/rules/     # pick your stack
-> ```
+> 1. 레포지토리 클론: `git clone https://github.com/affaan-m/everything-claude-code.git`
+> 2. `rules/common/`의 내용을 `~/.claude/rules/common/`에 복사
+> 3. 사용하는 스택에 맞는 언어별 규칙(예: `rules/typescript/`)을 `~/.claude/rules/typescript/`에 복사
 
 ---
 
-### 🔧 Option 2: Manual Installation
+### 🔧 옵션 2: 수동 설치
 
-If you prefer manual control over what's installed:
+설치 대상을 직접 제어하고 싶은 경우:
 
 ```bash
-# Clone the repo
+# 레포지토리 클론
 git clone https://github.com/affaan-m/everything-claude-code.git
 
-# Copy agents to your Claude config
+# 에이전트를 Claude 설정으로 복사
 cp everything-claude-code/agents/*.md ~/.claude/agents/
 
-# Copy rules (common + language-specific)
-cp -r everything-claude-code/rules/common/* ~/.claude/rules/
-cp -r everything-claude-code/rules/typescript/* ~/.claude/rules/   # pick your stack
-cp -r everything-claude-code/rules/python/* ~/.claude/rules/
-cp -r everything-claude-code/rules/golang/* ~/.claude/rules/
-cp -r everything-claude-code/rules/php/* ~/.claude/rules/
+# 규칙 복사 (공통 + 언어별)
+cp -r everything-claude-code/rules/common/* ~/.claude/rules/common/
+cp -r everything-claude-code/rules/typescript/* ~/.claude/rules/typescript/
 
-# Copy commands
+# 명령어 복사
 cp everything-claude-code/commands/*.md ~/.claude/commands/
 
-# Copy skills (core vs niche)
-# Recommended (new users): core/general skills only
+# 스킬 복사
 cp -r everything-claude-code/.agents/skills/* ~/.claude/skills/
-cp -r everything-claude-code/skills/search-first ~/.claude/skills/
-
-# Optional: add niche/framework-specific skills only when needed
-# for s in django-patterns django-tdd springboot-patterns; do
-#   cp -r everything-claude-code/skills/$s ~/.claude/skills/
-# done
 ```
-
-#### Add hooks to settings.json
-
-Copy the hooks from `hooks/hooks.json` to your `~/.claude/settings.json`.
-
-#### Configure MCPs
-
-Copy desired MCP servers from `mcp-configs/mcp-servers.json` to your `~/.claude.json`.
-
-**Important:** Replace `YOUR_*_HERE` placeholders with your actual API keys.
 
 ---
 
-## 🎯 Key Concepts
+## 🎯 핵심 개념 (Key Concepts)
 
-### Agents
+### 에이전트 (Agents)
 
-Subagents handle delegated tasks with limited scope. Example:
+제한된 범위 내에서 위임된 작업을 처리하는 서브에이전트입니다.
 
-```markdown
----
-name: code-reviewer
-description: Reviews code for quality, security, and maintainability
-tools: ["Read", "Grep", "Glob", "Bash"]
-model: opus
----
+### 스킬 (Skills)
 
-You are a senior code reviewer...
-```
+명령어나 에이전트에 의해 호출되는 워크플로우 정의입니다.
 
-### Skills
+### 후크 (Hooks)
 
-Skills are workflow definitions invoked by commands or agents:
-
-```markdown
-# TDD Workflow
-
-1. Define interfaces first
-2. Write failing tests (RED)
-3. Implement minimal code (GREEN)
-4. Refactor (IMPROVE)
-5. Verify 80%+ coverage
-```
-
-### Hooks
-
-Hooks fire on tool events. Example - warn about console.log:
-
-```json
-{
-  "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx|js|jsx)$\"",
-  "hooks": [{
-    "type": "command",
-    "command": "#!/bin/bash\ngrep -n 'console\\.log' \"$file_path\" && echo '[Hook] Remove console.log' >&2"
-  }]
-}
-```
-
-### Rules
-
-Rules are always-follow guidelines, organized into `common/` (language-agnostic) + language-specific directories:
-
-```
-rules/
-  common/          # Universal principles (always install)
-  typescript/      # TS/JS specific patterns and tools
-  python/          # Python specific patterns and tools
-  golang/          # Go specific patterns and tools
-  swift/           # Swift specific patterns and tools
-  php/             # PHP specific patterns and tools
-```
-
-See [`rules/README.md`](rules/README.md) for installation and structure details.
+도구 이벤트 발생 시 실행되는 자동화입니다.
 
 ---
 
-## 🗺️ Which Agent Should I Use?
+## 🗺️ 어떤 에이전트를 사용해야 하나요?
 
-Not sure where to start? Use this quick reference:
-
-| I want to... | Use this command | Agent used |
+| 목표 | 명령어 | 사용 에이전트 |
 |--------------|-----------------|------------|
-| Plan a new feature | `/everything-claude-code:plan "Add auth"` | planner |
-| Design system architecture | `/everything-claude-code:plan` + architect agent | architect |
-| Write code with tests first | `/tdd` | tdd-guide |
-| Review code I just wrote | `/code-review` | code-reviewer |
-| Fix a failing build | `/build-fix` | build-error-resolver |
-| Run end-to-end tests | `/e2e` | e2e-runner |
-| Find security vulnerabilities | `/security-scan` | security-reviewer |
-| Remove dead code | `/refactor-clean` | refactor-cleaner |
-| Update documentation | `/update-docs` | doc-updater |
-| Review Go code | `/go-review` | go-reviewer |
-| Review Python code | `/python-review` | python-reviewer |
-| Audit database queries | *(auto-delegated)* | database-reviewer |
-
-### Common Workflows
-
-**Starting a new feature:**
-```
-/everything-claude-code:plan "Add user authentication with OAuth"
-                                              → planner creates implementation blueprint
-/tdd                                          → tdd-guide enforces write-tests-first
-/code-review                                  → code-reviewer checks your work
-```
-
-**Fixing a bug:**
-```
-/tdd                                          → tdd-guide: write a failing test that reproduces it
-                                              → implement the fix, verify test passes
-/code-review                                  → code-reviewer: catch regressions
-```
-
-**Preparing for production:**
-```
-/security-scan                                → security-reviewer: OWASP Top 10 audit
-/e2e                                          → e2e-runner: critical user flow tests
-/test-coverage                                → verify 80%+ coverage
-```
+| 신규 기능 계획 | `/everything-claude-code:plan "Add auth"` | planner |
+| 시스템 아키텍처 설계 | `/plan` + architect 에이전트 | architect |
+| 테스트 우선 코드 작성 | `/tdd` | tdd-guide |
+| 작성한 코드 리뷰 | `/code-review` | code-reviewer |
+| 빌드 에러 수정 | `/build-fix` | build-error-resolver |
+| 엔드투엔드 테스트 실행 | `/e2e` | e2e-runner |
+| 보안 취약점 찾기 | `/security-scan` | security-reviewer |
+| 데드 코드 제거 | `/refactor-clean` | refactor-cleaner |
+| 문서 업데이트 | `/update-docs` | doc-updater |
 
 ---
 
-## ❓ FAQ
+## ❓ 자주 묻는 질문 (FAQ)
 
 <details>
-<summary><b>How do I check which agents/commands are installed?</b></summary>
+<summary><b>Cursor / OpenCode / Codex / Antigravity에서 작동하나요?</b></summary>
 
-```bash
-/plugin list everything-claude-code@everything-claude-code
-```
-
-This shows all available agents, commands, and skills from the plugin.
-</details>
-
-<details>
-<summary><b>My hooks aren't working / I see "Duplicate hooks file" errors</b></summary>
-
-This is the most common issue. **Do NOT add a `"hooks"` field to `.claude-plugin/plugin.json`.** Claude Code v2.1+ automatically loads `hooks/hooks.json` from installed plugins. Explicitly declaring it causes duplicate detection errors. See [#29](https://github.com/affaan-m/everything-claude-code/issues/29), [#52](https://github.com/affaan-m/everything-claude-code/issues/52), [#103](https://github.com/affaan-m/everything-claude-code/issues/103).
-</details>
-
-<details>
-<summary><b>Can I use ECC with Claude Code on a custom API endpoint or model gateway?</b></summary>
-
-Yes. ECC does not hardcode Anthropic-hosted transport settings. It runs locally through Claude Code's normal CLI/plugin surface, so it works with:
-
-- Anthropic-hosted Claude Code
-- Official Claude Code gateway setups using `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN`
-- Compatible custom endpoints that speak the Anthropic API Claude Code expects
-
-Minimal example:
-
-```bash
-export ANTHROPIC_BASE_URL=https://your-gateway.example.com
-export ANTHROPIC_AUTH_TOKEN=your-token
-claude
-```
-
-If your gateway remaps model names, configure that in Claude Code rather than in ECC. ECC's hooks, skills, commands, and rules are model-provider agnostic once the `claude` CLI is already working.
-
-Official references:
-- [Claude Code LLM gateway docs](https://docs.anthropic.com/en/docs/claude-code/llm-gateway)
-- [Claude Code model configuration docs](https://docs.anthropic.com/en/docs/claude-code/model-config)
-
-</details>
-
-<details>
-<summary><b>My context window is shrinking / Claude is running out of context</b></summary>
-
-Too many MCP servers eat your context. Each MCP tool description consumes tokens from your 200k window, potentially reducing it to ~70k.
-
-**Fix:** Disable unused MCPs per project:
-```json
-// In your project's .claude/settings.json
-{
-  "disabledMcpServers": ["supabase", "railway", "vercel"]
-}
-```
-
-Keep under 10 MCPs enabled and under 80 tools active.
-</details>
-
-<details>
-<summary><b>Can I use only some components (e.g., just agents)?</b></summary>
-
-Yes. Use Option 2 (manual installation) and copy only what you need:
-
-```bash
-# Just agents
-cp everything-claude-code/agents/*.md ~/.claude/agents/
-
-# Just rules
-cp -r everything-claude-code/rules/common/* ~/.claude/rules/
-```
-
-Each component is fully independent.
-</details>
-
-<details>
-<summary><b>Does this work with Cursor / OpenCode / Codex / Antigravity?</b></summary>
-
-Yes. ECC is cross-platform:
-- **Cursor**: Pre-translated configs in `.cursor/`. See [Cursor IDE Support](#cursor-ide-support).
-- **OpenCode**: Full plugin support in `.opencode/`. See [OpenCode Support](#-opencode-support).
-- **Codex**: First-class support for both macOS app and CLI, with adapter drift guards and SessionStart fallback. See PR [#257](https://github.com/affaan-m/everything-claude-code/pull/257).
-- **Antigravity**: Tightly integrated setup for workflows, skills, and flatten rules in `.agent/`.
-- **Claude Code**: Native — this is the primary target.
-</details>
-
-<details>
-<summary><b>How do I contribute a new skill or agent?</b></summary>
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). The short version:
-1. Fork the repo
-2. Create your skill in `skills/your-skill-name/SKILL.md` (with YAML frontmatter)
-3. Or create an agent in `agents/your-agent.md`
-4. Submit a PR with a clear description of what it does and when to use it
+예, ECC는 크로스 플랫폼을 지향합니다:
+- **Cursor**: `.cursor/`에 사전 번역된 설정이 있습니다.
+- **OpenCode**: `.opencode/`에서 플러그인을 지원합니다.
+- **Codex**: macOS 앱과 CLI 모두 지원합니다.
+- **Antigravity**: `.agent/`를 통해 워크플로우와 스킬이 긴밀하게 통합됩니다.
+- **Claude Code**: 기본 타겟입니다.
 </details>
 
 ---
 
-## 🧪 Running Tests
-
-The plugin includes a comprehensive test suite:
+## 🧪 테스트 실행 (Running Tests)
 
 ```bash
-# Run all tests
+# 모든 테스트 실행
 node tests/run-all.js
 
-# Run individual test files
+# 개별 테스트 실행
 node tests/lib/utils.test.js
-node tests/lib/package-manager.test.js
 node tests/hooks/hooks.test.js
 ```
 
 ---
 
-## 🤝 Contributing
+## 🤝 기여하기 (Contributing)
 
-**Contributions are welcome and encouraged.**
+**여러분의 기여를 환영합니다.** 유용한 에이전트, 스킬, 후크 또는 개선된 규칙이 있다면 언제든 공유해 주세요! 자세한 가이드는 [CONTRIBUTING.md](CONTRIBUTING.md)를 참조하십시오.
 
-This repo is meant to be a community resource. If you have:
-- Useful agents or skills
-- Clever hooks
-- Better MCP configurations
-- Improved rules
+## Cursor IDE 지원 (Cursor IDE Support)
 
-Please contribute! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+ECC는 Cursor의 네이티브 형식에 맞게 후크, 규칙, 에이전트, 스킬, 명령어 및 MCP 설정을 조정하여 **완벽한 Cursor IDE 지원**을 제공합니다.
 
-### Ideas for Contributions
-
-- Language-specific skills (Rust, C#, Kotlin, Java) — Go, Python, Perl, Swift, and TypeScript already included
-- Framework-specific configs (Rails, Laravel, FastAPI, NestJS) — Django, Spring Boot already included
-- DevOps agents (Kubernetes, Terraform, AWS, Docker)
-- Testing strategies (different frameworks, visual regression)
-- Domain-specific knowledge (ML, data engineering, mobile)
-
----
-
-## Cursor IDE Support
-
-ECC provides **full Cursor IDE support** with hooks, rules, agents, skills, commands, and MCP configs adapted for Cursor's native format.
-
-### Quick Start (Cursor)
+### 빠른 시작 (Cursor)
 
 ```bash
-# Install for your language(s)
+# 사용 언어에 맞게 설치
 ./install.sh --target cursor typescript
 ./install.sh --target cursor python golang swift php
 ```
 
-### What's Included
+### 포함된 구성 요소
 
-| Component | Count | Details |
+| 컴포넌트 | 개수 | 상세 내용 |
 |-----------|-------|---------|
-| Hook Events | 15 | sessionStart, beforeShellExecution, afterFileEdit, beforeMCPExecution, beforeSubmitPrompt, and 10 more |
-| Hook Scripts | 16 | Thin Node.js scripts delegating to `scripts/hooks/` via shared adapter |
-| Rules | 34 | 9 common (alwaysApply) + 25 language-specific (TypeScript, Python, Go, Swift, PHP) |
-| Agents | Shared | Via AGENTS.md at root (read by Cursor natively) |
-| Skills | Shared + Bundled | Via AGENTS.md at root and `.cursor/skills/` for translated additions |
-| Commands | Shared | `.cursor/commands/` if installed |
-| MCP Config | Shared | `.cursor/mcp.json` if installed |
-
-### Hook Architecture (DRY Adapter Pattern)
-
-Cursor has **more hook events than Claude Code** (20 vs 8). The `.cursor/hooks/adapter.js` module transforms Cursor's stdin JSON to Claude Code's format, allowing existing `scripts/hooks/*.js` to be reused without duplication.
-
-```
-Cursor stdin JSON → adapter.js → transforms → scripts/hooks/*.js
-                                              (shared with Claude Code)
-```
-
-Key hooks:
-- **beforeShellExecution** — Blocks dev servers outside tmux (exit 2), git push review
-- **afterFileEdit** — Auto-format + TypeScript check + console.log warning
-- **beforeSubmitPrompt** — Detects secrets (sk-, ghp_, AKIA patterns) in prompts
-- **beforeTabFileRead** — Blocks Tab from reading .env, .key, .pem files (exit 2)
-- **beforeMCPExecution / afterMCPExecution** — MCP audit logging
-
-### Rules Format
-
-Cursor rules use YAML frontmatter with `description`, `globs`, and `alwaysApply`:
-
-```yaml
----
-description: "TypeScript coding style extending common rules"
-globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
-alwaysApply: false
----
-```
+| 후크 이벤트 | 15개 | sessionStart, beforeShellExecution, afterFileEdit 등 |
+| 후크 스크립트 | 16개 | 공유 어댑터를 통해 `scripts/hooks/`로 위임되는 Node.js 스크립트 |
+| 규칙 | 34개 | 9개의 공통 규칙 + 25개의 언어별 규칙 (TS, Python, Go, Swift, PHP) |
+| 에이전트 | 공유 | 루트의 AGENTS.md를 통해 Cursor가 네이티브로 읽음 |
+| 스킬 | 공유+번들 | 루트의 AGENTS.md 및 `.cursor/skills/`에 포함된 추가 스킬 |
+| 명령어 | 공유 | 설치된 경우 `.cursor/commands/`에 포함 |
+| MCP 설정 | 공유 | 설치된 경우 `.cursor/mcp.json`에 포함 |
 
 ---
 
-## Codex macOS App + CLI Support
+## Codex macOS 앱 + CLI 지원
 
-ECC provides **first-class Codex support** for both the macOS app and CLI, with a reference configuration, Codex-specific AGENTS.md supplement, and shared skills.
+ECC는 macOS 앱과 CLI 모두에 대해 **퍼스트 클래스 Codex 지원**을 제공합니다.
 
-### Quick Start (Codex App + CLI)
+### 빠른 시작 (Codex 앱 + CLI)
 
 ```bash
-# Run Codex CLI in the repo — AGENTS.md and .codex/ are auto-detected
+# 레포지토리에서 Codex CLI 실행 — AGENTS.md 및 .codex/를 자동 감지합니다.
 codex
 
-# Optional: copy the global-safe defaults to your home directory
+# 옵션: 글로벌 기본 설정을 홈 디렉토리에 복사
 cp .codex/config.toml ~/.codex/config.toml
 ```
 
-Codex macOS app:
-- Open this repository as your workspace.
-- The root `AGENTS.md` is auto-detected.
-- `.codex/config.toml` and `.codex/agents/*.toml` work best when kept project-local.
-- Optional: copy `.codex/config.toml` to `~/.codex/config.toml` for global defaults; keep the multi-agent role files project-local unless you also copy `.codex/agents/`.
-
-### What's Included
-
-| Component | Count | Details |
-|-----------|-------|---------|
-| Config | 1 | `.codex/config.toml` — top-level approvals/sandbox/web_search, MCP servers, notifications, profiles |
-| AGENTS.md | 2 | Root (universal) + `.codex/AGENTS.md` (Codex-specific supplement) |
-| Skills | 16 | `.agents/skills/` — SKILL.md + agents/openai.yaml per skill |
-| MCP Servers | 4 | GitHub, Context7, Memory, Sequential Thinking (command-based) |
-| Profiles | 2 | `strict` (read-only sandbox) and `yolo` (full auto-approve) |
-| Agent Roles | 3 | `.codex/agents/` — explorer, reviewer, docs-researcher |
-
-### Skills
-
-Skills at `.agents/skills/` are auto-loaded by Codex:
-
-| Skill | Description |
-|-------|-------------|
-| tdd-workflow | Test-driven development with 80%+ coverage |
-| security-review | Comprehensive security checklist |
-| coding-standards | Universal coding standards |
-| frontend-patterns | React/Next.js patterns |
-| frontend-slides | HTML presentations, PPTX conversion, visual style exploration |
-| article-writing | Long-form writing from notes and voice references |
-| content-engine | Platform-native social content and repurposing |
-| market-research | Source-attributed market and competitor research |
-| investor-materials | Decks, memos, models, and one-pagers |
-| investor-outreach | Personalized outreach, follow-ups, and intro blurbs |
-| backend-patterns | API design, database, caching |
-| e2e-testing | Playwright E2E tests |
-| eval-harness | Eval-driven development |
-| strategic-compact | Context management |
-| api-design | REST API design patterns |
-| verification-loop | Build, test, lint, typecheck, security |
-
-### Key Limitation
-
-Codex does **not yet provide Claude-style hook execution parity**. ECC enforcement there is instruction-based via `AGENTS.md`, optional `model_instructions_file` overrides, and sandbox/approval settings.
-
-### Multi-Agent Support
-
-Current Codex builds support experimental multi-agent workflows.
-
-- Enable `features.multi_agent = true` in `.codex/config.toml`
-- Define roles under `[agents.<name>]`
-- Point each role at a file under `.codex/agents/`
-- Use `/agent` in the CLI to inspect or steer child agents
-
-ECC ships three sample role configs:
-
-| Role | Purpose |
-|------|---------|
-| `explorer` | Read-only codebase evidence gathering before edits |
-| `reviewer` | Correctness, security, and missing-test review |
-| `docs_researcher` | Documentation and API verification before release/docs changes |
-
 ---
 
-## 🔌 OpenCode Support
+## 🔌 OpenCode 지원
 
-ECC provides **full OpenCode support** including plugins and hooks.
+ECC는 플러그인과 후크를 포함한 **완벽한 OpenCode 지원**을 제공합니다.
 
-### Quick Start
+### 빠른 시작
 
 ```bash
-# Install OpenCode
+# OpenCode 설치
 npm install -g opencode
 
-# Run in the repository root
+# 레포지토리 루트에서 실행
 opencode
 ```
 
-The configuration is automatically detected from `.opencode/opencode.json`.
+설정은 `.opencode/opencode.json`에서 자동으로 감지됩니다.
 
-### Feature Parity
+### 플랫폼별 기능 비교
 
-| Feature | Claude Code | OpenCode | Status |
-|---------|-------------|----------|--------|
-| Agents | ✅ 16 agents | ✅ 12 agents | **Claude Code leads** |
-| Commands | ✅ 40 commands | ✅ 31 commands | **Claude Code leads** |
-| Skills | ✅ 65 skills | ✅ 37 skills | **Claude Code leads** |
-| Hooks | ✅ 8 event types | ✅ 11 events | **OpenCode has more!** |
-| Rules | ✅ 29 rules | ✅ 13 instructions | **Claude Code leads** |
-| MCP Servers | ✅ 14 servers | ✅ Full | **Full parity** |
-| Custom Tools | ✅ Via hooks | ✅ 6 native tools | **OpenCode is better** |
-
-### Hook Support via Plugins
-
-OpenCode's plugin system is MORE sophisticated than Claude Code with 20+ event types:
-
-| Claude Code Hook | OpenCode Plugin Event |
-|-----------------|----------------------|
-| PreToolUse | `tool.execute.before` |
-| PostToolUse | `tool.execute.after` |
-| Stop | `session.idle` |
-| SessionStart | `session.created` |
-| SessionEnd | `session.deleted` |
-
-**Additional OpenCode events**: `file.edited`, `file.watcher.updated`, `message.updated`, `lsp.client.diagnostics`, `tui.toast.show`, and more.
-
-### Available Commands (31+)
-
-| Command | Description |
-|---------|-------------|
-| `/plan` | Create implementation plan |
-| `/tdd` | Enforce TDD workflow |
-| `/code-review` | Review code changes |
-| `/build-fix` | Fix build errors |
-| `/e2e` | Generate E2E tests |
-| `/refactor-clean` | Remove dead code |
-| `/orchestrate` | Multi-agent workflow |
-| `/learn` | Extract patterns from session |
-| `/checkpoint` | Save verification state |
-| `/verify` | Run verification loop |
-| `/eval` | Evaluate against criteria |
-| `/update-docs` | Update documentation |
-| `/update-codemaps` | Update codemaps |
-| `/test-coverage` | Analyze coverage |
-| `/go-review` | Go code review |
-| `/go-test` | Go TDD workflow |
-| `/go-build` | Fix Go build errors |
-| `/python-review` | Python code review (PEP 8, type hints, security) |
-| `/multi-plan` | Multi-model collaborative planning |
-| `/multi-execute` | Multi-model collaborative execution |
-| `/multi-backend` | Backend-focused multi-model workflow |
-| `/multi-frontend` | Frontend-focused multi-model workflow |
-| `/multi-workflow` | Full multi-model development workflow |
-| `/pm2` | Auto-generate PM2 service commands |
-| `/sessions` | Manage session history |
-| `/skill-create` | Generate skills from git |
-| `/instinct-status` | View learned instincts |
-| `/instinct-import` | Import instincts |
-| `/instinct-export` | Export instincts |
-| `/evolve` | Cluster instincts into skills |
-| `/promote` | Promote project instincts to global scope |
-| `/projects` | List known projects and instinct stats |
-| `/learn-eval` | Extract and evaluate patterns before saving |
-| `/setup-pm` | Configure package manager |
-| `/harness-audit` | Audit harness reliability, eval readiness, and risk posture |
-| `/loop-start` | Start controlled agentic loop execution pattern |
-| `/loop-status` | Inspect active loop status and checkpoints |
-| `/quality-gate` | Run quality gate checks for paths or entire repo |
-| `/model-route` | Route tasks to models by complexity and budget |
-
-### Plugin Installation
-
-**Option 1: Use directly**
-```bash
-cd everything-claude-code
-opencode
-```
-
-**Option 2: Install as npm package**
-```bash
-npm install ecc-universal
-```
-
-Then add to your `opencode.json`:
-```json
-{
-  "plugin": ["ecc-universal"]
-}
-```
-
-That npm plugin entry enables ECC's published OpenCode plugin module (hooks/events and plugin tools).
-It does **not** automatically add ECC's full command/agent/instruction catalog to your project config.
-
-For the full ECC OpenCode setup, either:
-- run OpenCode inside this repository, or
-- copy the bundled `.opencode/` config assets into your project and wire the `instructions`, `agent`, and `command` entries in `opencode.json`
-
-### Documentation
-
-- **Migration Guide**: `.opencode/MIGRATION.md`
-- **OpenCode Plugin README**: `.opencode/README.md`
-- **Consolidated Rules**: `.opencode/instructions/INSTRUCTIONS.md`
-- **LLM Documentation**: `llms.txt` (complete OpenCode docs for LLMs)
-
----
-
-## Cross-Tool Feature Parity
-
-ECC is the **first plugin to maximize every major AI coding tool**. Here's how each harness compares:
-
-| Feature | Claude Code | Cursor IDE | Codex CLI | OpenCode |
+| 기능 | Claude Code | Cursor IDE | Codex CLI | OpenCode |
 |---------|------------|------------|-----------|----------|
-| **Agents** | 16 | Shared (AGENTS.md) | Shared (AGENTS.md) | 12 |
-| **Commands** | 40 | Shared | Instruction-based | 31 |
-| **Skills** | 65 | Shared | 10 (native format) | 37 |
-| **Hook Events** | 8 types | 15 types | None yet | 11 types |
-| **Hook Scripts** | 20+ scripts | 16 scripts (DRY adapter) | N/A | Plugin hooks |
-| **Rules** | 34 (common + lang) | 34 (YAML frontmatter) | Instruction-based | 13 instructions |
-| **Custom Tools** | Via hooks | Via hooks | N/A | 6 native tools |
-| **MCP Servers** | 14 | Shared (mcp.json) | 4 (command-based) | Full |
-| **Config Format** | settings.json | hooks.json + rules/ | config.toml | opencode.json |
-| **Context File** | CLAUDE.md + AGENTS.md | AGENTS.md | AGENTS.md | AGENTS.md |
-| **Secret Detection** | Hook-based | beforeSubmitPrompt hook | Sandbox-based | Hook-based |
-| **Auto-Format** | PostToolUse hook | afterFileEdit hook | N/A | file.edited hook |
-| **Version** | Plugin | Plugin | Reference config | 1.8.0 |
-
-**Key architectural decisions:**
-- **AGENTS.md** at root is the universal cross-tool file (read by all 4 tools)
-- **DRY adapter pattern** lets Cursor reuse Claude Code's hook scripts without duplication
-- **Skills format** (SKILL.md with YAML frontmatter) works across Claude Code, Codex, and OpenCode
-- Codex's lack of hooks is compensated by `AGENTS.md`, optional `model_instructions_file` overrides, and sandbox permissions
+| **에이전트** | 16개 | 공유 (AGENTS.md) | 공유 (AGENTS.md) | 12개 |
+| **명령어** | 40개 | 공유 | 지침 기반 | 31개 |
+| **스킬** | 65개 | 공유 | 10개 (네이티브) | 37개 |
+| **후크 이벤트** | 8개 유형 | 15개 유형 | 미지원 | 11개 유형 |
+| **규칙** | 34개 | 34개 | 지침 기반 | 13개 지침 |
+| **커스텀 도구**| 후크 방식 | 후크 방식 | 미지원 | 6개 네이티브 도구 |
+| **MCP 서버** | 14개 | 공유 (mcp.json)| 4개 (명령어 기반)| 전체 지원 |
 
 ---
 
-## 📖 Background
+## 📖 배경 (Background)
 
-I've been using Claude Code since the experimental rollout. Won the Anthropic x Forum Ventures hackathon in Sep 2025 building [zenith.chat](https://zenith.chat) with [@DRodriguezFX](https://x.com/DRodriguezFX) - entirely using Claude Code.
-
-These configs are battle-tested across multiple production applications.
-
-## Inspiration Credits
-
-- inspired by [zarazhangrui](https://github.com/zarazhangrui)
-- homunculus-inspired by [humanplane](https://github.com/humanplane)
+저는 실험적 출시 단계부터 Claude Code를 사용해 왔습니다. 2025년 9월 Anthropic x Forum Ventures 해커톤에서 오직 Claude Code만을 사용하여 [zenith.chat](https://zenith.chat)을 구축해 우승했습니다. 이 설정들은 여러 프로덕션 애플리케이션을 통해 검증되었습니다.
 
 ---
 
-## Token Optimization
+## 토큰 최적화 (Token Optimization)
 
-Claude Code usage can be expensive if you don't manage token consumption. These settings significantly reduce costs without sacrificing quality.
+Claude Code 사용 비용은 토큰 소비를 어떻게 관리하느냐에 따라 달라집니다. 다음 설정은 품질을 유지하면서 비용을 크게 절감해 줍니다.
 
-### Recommended Settings
+### 권장 설정
 
-Add to `~/.claude/settings.json`:
+`~/.claude/settings.json`에 추가하십시오:
 
 ```json
 {
@@ -1180,114 +715,54 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-| Setting | Default | Recommended | Impact |
+| 설정 | 기본값 | 권장값 | 효과 |
 |---------|---------|-------------|--------|
-| `model` | opus | **sonnet** | ~60% cost reduction; handles 80%+ of coding tasks |
-| `MAX_THINKING_TOKENS` | 31,999 | **10,000** | ~70% reduction in hidden thinking cost per request |
-| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 95 | **50** | Compacts earlier — better quality in long sessions |
+| `model` | opus | **sonnet** | 비용 약 60% 절감; 코딩 작업의 80% 이상 처리 가능 |
+| `MAX_THINKING_TOKENS` | 31,999 | **10,000** | 요청당 보이지 않는 'Thinking' 비용 약 70% 절감 |
+| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 95 | **50** | 더 일찍 압축 실행 — 긴 세션에서 품질 유지에 유리 |
 
-Switch to Opus only when you need deep architectural reasoning:
+심층적인 아키텍처 추론이 필요할 때만 Opus로 전환하십시오:
 ```
 /model opus
 ```
 
-### Daily Workflow Commands
+### 전략적 압축 (Strategic Compaction)
 
-| Command | When to Use |
-|---------|-------------|
-| `/model sonnet` | Default for most tasks |
-| `/model opus` | Complex architecture, debugging, deep reasoning |
-| `/clear` | Between unrelated tasks (free, instant reset) |
-| `/compact` | At logical task breakpoints (research done, milestone complete) |
-| `/cost` | Monitor token spending during session |
+이 플러그인에 포함된 `strategic-compact` 스킬은 95% 컨텍스트 임계치에 도달할 때까지 기다리는 대신, 논리적인 작업 지점에서 `/compact`를 실행하도록 제안합니다.
 
-### Strategic Compaction
-
-The `strategic-compact` skill (included in this plugin) suggests `/compact` at logical breakpoints instead of relying on auto-compaction at 95% context. See `skills/strategic-compact/SKILL.md` for the full decision guide.
-
-**When to compact:**
-- After research/exploration, before implementation
-- After completing a milestone, before starting the next
-- After debugging, before continuing feature work
-- After a failed approach, before trying a new one
-
-**When NOT to compact:**
-- Mid-implementation (you'll lose variable names, file paths, partial state)
-
-### Context Window Management
-
-**Critical:** Don't enable all MCPs at once. Each MCP tool description consumes tokens from your 200k window, potentially reducing it to ~70k.
-
-- Keep under 10 MCPs enabled per project
-- Keep under 80 tools active
-- Use `disabledMcpServers` in project config to disable unused ones
-
-### Agent Teams Cost Warning
-
-Agent Teams spawns multiple context windows. Each teammate consumes tokens independently. Only use for tasks where parallelism provides clear value (multi-module work, parallel reviews). For simple sequential tasks, subagents are more token-efficient.
+**압축 권장 시점:**
+- 리서치 완료 후 구현 시작 전
+- 마일스톤 달성 후 다음 단계 시작 전
+- 디버깅 완료 후 기능 개발 재개 전
+- 접근 방식이 실패하여 새로운 시도를 하기 전
 
 ---
 
-## ⚠️ Important Notes
+## ⚠️ 중요 참고 사항
 
-### Token Optimization
+### 사용자 정의 (Customization)
 
-Hitting daily limits? See the **[Token Optimization Guide](docs/token-optimization.md)** for recommended settings and workflow tips.
-
-Quick wins:
-
-```json
-// ~/.claude/settings.json
-{
-  "model": "sonnet",
-  "env": {
-    "MAX_THINKING_TOKENS": "10000",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
-  }
-}
-```
-
-Use `/clear` between unrelated tasks, `/compact` at logical breakpoints, and `/cost` to monitor spending.
-
-### Customization
-
-These configs work for my workflow. You should:
-1. Start with what resonates
-2. Modify for your stack
-3. Remove what you don't use
-4. Add your own patterns
+이 설정들은 저의 워크플로우에 최적화되어 있습니다. 여러분은 다음을 고려해야 합니다:
+1. 마음에 드는 부분부터 시작하십시오.
+2. 자신의 기술 스택에 맞게 수정하십시오.
+3. 사용하지 않는 기능은 제거하십시오.
+4. 자신만의 패턴을 추가하십시오.
 
 ---
 
-## 💜 Sponsors
+## 🔗 링크 (Links)
 
-This project is free and open source. Sponsors help keep it maintained and growing.
-
-[**Become a Sponsor**](https://github.com/sponsors/affaan-m) | [Sponsor Tiers](SPONSORS.md) | [Sponsorship Program](SPONSORING.md)
-
----
-
-## 🌟 Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=affaan-m/everything-claude-code&type=Date)](https://star-history.com/#affaan-m/everything-claude-code&Date)
-
----
-
-## 🔗 Links
-
-- **Shorthand Guide (Start Here):** [The Shorthand Guide to Everything Claude Code](https://x.com/affaanmustafa/status/2012378465664745795)
-- **Longform Guide (Advanced):** [The Longform Guide to Everything Claude Code](https://x.com/affaanmustafa/status/2014040193557471352)
+- **단축 가이드 (여기서 시작):** [Everything Claude Code 단축 가이드](https://x.com/affaanmustafa/status/2012378465664745795)
+- **상세 가이드 (고급):** [Everything Claude Code 상세 가이드](https://x.com/affaanmustafa/status/2014040193557471352)
 - **Follow:** [@affaanmustafa](https://x.com/affaanmustafa)
 - **zenith.chat:** [zenith.chat](https://zenith.chat)
-- **Skills Directory:** awesome-agent-skills (community-maintained directory of agent skills)
 
 ---
 
-## 📄 License
+## 📄 라이선스 (License)
 
-MIT - Use freely, modify as needed, contribute back if you can.
+MIT - 자유롭게 사용하고, 필요에 따라 수정하며, 가능하다면 커뮤니티에 기여해 주세요.
 
 ---
 
-**Star this repo if it helps. Read both guides. Build something great.**
+**이 레포지토리가 도움이 되었다면 스타(Star)를 눌러주세요. 가이드를 읽고 멋진 제품을 만드시길 바랍니다.**
