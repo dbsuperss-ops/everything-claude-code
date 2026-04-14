@@ -41,3 +41,7 @@ examples/sessions/*.tmp
 
 # Local drafts
 marketing/
+
+.claude/
+.vscode/
+CLAUDE.md
